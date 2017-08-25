@@ -1,0 +1,68 @@
+version: '2'
+
+services:
+  openldap-app:
+    restart: always
+    container_name: openldap-app
+    image: tiredofit/openldap
+    environment:
+      - VIRTUAL_HOST=ldap.example.org
+      - VIRTUAL_NETWORK=nginx-proxy
+      - VIRTUAL_PORT=80
+      - LETSENCRYPT_HOST=ldap.example.org
+      - LETSENCRYPT_EMAIL=email@example.org
+
+      - HOSTNAME=ldap.example.org
+ 
+      - CONTAINER_LOG_LEVEL=5
+
+      - LDAP_LOG_LEVEL=16384
+      - LDAP_ORGANISATION="Example Organization"
+      - LDAP_DOMAIN=example.org
+      - LDAP_BASE_DN=dc=selfdesign,dc=org
+      - LDAP_ADMIN_PASSWORD=admin
+      - LDAP_CONFIG_PASSWORD=config
+
+      - LDAP_READONLY_USER=true
+      - LDAP_READONLY_USER_USERNAME=reader
+      - LDAP_READONLY_USER_PASSWORD=reader
+
+      - LDAP_BACKEND=hdb
+
+      - LDAP_TLS=true
+      - LDAP_TLS_CRT_FILENAME=cert.pem
+      - LDAP_TLS_KEY_FILENAME=key.pem
+      - LDAP_TLS_CA_CRT_FILENAME=ca.pem
+      - LDAP_TLS_ENFORCE=false
+      - LDAP_TLS_CIPHER_SUITE=SECURE256:-VERS-SSL3.0
+      - LDAP_TLS_PROTOCOL_MIN=3.1
+      - LDAP_TLS_VERIFY_CLIENT=try
+
+      - LDAP_REPLICATION=false
+      - LDAP_REPLICATION_CONFIG_SYNCPROV=binddn="cn=admin,cn=config" bindmethod=simple credentials="password" searchbase="cn=config" type=refreshAndPersist retry="60 +" timeout=1 starttls=critical
+      - LDAP_REPLICATION_DB_SYNCPROV=binddn="cn=admin,dc=selfdesign,dc=org" bindmethod=simple credentials="password" searchbase="dc=selfdesign,dc=org" type=refreshAndPersist interval=00:00:00:10 retry="60 +" timeout=1 starttls=critical
+      - LDAP_REPLICATION_HOSTS=#PYTHON2BASH:['ldap://ldap-test.example.org',ldap://ldap-test2.example.org]
+      - LDAP_REMOVE_CONFIG_AFTER_SETUP=false
+      - LDAP_SSL_HELPER_PREFIX=ldap
+      - LDAP_BACKUP_CONFIG_CRON_PERIOD=0 4 * * *
+      - LDAP_BACKUP_DATA_CRON_PERIOD=0 4 * * *
+      - LDAP_BACKUP_TTL=15
+
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./backup:/data/backup
+      - ./data:/var/lib/ldap
+      - ./config:/etc/ldap/slapd.d
+      - ./certs:/assets/slapd/certs
+    ports:
+      - 389:389
+      - 636:636
+    networks:
+      - proxy-tier
+
+networks:              
+  proxy-tier:          
+    external:          
+      name: nginx-proxy
+

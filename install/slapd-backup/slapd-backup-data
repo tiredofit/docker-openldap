@@ -1,0 +1,5 @@
+#!/bin/bash -e
+
+/usr/sbin/slapd-backup 1 data
+
+exit 0

@@ -1,0 +1,3 @@
+<LDAP_BACKUP_CONFIG_CRON_PERIOD> /usr/sbin/slapd-backup-config 2>&1 
+<LDAP_BACKUP_DATA_CRON_PERIOD> /usr/sbin/slapd-backup-data 2>&1
+

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Usage: /sbin/slapd-restore dbnum file
+dbnum=$1
+file=$2
+
+backupPath="/data/backup"
+file="$backupPath/$file"
+
+TEMP_FILE=$(mktemp)
+gunzip -c $file > $TEMP_FILE
+chown openldap:openldap $TEMP_FILE
+
+# stop slapd
+sv stop /container/run/process/slapd
+
+/sbin/setuser openldap slapadd -c -F /etc/ldap/slapd.d -n $dbnum -l $TEMP_FILE
+
+# restart slapd
+sv start /container/run/process/slapd
+
+rm $TEMP_FILE
+
+exit 0
