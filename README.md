@@ -5,7 +5,7 @@
 Dockerfile to build a [OpenLDAP Server](https://openldap.org) 
 It contains TLS Encryption, Multi-Master Replication as configurable options.
 
-This Container uses [Debian:Jessue](http://www.debian.org) as a base, and also includes automated backups.
+This Container uses [Debian:Jessie](http://www.debian.org) as a base, and also includes automated backups.
 
 
 
