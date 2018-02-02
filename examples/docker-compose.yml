@@ -19,7 +19,7 @@ services:
       - LDAP_LOG_LEVEL=16384
       - LDAP_ORGANISATION="Example Organization"
       - LDAP_DOMAIN=example.org
-      - LDAP_BASE_DN=dc=selfdesign,dc=org
+      - LDAP_BASE_DN=dc=example,dc=org
       - LDAP_ADMIN_PASSWORD=admin
       - LDAP_CONFIG_PASSWORD=config
 
@@ -40,7 +40,7 @@ services:
 
       - LDAP_REPLICATION=false
       - LDAP_REPLICATION_CONFIG_SYNCPROV=binddn="cn=admin,cn=config" bindmethod=simple credentials="password" searchbase="cn=config" type=refreshAndPersist retry="60 +" timeout=1 starttls=critical
-      - LDAP_REPLICATION_DB_SYNCPROV=binddn="cn=admin,dc=selfdesign,dc=org" bindmethod=simple credentials="password" searchbase="dc=selfdesign,dc=org" type=refreshAndPersist interval=00:00:00:10 retry="60 +" timeout=1 starttls=critical
+      - LDAP_REPLICATION_DB_SYNCPROV=binddn="cn=admin,dc=example,dc=org" bindmethod=simple credentials="password" searchbase="dc=example,dc=org" type=refreshAndPersist interval=00:00:00:10 retry="60 +" timeout=1 starttls=critical
       - LDAP_REPLICATION_HOSTS=#PYTHON2BASH:['ldap://ldap-test.example.org',ldap://ldap-test2.example.org]
       - LDAP_REMOVE_CONFIG_AFTER_SETUP=false
       - LDAP_SSL_HELPER_PREFIX=ldap

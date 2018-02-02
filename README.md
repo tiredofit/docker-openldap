@@ -13,7 +13,7 @@ This Container uses [Debian:Jessie](http://www.debian.org) as a base, and also i
 
 # Authors
 
-- [Dave Conroy](daveconroy@selfdesign.org)
+- [Dave Conroy](dave at tiredofit dot ca)
 
 # Table of Contents
 
