@@ -16,10 +16,10 @@ log-helper level eq trace && set -x
 ulimit -n 1024
 
 LDAP_ETC_DIR="/etc/openldap"
+LDAP_RUN_DIR="/var/run/openldap"
 LDAP_CONFIG_DIR="$LDAP_ETC_DIR/slapd.d"
 LDAP_BACKEND_DIR="/var/lib/openldap"
 LDAP_MODULES_DIR="/usr/lib/openldap"
-LDAP_RUN_DIR="/var/run/openldap"
 LDAP_RUN_PIDFILE="$LDAP_RUN_DIR/slapd.pid"
 LDAP_RUN_ARGSFILE="$LDAP_RUN_DIR/slapd.args"
 
@@ -91,6 +91,9 @@ if [ ! -e "$FIRST_START_DONE" ]; then
 
 
 mkdir -p ${LDAP_BACKEND_DIR}/run
+mkdir -p ${LDAP_BACKEND_DIR}/openldap-data 
+chmod -R 700 ${LDAP_BACKEND_DIR}
+cp -R /etc/openldap/DB_CONFIG.example ${LDAP_BACKEND_DIR}/openldap-data/DB_CONFIG
 
 LDAP_BACKEND_OBJECTCLASS="olcMdbConfig"
 
@@ -448,22 +451,8 @@ echo 'Starting OpenLDAP Container......'
 
 ### Cron
 echo 'Starting Cron..'
-#touch /etc/crontab /etc/cron.d /etc/cron.daily /etc/cron.hourly /etc/cron.monthly /etc/cron.weekly
-#find /etc/cron.d/ -exec touch {} \;
-#find /etc/cron.daily/ -exec touch {} \;
-#find /etc/cron.hourly/ -exec touch {} \;
-#find /etc/cron.monthly/ -exec touch {} \;
-#find /etc/cron.weekly/ -exec touch {} \;
-crond
 crontab /assets/cron/crontab.txt
 
-
-### Zabbix
-echo 'Starting Zabbix..'
-sed -i -e "s/<ZABBIX_HOSTNAME>/$ZABBIX_HOSTNAME/g" /etc/zabbix/zabbix_agentd.conf
-sed -i -e "s/<LDAP_BASE_DN>/$LDAP_BASE_DN/g" /etc/zabbix/zabbix_agentd.conf.d/ldap-stats.sh
-sed -i -e "s/<LDAP_ADMIN_PASSWORD>/$LDAP_ADMIN_PASSWORD/g" /etc/zabbix/zabbix_agentd.conf.d/ldap-stats.sh
-#zabbix_agentd
 
 ### Nginx
 echo 'Starting Nginx..'
@@ -472,5 +461,5 @@ echo 'Starting Nginx..'
 ### OpenLDAP
 echo 'Starting OpenLDAP..'
 ulimit -n 1024
-/usr/sbin/slapd -h "ldap://$HOSTNAME ldaps://$HOSTNAME ldapi:///" -u openldap -g openldap -d $LDAP_LOG_LEVEL
+/usr/sbin/slapd -h "ldap://$HOSTNAME ldaps://$HOSTNAME ldapi:///" -u ldap -g ldap -d $LDAP_LOG_LEVEL
 

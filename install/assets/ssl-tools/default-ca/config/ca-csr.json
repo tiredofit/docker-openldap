@@ -1,0 +1,16 @@
+{
+  "CN": "ldap",
+  "key": {
+    "algo": "ecdsa",
+    "size": 384
+  },
+  "names": [
+    {
+      "O": "SelfDesign Learning Foundation",
+      "OU": "IT",
+      "L": "Vancouver",
+      "ST": "British Columbia",
+      "C": "CA"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 FROM tiredofit/alpine:3.6
-MAINTAINER Dave Conroy <dave at tiredofit dot ca>
+LABEL maintainer="Dave Conroy (dave at tiredofit dot ca)"
 
 ### Set Environment Variables
 ENV LDAP_LOG_LEVEL=256 \
@@ -35,59 +35,31 @@ ENV LDAP_LOG_LEVEL=256 \
            libressl \
            openldap \
            openldap-back-bdb \
-	       openldap-back-hdb \
-	       openldap-back-monitor \
-	       openldap-back-sql \
-	       openldap-clients \
-	       openldap-mqtt \
-	       py2-pyldap \
-	       sed
+           openldap-back-hdb \
+           openldap-back-monitor \
+           openldap-back-sql \
+           openldap-clients \
+           openldap-mqtt \
+           py2-pyldap \
+           sed && \
 
+### SSL Tools
+           curl -o /usr/sbin/cfssl -SL https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 && \
+    	   chmod 700 /usr/sbin/cfssl && \
+      	   curl -o /usr/sbin/cfssljson -SL https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 && \
+           chmod 700 /usr/sbin/cfssljson && \
+       	   chmod +x /usr/sbin/* && \
 	       
 ## OpenLDAP Setup
-	RUN rm -rf /var/lib/openldap 
-	RUN rm -rf /etc/ldap/slapd.d
-	ADD assets/slapd /assets/slapd/
+	rm -rf /var/lib/openldap /etc/ldap/slapd.d
 
-## OpenLDAP Backup
-	ADD assets/cron /assets/cron/
-	ADD install/slapd-backup/ /usr/sbin/
+### Files Setup
+    ADD install /
 
-## Log Helpers
-	ADD install/loghelper /usr/sbin
-
-## SSL Helpers
-	ADD install/ssl-tools /usr/sbin
-	ADD assets/ssl-tools /assets/ssl-tools/
-	RUN curl -o /usr/sbin/cfssl -SL https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 && \
-		chmod 700 /usr/sbin/cfssl && \
-		curl -o /usr/sbin/cfssljson -SL https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 && \
-		chmod 700 /usr/sbin/cfssljson && \
-		chmod +x /usr/sbin/*
-
-## Nginx
-	COPY install/nginx/nginx.conf /etc/nginx/nginx.conf
-	COPY install/nginx/placeholder.html /www/html/index.html
-
-## Zabbix
-	ADD install/sbin/ /usr/sbin
-    ADD install/zabbix/ /etc/zabbix
-    RUN mkdir -p /var/log/zabbix && \
-        chmod +x /etc/zabbix/zabbix_agentd.conf.d/*.sh && \
-        chown -R zabbix:root /var/log/zabbix
 
 ## Networking
-	EXPOSE 80 389 636 10050
-
-### S6 Setup
-    ADD install/s6 /etc/s6
-    
-
-## Logrotate Setup
-#    ADD install/logrotate.d /etc/logrotate.d
+    EXPOSE 80 389 636 10050
 
 ## Entrypoint
-	COPY install/run.sh /run.sh
 	RUN chmod +x /run.sh
 	CMD ["/run.sh"]
-
