@@ -1,4 +1,4 @@
-FROM registry.selfdesign.org/docker/alpine:3.8
+FROM tiredofit/alpine:3.8
 LABEL maintainer="Dave Conroy <dave@tiredofit.ca>"
 
 ENV ADMIN_PASS=admin \
@@ -18,6 +18,7 @@ ENV ADMIN_PASS=admin \
     READONLY_USER_PASS=readonly \
     READONLY_USER_USER=readonly \
     REMOVE_CONFIG_AFTER_SETUP=false \
+    SCHEMA_TYPE=nis \
     SSL_HELPER_PREFIX=ldap \
     TLS_CA_CRT_FILENAME=ca.pem \
     TLS_CIPHER_SUITE="ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AES:-DHE-DSS:-RSA:!aNULL:!MD5:!DSS:!SHA" \
