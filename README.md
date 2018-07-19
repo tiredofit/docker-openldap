@@ -18,6 +18,7 @@ Upon starting this image it will give you a ready to run server with many config
 * Supports Replication
 * Optional Web Server included to take advantage of Let's Encrypt certificates
 * Scheduled Backups of Data
+* Ability to choose NIS or rfc2307bis Schema
 * Zabbix Monitoring templates included
 
 * This Container uses a [customized Alpine Linux base](https://hub.docker.com/r/tiredofit/alpine) which includes [s6 overlay](https://github.com/just-containers/s6-overlay) enabled for PID 1 Init capabilities, [zabbix-agent](https://zabbix.org) based on 3.4 Packages for individual container monitoring, Cron also installed along with other tools (bash,curl, less, logrotate, mariadb-client, nano, vim) for easier management. It also supports sending to external SMTP servers..
@@ -110,6 +111,7 @@ Required and used for new ldap server only:
 | `ENABLE_READONLY_USER` | Add a read only user. Default`false` |
 | `READONLY_USER_USER` | Read only user username. Default `readonly |
 | `READONLY_USER_PASS` | Read only user password. Default `readonly` |
+| `SCHEMA_TYPE` | Use `nis` or `rfc2307bis` core schema. Default `nis` |
 
 
 | Variable | Description |
