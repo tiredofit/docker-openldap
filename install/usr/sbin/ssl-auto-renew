@@ -3,8 +3,6 @@
 # This file aims to be called by a cron task
 # and not directly. See ssl-helper.
 
-#source /container/run/environment.sh
-
 SSL_HELPER_TOOL=$1
 PREFIX=$2
 CERT_FILE=$3

@@ -1,0 +1,12 @@
+#!/usr/bin/with-contenv bash
+
+while [ ! -f /tmp/state/10-openldap-init ]
+do
+  sleep 1
+done
+
+ulimit -n 1024
+
+### OpenLDAP
+echo '** [openldap] Starting OpenLDAP'
+/usr/sbin/slapd -h "ldap://$HOSTNAME ldaps://$HOSTNAME ldapi:///" -u ldap -g ldap -d $LOG_LEVEL

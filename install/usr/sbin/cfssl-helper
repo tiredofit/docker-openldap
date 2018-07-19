@@ -1,5 +1,8 @@
 #!/bin/bash
-log-helper level eq trace && set -x
+
+if [ "$DEBUG_MODE" = "TRUE" ] || [ "$DEBUG_MODE" = "true" ];  then
+  set -x
+fi
 
 # This tool helps to generate tls certificates with cfssl
 # It takes cfssl configuration from environment variable.
@@ -10,38 +13,21 @@ CERT_FILE=$2
 KEY_FILE=$3
 CA_FILE=$4
 
-log-helper debug "Launching CFssl-helper..."
+echo "** [openldap] Launching cfssl-helper"
 
 # before 0.2.5 retro compatibility, will be removed.
 mkdir -p /assets/cfssl/assets/default-ca
 ln -sf /assets/ssl-tools/default-ca/default-ca.pem /assets/cfssl/assets/default-ca/default-ca.pem
 
 if [ -z "$PREFIX" ] || [ -z "$CERT_FILE" ] || [ -z "$KEY_FILE" ] || [ -z "$CA_FILE" ]; then
-  log-helper error "Usage: cfssl-helper prefix cert_file key_file ca_file"
+  echo "** [openldap] Usage: cfssl-helper prefix cert_file key_file ca_file"
   exit 1
 fi
 
 if [ ! -e "$CERT_FILE" ] && [ ! -e "$KEY_FILE" ]; then
 
-  log-helper info "No certificate file and certificate key provided, generate:"
-  log-helper info "$CERT_FILE and $KEY_FILE"
-
-  LOG_LEVEL_PARAM=""
-
-  case $CONTAINER_LOG_LEVEL in
-      0 )
-          LOG_LEVEL_PARAM="-loglevel 4";;
-      1 )
-          LOG_LEVEL_PARAM="-loglevel 3";;
-      2 )
-          LOG_LEVEL_PARAM="-loglevel 2";;
-      3 )
-          LOG_LEVEL_PARAM="-loglevel 1";;
-      4 )
-          LOG_LEVEL_PARAM="-loglevel 0";;
-      5 )
-          LOG_LEVEL_PARAM="-loglevel 0";;
-  esac
+  echo "** [openldap] No certificate file and certificate key provided, generate:"
+  echo "** [openldap] $CERT_FILE and $KEY_FILE"
 
   # set env vars
   PREFIX=${PREFIX^^} # uppercase
@@ -84,10 +70,10 @@ if [ ! -e "$CERT_FILE" ] && [ ! -e "$KEY_FILE" ]; then
   # set csr file
   CSR_FILE="/tmp/csr-file"
   if [ -n "$CFSSL_CSR_JSON" ]; then
-      log-helper debug "use CFSSL_CSR_JSON value as csr file"
+      echo "** [openldap] Using CFSSL_CSR_JSON value as csr file"
       echo $CFSSL_CSR_JSON > $CSR_FILE
   elif [ -n "$CFSSL_CSR" ]; then
-    log-helper debug "use $CFSSL_CSR as csr file"
+    echo "** [openldap] Using $CFSSL_CSR as csr file"
     cp -f $CFSSL_CSR $CSR_FILE
 
     # it's the default csr
@@ -103,8 +89,8 @@ if [ ! -e "$CERT_FILE" ] && [ ! -e "$KEY_FILE" ]; then
       sed -i "s|{{ CFSSL_DEFAULT_CA_CSR_COUNTRY }}|${CFSSL_DEFAULT_CA_CSR_COUNTRY}|g" $CSR_FILE
     fi
   else
-    log-helper error "error: no csr file provided"
-    log-helper error "CFSSL_CSR_JSON and CFSSL_CSR are empty"
+    echo "** [openldap] ERROR: No csr file provided"
+    echo "** [openldap]        CFSSL_CSR_JSON and CFSSL_CSR are empty"
     exit 1
   fi
 
@@ -129,7 +115,7 @@ if [ ! -e "$CERT_FILE" ] && [ ! -e "$KEY_FILE" ]; then
         [[ ! -d "/etc/ssl/certs/" ]] && mkdir -p /etc/ssl/certs/
         cat $CFSSL_REMOTE_HTTPS_CA_CERT >> /etc/ssl/certs/ca-certificates.crt
       else
-        log-helper error "error: remote https ca cert file $CFSSL_REMOTE_HTTPS_CA_CERT not found"
+        echo "** [openldap] ERROR: Remote https ca cert file $CFSSL_REMOTE_HTTPS_CA_CERT not found"
       fi
     fi
 
@@ -139,12 +125,12 @@ if [ ! -e "$CERT_FILE" ] && [ ! -e "$KEY_FILE" ]; then
   fi
 
   if [ -n "$CFSSL_CONFIG_JSON" ]; then
-    log-helper debug "use CFSSL_CONFIG_JSON value as config file"
+    echo "** [openldap] Using CFSSL_CONFIG_JSON value as config file"
     echo $CFSSL_CONFIG_JSON > $CONFIG_FILE
     CONFIG_PARAM="-config $CONFIG_FILE"
 
     elif [ -n "$CFSSL_CONFIG" ]; then
-      log-helper debug "use $CFSSL_CONFIG as config file"
+      echo "** [openldap] Using $CFSSL_CONFIG as config file"
       cp -f $CFSSL_CONFIG $CONFIG_FILE
       CONFIG_PARAM="-config $CONFIG_FILE"
   fi
@@ -155,7 +141,7 @@ if [ ! -e "$CERT_FILE" ] && [ ! -e "$KEY_FILE" ]; then
 
   retry=0
   while [  $retry -lt $CFSSL_RETRY ]; do
-    log-helper debug "cfssl $LOG_LEVEL_PARAM gencert $REMOTE_PARAM $CA_CERT_PARAM $CA_KEY_PARAM $CONFIG_PARAM $HOSTNAME_PARAM $PROFILE_PARAM $LABEL_PARAM $CSR_FILE | cfssljson -bare /tmp/$CERT_NAME"
+    echo "** [openldap] cfssl $LOG_LEVEL_PARAM gencert $REMOTE_PARAM $CA_CERT_PARAM $CA_KEY_PARAM $CONFIG_PARAM $HOSTNAME_PARAM $PROFILE_PARAM $LABEL_PARAM $CSR_FILE | cfssljson -bare /tmp/$CERT_NAME"
     cfssl $LOG_LEVEL_PARAM gencert $REMOTE_PARAM $CA_CERT_PARAM $CA_KEY_PARAM $CONFIG_PARAM $HOSTNAME_PARAM $PROFILE_PARAM $LABEL_PARAM $CSR_FILE | cfssljson -bare /tmp/$CERT_NAME && break
     sleep $CFSSL_RETRY_DELAY
     ((retry++))
@@ -163,31 +149,31 @@ if [ ! -e "$CERT_FILE" ] && [ ! -e "$KEY_FILE" ]; then
 
   # move generated files
   [[ ! -e "/tmp/$CERT_NAME.pem" ]] && exit 1
-  log-helper debug "move /tmp/$CERT_NAME.pem to $CERT_FILE"
+  echo "** [openldap] Moving /tmp/$CERT_NAME.pem to $CERT_FILE"
   mv /tmp/$CERT_NAME.pem $CERT_FILE
 
-  log-helper debug "move /tmp/$CERT_NAME-key.pem to $KEY_FILE"
+  echo "** [openldap] Moving /tmp/$CERT_NAME-key.pem to $KEY_FILE"
   mv /tmp/$CERT_NAME-key.pem $KEY_FILE
 
   # if ca file don't exists
   if [ ! -e "$CA_FILE" ]; then
 
     if [ -n "$CFSSL_REMOTE" ]; then
-      log-helper debug "Get CA certificate from $CFSSL_REMOTE"
-      log-helper debug "cfssl $LOG_LEVEL_PARAM info $REMOTE_PARAM $CONFIG_PARAM $PROFILE_PARAM $LABEL_PARAM"
+      echo "** [openldap] Get CA certificate from $CFSSL_REMOTE"
+      echo "** [openldap] cfssl $LOG_LEVEL_PARAM info $REMOTE_PARAM $CONFIG_PARAM $PROFILE_PARAM $LABEL_PARAM"
 
       retry=0
       while [  $retry -lt $CFSSL_RETRY ]; do
         cfssl $LOG_LEVEL_PARAM info $REMOTE_PARAM $CONFIG_PARAM $PROFILE_PARAM $LABEL_PARAM | sed -e "s/.*certificate\":\"\(.*-----\)\".*/\1/g" | sed 's/\\n/\n/g' > $CA_FILE && break
         sleep $CFSSL_RETRY_DELAY
-        log-helper debug "CA certificate returned save as $CA_FILE"
+        echo "** [openldap] CA certificate saves as $CA_FILE"
         ((retry++))
       done
 
       [[ ! -e "$CA_FILE" ]] && exit 1
 
     elif [ -n "$CFSSL_CA_CERT" ]; then
-      log-helper info "Link $CFSSL_CA_CERT to $CA_FILE"
+      echo "** [openldap] Link $CFSSL_CA_CERT to $CA_FILE"
       ln -sf $CFSSL_CA_CERT $CA_FILE
     fi
 
@@ -196,16 +182,16 @@ if [ ! -e "$CERT_FILE" ] && [ ! -e "$KEY_FILE" ]; then
   # delete tmp files
   rm -f /tmp/$CERT_NAME.csr $CONFIG_FILE $CSR_FILE
 
-  log-helper debug "done :)"
+  echo "** [openldap] SSL Certificate creation complete"
 
 elif [ ! -e "$KEY_FILE" ]; then
-  log-helper error "Certificate file $CERT_FILE exists but not key file $KEY_FILE"
+  echo "** [openldap] ERROR: Certificate file $CERT_FILE exists but not key file $KEY_FILE"
   exit 1
 elif [ ! -e "$CERT_FILE" ]; then
-  log-helper error "Key file $KEY_FILE exists but not certificate file $CERT_FILE"
+  echo "** [openldap] ERROR: Key file $KEY_FILE exists but not certificate file $CERT_FILE"
   exit 1
 else
-  log-helper debug "Files $CERT_FILE and $KEY_FILE exists, fix files permissions"
+  echo "** [openldap] Files $CERT_FILE and $KEY_FILE exists, fix files permissions"
   chmod 644 $CERT_FILE
   chmod 600 $KEY_FILE
 fi

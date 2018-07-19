@@ -1,0 +1,20 @@
+#!/usr/bin/with-contenv bash
+
+### Check to see if Enabled/Disabled
+  if [ "$ENABLE_NGINX" = "FALSE" ];  then
+    echo "**** [nginx] Disabling nginx"
+    s6-svc -d /var/run/s6/services/09-nginx
+    exit 0
+  fi
+
+  ### Adjust NGINX Runtime Variables
+  UPLOAD_MAX_SIZE=${UPLOAD_MAX_SIZE:="2G"}
+  sed -i -e "s/<UPLOAD_MAX_SIZE>/$UPLOAD_MAX_SIZE/g" /etc/nginx/nginx.conf
+
+  mkdir -p /www/logs/nginx
+  chown -R nginx /www/logs/nginx
+  mkdir -p /tmp/nginx
+  chown -R nginx /tmp/nginx
+
+  mkdir -p /tmp/state
+  touch /tmp/state/09-nginx

@@ -6,11 +6,11 @@
   },
   "names": [
     {
-      "O": "Example Organization",
-      "OU": "IT",
-      "L": "Vancouver",
-      "ST": "British Columbia",
-      "C": "CA"
+      "O": "Example",
+      "OU": "Example",
+      "L": "Example",
+      "ST": "Example",
+      "C": "XX"
     }
   ]
 }

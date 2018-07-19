@@ -1,5 +1,2 @@
-#!/bin/bash -e
-
+#!/usr/bin/with-contenv bash
 /usr/sbin/slapd-backup 0 config
-
-exit 0

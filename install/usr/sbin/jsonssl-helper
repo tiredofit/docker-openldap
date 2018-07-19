@@ -1,5 +1,9 @@
 #!/bin/bash
-log-helper level eq trace && set -x
+
+
+if [ "$DEBUG_MODE" = "TRUE" ] || [ "$DEBUG_MODE" = "true" ];  then
+  set -x
+fi
 
 # This tool helps get certificates from json files
 # like kubernetes secrets or traefik acme.json

@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/with-contenv bash
 
 # Usage: /sbin/slapd-backup dbnum filename
 dbnum=$1
@@ -6,10 +6,8 @@ filename=$2
 
 backupPath="/data/backup"
 
-#source /container/run/environment.sh
-
-# delete backups that are over $LDAP_BACKUP_TTL days
-find $backupPath -type f -mtime +$LDAP_BACKUP_TTL -exec rm {} \;
+# delete backups that are over $BACKUP_TTL days
+find $backupPath -type f -mtime +$BACKUP_TTL -exec rm {} \;
 
 # Date format for the dump file name
 dateFileFormat="+%Y%m%dT%H%M%S"

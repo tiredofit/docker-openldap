@@ -1,7 +1,7 @@
-dn: cn={{ LDAP_READONLY_USER_USERNAME }},{{ LDAP_BASE_DN }}
+dn: cn=<READONLY_USER_USER>,<BASE_DN>
 changetype: add
-cn: {{ LDAP_READONLY_USER_USERNAME }}
+cn: <READONLY_USER_USER>
 objectClass: simpleSecurityObject
 objectClass: organizationalRole
-userPassword: {{ LDAP_READONLY_USER_PASSWORD_ENCRYPTED }}
+userPassword: <READONLY_USER_PASS_ENCRYPTED>
 description: LDAP read only user

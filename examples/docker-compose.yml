@@ -1,68 +1,66 @@
 version: '2'
-
 services:
-  openldap-app:
-    restart: always
-    container_name: openldap-app
+  ldap:
+    hostname: ldap.example.com
+    domainname: ldap.example.com
+    container_name: ldap
     image: tiredofit/openldap
-    environment:
-      - VIRTUAL_HOST=ldap.example.org
-      - VIRTUAL_NETWORK=nginx-proxy
-      - VIRTUAL_PORT=80
-      - LETSENCRYPT_HOST=ldap.example.org
-      - LETSENCRYPT_EMAIL=email@example.org
-
-      - HOSTNAME=ldap.example.org
- 
-      - CONTAINER_LOG_LEVEL=5
-
-      - LDAP_LOG_LEVEL=16384
-      - LDAP_ORGANISATION="Example Organization"
-      - LDAP_DOMAIN=example.org
-      - LDAP_BASE_DN=dc=example,dc=org
-      - LDAP_ADMIN_PASSWORD=admin
-      - LDAP_CONFIG_PASSWORD=config
-
-      - LDAP_READONLY_USER=true
-      - LDAP_READONLY_USER_USERNAME=reader
-      - LDAP_READONLY_USER_PASSWORD=reader
-
-      - LDAP_BACKEND=hdb
-
-      - LDAP_TLS=true
-      - LDAP_TLS_CRT_FILENAME=cert.pem
-      - LDAP_TLS_KEY_FILENAME=key.pem
-      - LDAP_TLS_CA_CRT_FILENAME=ca.pem
-      - LDAP_TLS_ENFORCE=false
-      - LDAP_TLS_CIPHER_SUITE=SECURE256:-VERS-SSL3.0
-      - LDAP_TLS_PROTOCOL_MIN=3.1
-      - LDAP_TLS_VERIFY_CLIENT=try
-
-      - LDAP_REPLICATION=false
-      - LDAP_REPLICATION_CONFIG_SYNCPROV=binddn="cn=admin,cn=config" bindmethod=simple credentials="password" searchbase="cn=config" type=refreshAndPersist retry="60 +" timeout=1 starttls=critical
-      - LDAP_REPLICATION_DB_SYNCPROV=binddn="cn=admin,dc=example,dc=org" bindmethod=simple credentials="password" searchbase="dc=example,dc=org" type=refreshAndPersist interval=00:00:00:10 retry="60 +" timeout=1 starttls=critical
-      - LDAP_REPLICATION_HOSTS=#PYTHON2BASH:['ldap://ldap-test.example.org',ldap://ldap-test2.example.org]
-      - LDAP_REMOVE_CONFIG_AFTER_SETUP=false
-      - LDAP_SSL_HELPER_PREFIX=ldap
-      - LDAP_BACKUP_CONFIG_CRON_PERIOD=0 4 * * *
-      - LDAP_BACKUP_DATA_CRON_PERIOD=0 4 * * *
-      - LDAP_BACKUP_TTL=15
-
-    tty: true
-    stdin_open: true
-    volumes:
-      - ./backup:/data/backup
-      - ./data:/var/lib/ldap
-      - ./config:/etc/ldap/slapd.d
-      - ./certs:/assets/slapd/certs
     ports:
       - 389:389
       - 636:636
+    environment:
+       ## For Automatic LetsEncrypt - Make sure you create symbolic links to the generated fullchain/certs!
+      - VIRTUAL_HOST=ldap1.example.org
+      - VIRTUAL_NETWORK=nginx-proxy
+      - VIRTUAL_PORT=80
+      - LETSENCRYPT_HOST=ldap1.example.org
+      - LETSENCRYPT_EMAIL=email@example.org
+
+      - HOSTNAME=ldap.example.com     
+      - BACKEND=mdb
+      - LOG_LEVEL=256
+      - DOMAIN=example.org
+      - ADMIN_PASS=admin
+      - CONFIG_PASS=config
+
+      - BASE_DN=dc=example,dc=org
+      - ENABLE_READONLY_USER=false
+      - READONLY_USER_USER=reader
+      - READONLY_USER_PASS=reader
+      
+      ## Once Turned on you can never turn off, not necessarily a bad thing.
+      - ENABLE_TLS=true
+      - TLS_CRT_FILENAME=cert.pem
+      - TLS_KEY_FILENAME=key.pem
+      - TLS_CA_CRT_FILENAME=ca.pem
+      - TLS_ENFORCE=false
+      - TLS_CIPHER_SUITE=ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AES:-DHE-DSS:-RSA:!aNULL:!MD5:!DSS:!SHA
+      - TLS_VERIFY_CLIENT=never
+      - SSL_HELPER_PREFIX=ldap
+
+      ## Multimaster Only
+      - ENABLE_REPLICATION=false
+      - REPLICATION_CONFIG_SYNCPROV=binddn="cn=admin,cn=config" bindmethod=simple credentials="admin" searchbase="cn=config" type=refreshAndPersist retry="60 +" timeout=1
+      - REPLICATION_DB_SYNCPROV=binddn="cn=admin,dc=example,dc=org" bindmethod=simple credentials="admin" searchbase="dc=example,dc=org" type=refreshAndPersist interval=00:00:00:10 retry="60 +" timeout=1
+      - REPLICATION_HOSTS=ldap://ldap1.example.com ldap://ldap2.example.com ldap://ldap3.example.com
+      - REMOVE_CONFIG_AFTER_SETUP=false
+
+      - BACKUP_CONFIG_CRON_PERIOD=0 4 * * *
+      - BACKUP_DATA_CRON_PERIOD=0 4 * * *
+      - BACKUP_TTL=15
+    
+      - ZABBIX_HOSTNAME=ldap-app
+    volumes:
+      - ./backup:/data/backup
+      - ./data:/var/lib/openldap
+      - ./config:/etc/openldap/slapd.d
+      - ./certs:/assets/slapd/certs
+    restart: always
     networks:
       - proxy-tier
 
-networks:              
-  proxy-tier:          
-    external:          
+networks:
+  proxy-tier:
+    external:
       name: nginx-proxy
 

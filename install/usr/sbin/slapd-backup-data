@@ -1,5 +1,3 @@
-#!/bin/bash -e
-
+#!/usr/bin/with-contenv bash
 /usr/sbin/slapd-backup 1 data
 
-exit 0
