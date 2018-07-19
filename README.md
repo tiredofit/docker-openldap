@@ -7,7 +7,7 @@
 
 # Introduction
 
-This as a Dockerfile to build a [OpenLDAP] server(https://openldap.org) for maintaining a directory.
+This as a Dockerfile to build a [OpenLDAP](https://openldap.org) server for maintaining a directory.
 Upon starting this image it will give you a ready to run server with many configurable options.
 
 * Tracks latest release
