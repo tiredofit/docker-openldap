@@ -12,7 +12,7 @@ Upon starting this image it will give you a ready to run server with many config
 
 * Tracks latest release
 * Compiles from source
-* Multiple backends (bdb, hdb, mdb, sql
+* Multiple backends (bdb, hdb, mdb, sql)
 * All overlays compiled
 * Supports TLS encryption
 * Supports Replication
