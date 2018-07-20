@@ -1,21 +1,14 @@
 version: '2'
 services:
-  ldap:
+  openldap-app:
     hostname: ldap.example.com
     domainname: ldap.example.com
-    container_name: ldap
+    container_name: openldap-app
     image: tiredofit/openldap
     ports:
       - 389:389
       - 636:636
     environment:
-       ## For Automatic LetsEncrypt - Make sure you create symbolic links to the generated fullchain/certs!
-      - VIRTUAL_HOST=ldap1.example.org
-      - VIRTUAL_NETWORK=nginx-proxy
-      - VIRTUAL_PORT=80
-      - LETSENCRYPT_HOST=ldap1.example.org
-      - LETSENCRYPT_EMAIL=email@example.org
-
       - HOSTNAME=ldap.example.com     
       - BACKEND=mdb
       - LOG_LEVEL=256
@@ -27,8 +20,7 @@ services:
       - ENABLE_READONLY_USER=false
       - READONLY_USER_USER=reader
       - READONLY_USER_PASS=reader
-      
-      ## Once Turned on you can never turn off, not necessarily a bad thing.
+
       - ENABLE_TLS=true
       - TLS_CRT_FILENAME=cert.pem
       - TLS_KEY_FILENAME=key.pem
@@ -38,7 +30,6 @@ services:
       - TLS_VERIFY_CLIENT=never
       - SSL_HELPER_PREFIX=ldap
 
-      ## Multimaster Only
       - ENABLE_REPLICATION=false
       - REPLICATION_CONFIG_SYNCPROV=binddn="cn=admin,cn=config" bindmethod=simple credentials="admin" searchbase="cn=config" type=refreshAndPersist retry="60 +" timeout=1
       - REPLICATION_DB_SYNCPROV=binddn="cn=admin,dc=example,dc=org" bindmethod=simple credentials="admin" searchbase="dc=example,dc=org" type=refreshAndPersist interval=00:00:00:10 retry="60 +" timeout=1
@@ -49,7 +40,7 @@ services:
       - BACKUP_DATA_CRON_PERIOD=0 4 * * *
       - BACKUP_TTL=15
     
-      - ZABBIX_HOSTNAME=ldap-app
+      - ZABBIX_HOSTNAME=openldap-app
     volumes:
       - ./backup:/data/backup
       - ./data:/var/lib/openldap

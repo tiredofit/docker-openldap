@@ -40,8 +40,6 @@ function ldap_add_or_modify (){
 }
 
 function schema2ldif (){
-  log-helper level eq trace && set -x
-
   SCHEMAS=$1
 
   tmpd=`mktemp -d`
@@ -142,20 +140,14 @@ TLS_DH_PARAM_PATH="/assets/slapd/certs/dhparam.pem"
 ### Container first start
 if [ ! -e "$FIRST_START_DONE" ]; then
 
-
-  #
   # Global variables
-  #
   NEW_INSTALL=false
 
-  #
   # database and config directory are empty
   # setup bootstrap config - Part 1
-  #
   if [ -z "$(ls -A -I lost+found /var/lib/openldap)" ] && [ -z "$(ls -A -I lost+found /etc/openldap/slapd.d)" ]; then
 
     NEW_INSTALL=true
-    echo "** [openldap] Detected Database and Config directories are empty"
     echo "** [openldap] First time install detected"
 
     # RFC2307bis schema
@@ -188,7 +180,7 @@ maxsize   1073741824
 suffix    "${BASE_DN}"
 rootdn    "cn=admin,${BASE_DN}"
 #rootpw    `slappasswd -s ${ADMIN_PASS}`
-#rootpw    ${ADMIN_PASS}
+rootpw    ${CONFIG_PASS}
 directory /var/lib/openldap
 
 #sortvals uid
@@ -209,7 +201,7 @@ EOF
 
 set +e
 silent slaptest -f /tmp/slapd.conf -F /etc/openldap/slapd.d
-silent slaptest -f /tmp/slapd.conf -F /etc/openldap/slapd.d
+silent slaptest -f /tmp/slapd.conf -F /etc/openldap/slapd.d -u
 rm -rf /tmp/slapd.conf
 set -e
 chown -R ldap:ldap /etc/openldap 
@@ -313,7 +305,7 @@ chown -R ldap:ldap /etc/openldap
     get_ldap_base_dn
     sed -i "s|<BASE_DN>|${BASE_DN}|g" /assets/slapd/config/bootstrap/ldif/02-security.ldif
 
-    # Process config files (*.ldif) in bootstrap directory (do no process files in subdirectories)
+    # Process config files (*.ldif) in bootstrap directory (do not process files in subdirectories)
     echo "** [openldap] Add bootstrap LDIFs"
     for f in $(find /assets/slapd/config/bootstrap/ldif -mindepth 1 -maxdepth 1 -type f -name \*.ldif  | sort); do
       echo "** [openldap] Processing file ${f}"
@@ -417,7 +409,7 @@ chown -R ldap:ldap /etc/openldap
 
     get_ldap_base_dn
     sed -i "s|\$BASE_DN|$BASE_DN|g" /assets/slapd/config/replication/replication-enable.ldif
-    sed -i "s|\$ADMIN_PASS|$ADMIN_PASS|g" /assets/slapd/config/replication/replication-enable.ldif
+    sed -i "s|\$CONFIG_PASS|$CONFIG_PASS|g" /assets/slapd/config/replication/replication-enable.ldif
     sed -i "s|\$CONFIG_PASS|$CONFIG_PASS|g" /assets/slapd/config/replication/replication-enable.ldif
 
     sed -i "/<REPLICATION_HOSTS>/d" /assets/slapd/config/replication/replication-enable.ldif
@@ -436,13 +428,16 @@ chown -R ldap:ldap /etc/openldap
   fi
 
   ## Execute Custom Scripts (To be used for example for tiredofit/openldap-fusiondirectory)
-  if [ -f /assets/custom-scripts/*.sh ] ; then
+  if [ -d /assets/custom-scripts/ ] ; then
     echo '** [openldap] Found Custom Scripts to Execute'
-    chmod +x /assets/custom-scripts/*.sh
-    exec /assets/custom-scripts/*.sh
+    for f in $(find /assets/custom-scripts/ -name \*.sh -type f); do
+      echo "** [openldap] Running Script ${f}"
+      chmod +x ${f}
+      ${f}
+    done
   fi  
 
-  # stop OpenLDAP
+  # Stop OpenLDAP
   echo "** [openldap] Finished OpenLDAP Initialization"
 
   SLAPD_PID=$(cat /run/openldap/slapd.pid)

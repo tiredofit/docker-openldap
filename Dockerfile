@@ -1,4 +1,4 @@
-FROM tiredofit/alpine:3.8
+FROM registry.selfdesign.org/docker/alpine:3.8
 LABEL maintainer="Dave Conroy <dave@tiredofit.ca>"
 
 ENV ADMIN_PASS=admin \
@@ -153,7 +153,7 @@ RUN set -x && \
     chmod 700 /usr/sbin/cfssljson && \
     \
 ### Cleanup
-    rm -rf /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ \
+    rm -rf /tiredofit \
            /var/cache/apk/* && \
     apk del .openldap-build-deps
 
