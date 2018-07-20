@@ -59,7 +59,6 @@ RUN set -x && \
         cyrus-sasl \
         coreutils \
         cracklib \
-        fail2ban \
         libressl \
         libltdl \
         libuuid \
