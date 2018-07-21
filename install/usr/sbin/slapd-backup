@@ -13,7 +13,7 @@ find $backupPath -type f -mtime +$BACKUP_TTL -exec rm {} \;
 dateFileFormat="+%Y%m%dT%H%M%S"
 backupFilePath="$backupPath/$(date "$dateFileFormat")-$filename.gz"
 
-/usr/sbin/slapcat -F /etc/ldap/slapd.d -n $dbnum | gzip > $backupFilePath
+/usr/sbin/slapcat -F /etc/openldap/slapd.d -n $dbnum | gzip > $backupFilePath
 chmod 600 $backupFilePath
 
 exit 0

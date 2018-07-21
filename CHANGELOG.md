@@ -1,3 +1,9 @@
+## 5.1 2018-07-21 <dave@tiredofit.ca>
+
+* Add a sanity checker for Replication errors if hostname doesn't exist in DNS or malformed IP address which causes container start 
+fail on 2nd try
+* Cleanup Config Pass item
+
 ## 5.0 2018-07-19 <dave@tiredofit.ca>
 
 * Rewrite entire image

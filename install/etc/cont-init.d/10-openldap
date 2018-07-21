@@ -179,18 +179,16 @@ database  mdb
 maxsize   1073741824
 suffix    "${BASE_DN}"
 rootdn    "cn=admin,${BASE_DN}"
-#rootpw    `slappasswd -s ${ADMIN_PASS}`
-rootpw    ${CONFIG_PASS}
+rootpw    `slappasswd -s ${ADMIN_PASS}`
 directory /var/lib/openldap
 
 #sortvals uid
 
 database config
+rootdn "cn=admin,cn=config"
 access to *
-  by dn.exact="gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth" manage
-  by * none
-#rootpw `slappasswd -s ${ADMIN_PASS}`
-#rootpw ${ADMIN_PASS}
+  by dn.exact="gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth" manage by break
+  by * break
 
 database monitor
 access to dn.subtree="cn=Monitor"
@@ -260,9 +258,37 @@ chown -R ldap:ldap /etc/openldap
     chown ldap:ldap $PREVIOUS_TLS_CRT_PATH $PREVIOUS_TLS_KEY_PATH $PREVIOUS_TLS_CA_CRT_PATH $PREVIOUS_TLS_DH_PARAM_PATH
   fi
 
+  ### Replication Sanity Tester
+  set +e
+  replhosts_sanity=`grep -o -h "provider=ldap.*//.*." /etc/openldap/slapd.d/cn\=config/olcDatabase*.ldif | awk -F '[//]' '{ print $3 }' | awk -F 'binddn' '{ print $1 }' | awk '!a[$0]++' | tr '\n' ' ' | awk '!a[$0]++'| sed 's/  / /g'`
+  if [ ! -z "$replhosts_sanity" ]; then
+    for sanity_host in $replhosts_sanity
+      do
+        if [[ $sanity_host =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          sanity_ip=$sanity_host
+          if [ -z "$sanity_ip" ]; then
+                echo "** [openldap] ERROR: It looks as if you have a malformed IP address for replciation host "$sanity_host" in your schema configuration. Startup will fail!"
+                exit 1
+          fi
+        else
+          sanity_ip=$(getent hosts $sanity_host | awk '{ print $1 }' )
+          if [ -z "$sanity_ip" ]; then
+            echo 'fuck'
+          fi
+          valid_ip=`echo $sanity_ip | awk -F'.' '$1 <=255 && $2 <= 255 && $3 <= 255 && $4 <= 255'`
+          echo          
+          if [ -z "$valid_ip" ] || [ -z "$sanity_ip" ]; then
+                echo "** [openldap] ERROR: It looks as if you have no DNS entry for replciation host "$sanity_host" in your schema configuration. Startup will fail!"
+                exit 1
+          fi
+        fi
+    done
+    set -e
+  fi
+
   ### Start OpenLDAP
   echo "** [openldap] Starting OpenLDAP Initialization Sequence"
-  silent slapd -h "ldap:// ldapi:///" -u ldap -g ldap -d $LOG_LEVEL &
+  silent slapd -h "ldap://$HOSTNAME $PREVIOUS_HOSTNAME_PARAM ldapi:///" -u ldap -g ldap -d $LOG_LEVEL &
 
 
   echo "** [openldap] Waiting for OpenLDAP to be ready"
