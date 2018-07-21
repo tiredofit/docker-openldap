@@ -9,15 +9,16 @@ file="$backupPath/$file"
 
 TEMP_FILE=$(mktemp)
 gunzip -c $file > $TEMP_FILE
-chown openldap:openldap $TEMP_FILE
+chown ldap:ldap $TEMP_FILE
 
 # stop slapd
-sv stop /container/run/process/slapd
+s6-svc -d /var/run/s6/services/10-openldap
+pkill slapd
 
-/sbin/setuser openldap slapadd -c -F /etc/ldap/slapd.d -n $dbnum -l $TEMP_FILE
+sudo -u ldap slapadd -c -F /etc/openldap/slapd.d -n $dbnum -l $TEMP_FILE
 
 # restart slapd
-sv start /container/run/process/slapd
+s6-svc -u /var/run/s6/services/10-openldap
 
 rm $TEMP_FILE
 
