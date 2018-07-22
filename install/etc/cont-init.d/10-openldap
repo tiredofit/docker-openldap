@@ -273,14 +273,16 @@ chown -R ldap:ldap /etc/openldap
         else
           sanity_ip=$(getent hosts $sanity_host | awk '{ print $1 }' )
           if [ -z "$sanity_ip" ]; then
-            echo 'fuck'
+                exit 1
           fi
           valid_ip=`echo $sanity_ip | awk -F'.' '$1 <=255 && $2 <= 255 && $3 <= 255 && $4 <= 255'`
-          echo          
+            
           if [ -z "$valid_ip" ] || [ -z "$sanity_ip" ]; then
                 echo "** [openldap] ERROR: It looks as if you have no DNS entry for replciation host "$sanity_host" in your schema configuration. Startup will fail!"
                 exit 1
           fi
+
+          echo @
         fi
     done
     set -e
@@ -288,7 +290,7 @@ chown -R ldap:ldap /etc/openldap
 
   ### Start OpenLDAP
   echo "** [openldap] Starting OpenLDAP Initialization Sequence"
-  silent slapd -h "ldap://$HOSTNAME $PREVIOUS_HOSTNAME_PARAM ldapi:///" -u ldap -g ldap -d $LOG_LEVEL &
+  silent slapd -h "ldap://$HOSTNAME ldapi:///" -u ldap -g ldap -d $LOG_LEVEL &
 
 
   echo "** [openldap] Waiting for OpenLDAP to be ready"
@@ -414,7 +416,7 @@ chown -R ldap:ldap /etc/openldap
   ### Replication config
   function disableReplication() {
     sed -i "s|<BACKEND>|${BACKEND}|g" /assets/slapd/config/replication/replication-disable.ldif
-    silent ldapmodify -c -Y EXTERNAL -Q -H ldapi:/// -f /assets/slapd/config/replication/replication-disable.ldif 2>&1 | log-helper debug || true
+    silent ldapmodify -c -Y EXTERNAL -Q -H ldapi:/// -f /assets/slapd/config/replication/replication-disable.ldif
     [[ -f "$WAS_STARTED_WITH_REPLICATION" ]] && rm -f "$WAS_STARTED_WITH_REPLICATION"
   }
 

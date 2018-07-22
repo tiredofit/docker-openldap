@@ -11,15 +11,13 @@
     BASE_DN=${BASE_DN::-1}
   fi
 
-#config
-URI="ldap://127.0.0.1:389"
 
 #dynamic
 LDAP_PARAM="$1"
 LDAP_RESPONSE_KEY="${2:-monitorCounter}"
 
 #get LDAP response
-COMMAND="ldapsearch -H $URI -b $LDAP_PARAM -D cn=admin,$BASE_DN -w $CONFIG_PASS"
+COMMAND="ldapsearch -H $HOSTNAME -b $LDAP_PARAM -D cn=admin,$BASE_DN -w $ADMIN_PASS"
 RAW=$($COMMAND -s base '(objectClass=*)' '*' '+')
 
 #parse out number
