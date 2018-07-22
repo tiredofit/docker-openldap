@@ -282,7 +282,6 @@ chown -R ldap:ldap /etc/openldap
                 exit 1
           fi
 
-          echo @
         fi
     done
     set -e
