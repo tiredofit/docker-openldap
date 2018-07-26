@@ -17,7 +17,7 @@ LDAP_PARAM="$1"
 LDAP_RESPONSE_KEY="${2:-monitorCounter}"
 
 #get LDAP response
-COMMAND="ldapsearch -H $HOSTNAME -b $LDAP_PARAM -D cn=admin,$BASE_DN -w $ADMIN_PASS"
+COMMAND="ldapsearch -H ldap://$HOSTNAME:389 -b $LDAP_PARAM -D cn=admin,$BASE_DN -w $ADMIN_PASS"
 RAW=$($COMMAND -s base '(objectClass=*)' '*' '+')
 
 #parse out number

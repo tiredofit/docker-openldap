@@ -412,6 +412,7 @@ chown -R ldap:ldap /etc/openldap
     fi
   fi
 
+  set +e
   ### Replication config
   function disableReplication() {
     sed -i "s|<BACKEND>|${BACKEND}|g" /assets/slapd/config/replication/replication-disable.ldif
@@ -444,7 +445,7 @@ chown -R ldap:ldap /etc/openldap
     sed -i "/<REPLICATION_HOSTS_DB_SYNC_REPL>/d" /assets/slapd/config/replication/replication-enable.ldif
 
     sed -i "s|<BACKEND>|${BACKEND}|g" /assets/slapd/config/replication/replication-enable.ldif
-
+    
     silent ldapmodify -c -Y EXTERNAL -Q -H ldapi:/// -f /assets/slapd/config/replication/replication-enable.ldif
 
     [[ -f "$WAS_STARTED_WITH_REPLICATION" ]] && rm -f "$WAS_STARTED_WITH_REPLICATION"

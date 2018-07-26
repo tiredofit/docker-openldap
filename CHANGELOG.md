@@ -1,3 +1,7 @@
+## 5.3 2018-07-24 <dave at tiredofit dot ca>
+
+* Stop being so thorough with exiting script when replicating - Fixed cont-init.d/10-openldap prematurely exiting with error 20
+
 ## 5.2 2018-07-21 <dave at tiredofit dot ca>
 
 * Zabbix Monitoring Fixup
