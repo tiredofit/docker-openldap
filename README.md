@@ -12,7 +12,7 @@ Upon starting this image it will give you a ready to run server with many config
 
 * Tracks latest release
 * Compiles from source
-* Multiple backends (bdb, hdb, mdb, sql
+* Multiple backends (bdb, hdb, mdb, sql)
 * All overlays compiled
 * Supports TLS encryption
 * Supports Replication
@@ -61,7 +61,7 @@ None.
 
 # Installation
 
-Automated builds of the image are available on [Registry](https://registry.selfdesign.org/docker/openldap) and is the recommended method of installation.
+Automated builds of the image are available on [Registry](https://hub.docker.com/r/tiredofit/openldap) and is the recommended method of installation.
 
 ```bash
 docker pull registry.selfdesign.org/docker/openldap
