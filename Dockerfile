@@ -1,4 +1,4 @@
-FROM registry.selfdesign.org/docker/alpine:3.8
+FROM tiredofit/alpine:3.8
 LABEL maintainer="Dave Conroy <dave@tiredofit.ca>"
 
 ENV ADMIN_PASS=admin \
