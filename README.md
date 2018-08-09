@@ -148,8 +148,8 @@ Replication options:
 | Variable | Description |
 |-----------|-------------|
 | `ENABLE_REPLICATION` | Add replication capabilities. Multimaster only at present. Default `false`
-| `REPLICATION_CONFIG_SYNCPROV` |  olcSyncRepl options used for the config database. Without rid and provider which are automatically added based on `REPLICATION_HOSTS`. Default  `binddn="cn=admin,cn=config" bindmethod=simple credentials=$LDAP_CONFIG_PASSWORD searchbase="cn=config" type=refreshAndPersist retry="60 +" timeout=1 starttls=critical` |
-| `REPLICATION_DB_SYNCPROV` | olcSyncRepl options used for the database. Without rid and provider which are automatically added based on `REPLICATION_HOSTS`. Default  `binddn="cn=admin,$LDAP_BASE_DN" bindmethod=simple credentials=$LDAP_ADMIN_PASSWORD searchbase="$LDAP_BASE_DN" type=refreshAndPersist interval=00:00:00:10 retry="60 +" timeout=1 starttls=critical` |
+| `REPLICATION_CONFIG_SYNCPROV` |  olcSyncRepl options used for the config database. Without rid and provider which are automatically added based on `REPLICATION_HOSTS`. Default  `binddn="cn=admin,cn=config" bindmethod=simple credentials=$CONFIG_PASS searchbase="cn=config" type=refreshAndPersist retry="60 +" timeout=1 starttls=critical` |
+| `REPLICATION_DB_SYNCPROV` | olcSyncRepl options used for the database. Without rid and provider which are automatically added based on `REPLICATION_HOSTS`. Default  `binddn="cn=admin,$BASE_DN" bindmethod=simple credentials=$ADMIN_PASS searchbase="$BASE_DN" type=refreshAndPersist interval=00:00:00:10 retry="60 +" timeout=1 starttls=critical` |
 | `REPLICATION_HOSTS`  | list of replication hosts seperated by a space, must contain the current container hostname set by --hostname on docker run command. If replicating all hosts must be set in the same order. Example - `ldap://ldap1.example.com ldap://ldap2.example.com ldap://ldap3.example.com`
 
 
