@@ -1,4 +1,4 @@
-FROM tiredofit/alpine:3.8
+FROM registry.selfdesign.org/docker/alpine:3.8
 LABEL maintainer="Dave Conroy <dave@tiredofit.ca>"
 
 ENV ADMIN_PASS=admin \
@@ -76,6 +76,8 @@ RUN set -x && \
     git clone --depth 1 git://git.alpinelinux.org/aports.git /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/alpine && \
     mkdir -p contrib/slapd-modules/ppolicy-check-password && \
     git clone https://github.com/cedric-dufour/ppolicy-check-password /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/contrib/slapd-modules/ppolicy-check-password && \
+    mkdir -p contrib/slapd-modules/ppm && \
+    git clone https://github.com/ltb-project/ppm /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/contrib/slapd-modules/ppm && \
     cd /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/alpine && \
     git filter-branch --prune-empty --subdirectory-filter main/openldap HEAD && \
     # Already applied
@@ -133,6 +135,10 @@ RUN set -x && \
     cd /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
     make prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/ppolicy-check-password LDAP_INC_PATH=/tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}` && \
     cp /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/contrib/slapd-modules/ppolicy-check-password/check_password.so /usr/lib/openldap && \
+    ## Build Alternative PPM Module
+    cd /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
+    make prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/ppm LDAP_INC_PATH=/tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}` && \
+    cp /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/contrib/slapd-modules/ppm/ppm.so /usr/lib/openldap && \
     \
 ### OpenLDAP Setup
     ln -s /usr/lib/slapd /usr/sbin && \

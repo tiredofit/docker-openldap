@@ -1,3 +1,8 @@
+## 5.4 2018-08-08 <dave at tiredofit dot ca>
+
+* Add alternative Password Checking Module ppm.so
+* Provide Default Configurations for check_password.conf and ppm.conf
+
 ## 5.3 2018-07-24 <dave at tiredofit dot ca>
 
 * Stop being so thorough with exiting script when replicating - Fixed cont-init.d/10-openldap prematurely exiting with error 20
