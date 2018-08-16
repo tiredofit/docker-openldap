@@ -1,3 +1,7 @@
+## 5.5 2018-08-16 <dave at tiredofit dot ca>
+
+* Fix for ACLs not applying on initial boot 
+
 ## 5.4 2018-08-08 <dave at tiredofit dot ca>
 
 * Add alternative Password Checking Module ppm.so

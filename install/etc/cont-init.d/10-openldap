@@ -25,7 +25,7 @@ function is_new_schema() {
 
 function ldap_add_or_modify (){
   local LDIF_FILE=$1
-  log-helper debug "Processing file ${LDIF_FILE}"
+  echo "** [openldap] Processing file ${LDIF_FILE}"
   sed -i "s|<BASE_DN>|${BASE_DN}|g" $LDIF_FILE
   sed -i "s|<BACKEND>|${BACKEND}|g" $LDIF_FILE
   if [ "${READONLY_USER,,}" == "true" ]; then
@@ -339,6 +339,7 @@ chown -R ldap:ldap /etc/openldap
       ldap_add_or_modify "$f"
     done
 
+    
     # Add ppolicy schema
     echo "** [openldap] Adding ppolicy Schema"
     schema2ldif /etc/openldap/schema/ppolicy.schema && \

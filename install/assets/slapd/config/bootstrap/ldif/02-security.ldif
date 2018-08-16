@@ -1,6 +1,5 @@
 dn: olcDatabase={1}<BACKEND>,cn=config
 changeType: modify
-
 add: olcAccess
 olcAccess: to attrs=userPassword,shadowLastChange by self write by dn="cn=admin,<BASE_DN>" write by anonymous auth by * none
 olcAccess: to * by self write by dn="cn=admin,<BASE_DN>" write by * none
