@@ -130,16 +130,21 @@ Backup Options:
 | `BACKUP_DATA_CRON_PERIOD` | Cron expression to schedule OpenLDAP data backup. Defaults `0 4 * * *`  Every day at 4am. |
 | `BACKUP_TTL ` | Automatically cleanup backup after how many days. Default `15` |
 
-Password Policy Options (only if using check_password.so):
+Password Policy Options:
+
+If you already have a check_password.conf or ppm.conf in /etc/openldap/ the following environment variables will not be applied
 
 | Variable | Description |
 |-----------|-------------|
-| `PPOLICY_MAX_CONSEC`| Maximu Consective Character Pattern - Default `0` |
+| `PPOLICY_CHECK_RDN` | Check RDN Parameter (ppm.so) - Default `0` |
+| `PPOLICY_FORBIDDEN_CHARACTERS | Forbidden Characters (ppm.so) - Default `` |
+| `PPOLICY_MAX_CONSEC`| Maximum Consective Character Pattern - Default `0` |
 | `PPOLICY_MIN_DIGIT` | Minimum Digit Characters - Default `0` |
 | `PPOLICY_MIN_LOWER` | Minimum Lowercase Characters - Default `0` |
 | `PPOLICY_MIN_POINTS`| Minimum Points required to pass checker - Default `3` |
 | `PPOLICY_MIN_PUNCT` | Minimum Punctuation Characters - Default `0` |
 | `PPOLICY_MIN_UPPER` | Minimum Uppercase Characters - Default `0` |
+| `PPOLICY_USE_CRACKLIB` | Use Cracklib for verifying words (ppm.so) - Default `1` |
 
 TLS options:
 
