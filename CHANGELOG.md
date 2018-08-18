@@ -1,3 +1,10 @@
+## 6.0 2018-08-18 <dave at tiredofit dot ca>
+
+* Stop relying on slapd.conf on first time initialization
+* Properly apply ACLs for ppolicy 
+* Generate Wordlist for ppm.so
+* Automatically generate check_password.conf and ppm.conf
+
 ## 5.5 2018-08-16 <dave at tiredofit dot ca>
 
 * Fix for ACLs not applying on initial boot 

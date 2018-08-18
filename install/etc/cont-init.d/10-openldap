@@ -10,9 +10,34 @@ function get_ldap_base_dn() {
       BASE_DN=$BASE_DN$EXT
     done
 
+    IFS='.' read -a domain_elems <<< "${DOMAIN}"
+    SUFFIX=""
+    ROOT=""
+
+    for elem in "${domain_elems[@]}" ; do
+        if [ "x${SUFFIX}" = x ] ; then
+            SUFFIX="dc=${elem}"
+            ROOT="${elem}"
+        fi
+    done
+
     BASE_DN=${BASE_DN::-1}
   fi
 }
+
+
+  IFS='.' read -a domain_elems <<< "${DOMAIN}"
+  SUFFIX=""
+  ROOT=""
+
+  for elem in "${domain_elems[@]}" ; do
+      if [ "x${SUFFIX}" = x ] ; then
+          SUFFIX="dc=${elem}"
+          ROOT="${elem}"
+      else
+          BASE_DN="${SUFFIX},dc=${elem}"
+      fi
+  done
 
 function is_new_schema() {
   local COUNT=$(ldapsearch -Q -Y EXTERNAL -H ldapi:/// -b cn=schema,cn=config cn | grep -c $1)
@@ -42,12 +67,20 @@ function ldap_add_or_modify (){
 function schema2ldif (){
   SCHEMAS=$1
 
+# Dual Schema Support
+  if [ "$SCHEMA_TYPE" = "rfc2307bis" ] || [ "$SCHEMA_TYPE" = "RFC2307BIS" ]; then
+    cp -R /assets/slapd/config/bootstrap/schema/rfc2307bis/rfc2307bis.schema /etc/openldap/schema/
+    SCHEMA_TYPE="rfc2307bis"
+  else
+    SCHEMA_TYPE="nis"
+  fi
+
   tmpd=`mktemp -d`
   pushd ${tmpd} >>/dev/null
 
   echo "include /etc/openldap/schema/core.schema" >> convert.dat
   echo "include /etc/openldap/schema/cosine.schema" >> convert.dat
-  echo "include /etc/openldap/schema/nis.schema" >> convert.dat
+  echo "include /etc/openldap/schema/${SCHEMA_TYPE}.schema" >> convert.dat
   echo "include /etc/openldap/schema/inetorgperson.schema" >> convert.dat
 
   for schema in ${SCHEMAS} ; do
@@ -153,7 +186,7 @@ if [ ! -e "$FIRST_START_DONE" ]; then
     # RFC2307bis schema
     if [ "$SCHEMA_TYPE" = "rfc2307bis" ] || [ "$SCHEMA_TYPE" = "RFC2307BIS" ]; then
       echo "** [openldap] Using RFC2307BIS schema type"
-      cp /assets/slapd/config/bootstrap/schema/rfc2307bis/rfc2307bis.* /etc/openldap/schema/
+      cp -R /assets/slapd/config/bootstrap/schema/rfc2307bis/rfc2307bis.schema /etc/openldap/schema/
       SCHEMA_TYPE="rfc2307bis"
     else
       echo "** [openldap] Using NIS schema type"
@@ -163,45 +196,78 @@ if [ ! -e "$FIRST_START_DONE" ]; then
     get_ldap_base_dn
 
     ### Create Sample Configuration to Populate Schema
-    cat <<EOF > /tmp/slapd.conf
-include   /etc/openldap/schema/core.schema
-include   /etc/openldap/schema/cosine.schema
-include   /etc/openldap/schema/inetorgperson.schema
-include   /etc/openldap/schema/${SCHEMA_TYPE}.schema
-pidfile   /run/openldap/slapd.pid
-argsfile  /run/openldap/slapd.args
-modulepath  /usr/lib/openldap
-moduleload  back_mdb.so
+    cat <<EOF > /tmp/slapd.ldif
+dn: cn=config
+objectClass: olcGlobal
+cn: config
+olcPidFile: /run/openldap/slapd.pid
+olcArgsFile: /run/openldap/slapd.args
 
-disallow tls_2_anon 
+dn: cn=module,cn=config
+objectClass: olcModuleList
+cn: module
+olcModulepath:  /usr/lib/openldap
+olcModuleload:  back_mdb.so
 
-database  mdb
-maxsize   1073741824
-suffix    "${BASE_DN}"
-rootdn    "cn=admin,${BASE_DN}"
-rootpw    `slappasswd -s ${ADMIN_PASS}`
-directory /var/lib/openldap
+dn: cn=schema,cn=config
+objectClass: olcSchemaConfig
+cn: schema
 
-#sortvals uid
+include: file:///etc/openldap/schema/core.ldif
+include: file:///etc/openldap/schema/cosine.ldif
+include: file:///etc/openldap/schema/inetorgperson.ldif
+include: file:///etc/openldap/schema/${SCHEMA_TYPE}.ldif
 
-database config
-rootdn "cn=admin,cn=config"
-access to *
+# Frontend settings
+dn: olcDatabase=frontend,cn=config
+objectClass: olcDatabaseConfig
+objectClass: olcFrontendConfig
+olcDatabase: frontend
+olcAccess: to dn.base="" by * read
+olcAccess: to dn.base="cn=Subschema" by * read
+olcAccess: to *
+  by self write
+  by users read
+  by anonymous auth
+
+# Config Settings
+dn: olcDatabase=config,cn=config
+objectClass: olcDatabaseConfig
+olcDatabase: config
+olcRootPW: `slappasswd -s ${CONFIG_PASS}`
+olcAccess: to *
   by dn.exact="gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth" manage by break
   by * break
 
-database monitor
-access to dn.subtree="cn=Monitor"
-  by dn.exact="cn=admin,$BASE_DN" write
-  by users read
-  by * none 
+dn: olcDatabase=mdb,cn=config
+objectClass: olcDatabaseConfig
+objectClass: olcMdbConfig
+olcDatabase: mdb
+olcSuffix: ${BASE_DN}
+OlcDbMaxSize: 1073741824
+olcDbDirectory: /var/lib/openldap
+olcRootDN: cn=admin,${BASE_DN}
+olcRootPW: `slappasswd -s ${ADMIN_PASS}`
+olcDbIndex: objectClass eq
+
+dn: olcDatabase=Monitor,cn=config
+objectClass: olcDatabaseConfig
+objectClass: olcMonitorConfig
+olcDatabase: Monitor
+olcAccess: to dn.subtree="cn=Monitor" by dn.exact="cn=admin,${BASE_DN}" write by users read by * none 
 EOF
 
 set +e
-silent slaptest -f /tmp/slapd.conf -F /etc/openldap/slapd.d
-silent slaptest -f /tmp/slapd.conf -F /etc/openldap/slapd.d -u
-rm -rf /tmp/slapd.conf
+
+/usr/bin/schema2ldif /etc/openldap/schema/core.schema > /etc/openldap/schema/core.ldif
+/usr/bin/schema2ldif /etc/openldap/schema/cosine.schema > /etc/openldap/schema/cosine.ldif
+/usr/bin/schema2ldif /etc/openldap/schema/inetorgperson.schema > /etc/openldap/schema/inetorgperson.ldif
+/usr/bin/schema2ldif /etc/openldap/schema/${SCHEMA_TYPE}.schema > /etc/openldap/schema/${SCHEMA_TYPE}.ldif
+
+silent slapadd -n 0 -F /etc/openldap/slapd.d -l /tmp/slapd.ldif
+rm -rf /tmp/slapd.ldif
 set -e
+
 chown -R ldap:ldap /etc/openldap 
 
   # Error: the database directory (/var/lib/openldap) is empty but not the config directory (/etc/openldap/slapd.d)
@@ -338,11 +404,10 @@ chown -R ldap:ldap /etc/openldap
       echo "** [openldap] Processing file ${f}"
       ldap_add_or_modify "$f"
     done
-
     
     # Add ppolicy schema
     echo "** [openldap] Adding ppolicy Schema"
-    schema2ldif /etc/openldap/schema/ppolicy.schema && \
+    /usr/bin/schema2ldif /etc/openldap/schema/ppolicy.schema > /etc/openldap/schema/ppolicy.ldif && \
     silent ldapadd -c -Y EXTERNAL -Q -H ldapi:/// -f /etc/openldap/schema/ppolicy.ldif
 
     # Read only user
@@ -353,6 +418,7 @@ chown -R ldap:ldap /etc/openldap
       ldap_add_or_modify "/assets/slapd/config/bootstrap/ldif/readonly-user/readonly-user-acl.ldif"
     fi
 
+    # Custom LDIF injection
     if [ -d /assets/slapd/config/bootstrap/ldif/custom ]; then
       echo "** [openldap] Add custom bootstrap ldifs"
       for f in $(find /assets/slapd/config/bootstrap/ldif/custom -type f -name \*.ldif  | sort); do
@@ -465,6 +531,55 @@ chown -R ldap:ldap /etc/openldap
       ${f}
     done
   fi  
+
+
+  ## Configure PPolicy check_password.so + ppm.so module
+  PPOLICY_CHECK_RDN=${PPOLICY_CHECK_RDN:-0}
+  PPOLICY_MAX_CONSEC=${PPOLICY_MAX_CONSEC:-0}
+  PPOLICY_MAX_LENGTH=${PPOLICY_MAX_LENGTH:-0}
+  PPOLICY_MIN_DIGIT=${PPOLICY_MIN_DIGIT:-0}
+  PPOLICY_MIN_LOWER=${PPOLICY_MIN_LOWER:-0}
+  PPOLICY_MIN_POINTS=${PPOLICY_MIN_POINTS:-3}
+  PPOLICY_MIN_PUNCT=${PPOLICY_MIN_PUNCT:-0}
+  PPOLICY_MIN_UPPER=${PPOLICY_MIN_UPPER:-0}
+  PPOLICY_USE_CRACKLIB=${PPOLICY_USE_CRACKLIB:-1}
+
+  ### check_password.so
+  if [ ! -f /etc/openldap/check_password.conf ]; then
+    cat <<EOF > /etc/openldap/check_password.conf
+## check_password.conf
+## Auto Generated by Container, any changes will be reset on container restart!
+min_points $PPOLICY_MIN_POINTS
+min_upper $PPOLICY_MIN_UPPER
+min_lower $PPOLICY_MIN_LOWER
+min_digit $PPOLICY_MIN_DIGIT
+min_punct $PPOLICY_MIN_PUNCT
+max_consecutive_per_class $PPOLICY_MAX_CONSEC
+EOF
+
+    chown ldap. /etc/openldap/check_password.conf
+  fi
+  
+  ### ppm.so
+  if [ ! -f /etc/openldap/ppm.conf ]; then
+    cat <<EOF > /etc/openldap/ppm.conf
+## ppm.conf
+## Auto Generated by Container, any changes will be reset on container restart!
+minQuality $PPOLICY_MIN_POINTS
+maxLength $PPOLICY_MAX_LENGTH
+checkRDN $$POLICY_CHECK_RDN
+forbiddenChars $PPOLICY_FORBIDDEN_CHARACTERS
+maxConsecutivePerClass $PPOLICY_MAX_CONSEC
+useCracklib $PPOLICY_USE_CRACKLIB
+cracklibDict /usr/share/dict/pw_dict
+class-upperCase ABCDEFGHIJKLMNOPQRSTUVWXYZ $PPOLICY_MIN_UPPER 1
+class-lowerCase abcdefghijklmnopqrstuvwxyz $PPOLICY_MIN_LOWER 1
+class-digit 0123456789 $PPOLICY_MIN_DIGIT 1
+class-special <>,?;.:/!§ù%*µ^¨$£²&é~"#'{([-|è`_\ç^à@)]°=}+ $PPOLICY_MIN_PUNCT 1
+EOF
+
+    chown ldap. /etc/openldap/ppm.conf  
+  fi
 
   # Stop OpenLDAP
   echo "** [openldap] Finished OpenLDAP Initialization"

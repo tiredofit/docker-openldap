@@ -15,9 +15,11 @@ ENV ADMIN_PASS=admin \
     ENABLE_TLS=true \
     LOG_LEVEL=256 \
     OPENLDAP_VERSION=2.4.46 \
+    ORGANIZATION="Example Organization" \
     READONLY_USER_PASS=readonly \
     READONLY_USER_USER=readonly \
     REMOVE_CONFIG_AFTER_SETUP=false \
+    SCHEMA2LDIF_VERSION=1.3 \
     SCHEMA_TYPE=nis \
     SSL_HELPER_PREFIX=ldap \
     TLS_CA_CRT_FILENAME=ca.pem \
@@ -27,6 +29,7 @@ ENV ADMIN_PASS=admin \
     TLS_KEY_FILENAME=key.pem \
     TLS_VERIFY_CLIENT=try \
     ZABBIX_HOSTNAME=openldap-app
+
 
 COPY CHANGELOG.md /tiredofit/
 
@@ -59,12 +62,12 @@ RUN set -x && \
         cyrus-sasl \
         coreutils \
         cracklib \
-        cracklib-words \
         libressl \
         libltdl \
         libuuid \
         libintl \
         nginx \
+        perl \
         sed \
         sudo \
         unixodbc \
@@ -159,10 +162,24 @@ RUN set -x && \
     curl -o /usr/sbin/cfssljson -SL https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 && \
     chmod 700 /usr/sbin/cfssljson && \
     \
+## Install Schema2LDIF
+    curl https://codeload.github.com/fusiondirectory/schema2ldif/tar.gz/${SCHEMA2LDIF_VERSION} | tar xvfz - --strip 1 -C /usr && \
+    rm -rf /usr/Changelog && \
+    rm -rf /usr/LICENSE && \
+    \
+## Create Cracklib Dictionary
+    mkdir -p /usr/share/dict && \
+    cd /usr/share/dict && \
+    wget https://github.com/cracklib/cracklib/releases/download/cracklib-2.9.6/cracklib-words-2.9.6.gz && \
+    create-cracklib-dict -o pw_dict cracklib-words-2.9.6.gz && \
+    rm -rf cracklib-words-2.9.6.gz && \
+    \
 ### Cleanup
+    apk del \
+        .openldap-build-deps \
+        && \
     rm -rf /tiredofit \
-           /var/cache/apk/* && \
-    apk del .openldap-build-deps
+           /var/cache/apk/*
 
 ### Add Assets
 ADD install /

@@ -109,6 +109,7 @@ Required and used for new ldap server only:
 | `BASE_DN` | LDAP base DN. If empty automatically set from `DOMAIN` value. Default  (empty) |
 | `ADMIN_PASS` | Ldap Admin password. Default  `admin` |
 | `CONFIG_PASS` | Ldap Config password. Default  `config` |
+| `ORGANIZATION` | Organization Name Default: `Example Organization` |
 | `ENABLE_READONLY_USER` | Add a read only user. Default`false` |
 | `READONLY_USER_USER` | Read only user username. Default `readonly |
 | `READONLY_USER_PASS` | Read only user password. Default `readonly` |
@@ -128,6 +129,17 @@ Backup Options:
 | `BACKUP_CONFIG_CRON_PERIOD` | Cron expression to schedule OpenLDAP config backup. Defaults `0 4 * * *` Every day at 4am. |
 | `BACKUP_DATA_CRON_PERIOD` | Cron expression to schedule OpenLDAP data backup. Defaults `0 4 * * *`  Every day at 4am. |
 | `BACKUP_TTL ` | Automatically cleanup backup after how many days. Default `15` |
+
+Password Policy Options (only if using check_password.so):
+
+| Variable | Description |
+|-----------|-------------|
+| `PPOLICY_MAX_CONSEC`| Maximu Consective Character Pattern - Default `0` |
+| `PPOLICY_MIN_DIGIT` | Minimum Digit Characters - Default `0` |
+| `PPOLICY_MIN_LOWER` | Minimum Lowercase Characters - Default `0` |
+| `PPOLICY_MIN_POINTS`| Minimum Points required to pass checker - Default `3` |
+| `PPOLICY_MIN_PUNCT` | Minimum Punctuation Characters - Default `0` |
+| `PPOLICY_MIN_UPPER` | Minimum Uppercase Characters - Default `0` |
 
 TLS options:
 
