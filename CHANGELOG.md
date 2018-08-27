@@ -1,3 +1,7 @@
+## 6.0.1 2018-08-27 <dave at tiredofit dot ca>
+
+* Fix with ppm.conf generation for bad characters
+
 ## 6.0 2018-08-18 <dave at tiredofit dot ca>
 
 * Stop relying on slapd.conf on first time initialization

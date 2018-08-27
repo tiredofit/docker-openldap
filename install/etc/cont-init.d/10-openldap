@@ -575,7 +575,7 @@ cracklibDict /usr/share/dict/pw_dict
 class-upperCase ABCDEFGHIJKLMNOPQRSTUVWXYZ $PPOLICY_MIN_UPPER 1
 class-lowerCase abcdefghijklmnopqrstuvwxyz $PPOLICY_MIN_LOWER 1
 class-digit 0123456789 $PPOLICY_MIN_DIGIT 1
-class-special <>,?;.:/!§ù%*µ^¨$£²&é~"#'{([-|è`_\ç^à@)]°=}+ $PPOLICY_MIN_PUNCT 1
+class-special <>,?;.:/!§ù%*µ^¨$£²&é~"#'{([-|è\`_\ç^à@)]°=}+ $PPOLICY_MIN_PUNCT 1
 EOF
 
     chown ldap. /etc/openldap/ppm.conf  
