@@ -65,7 +65,7 @@ None.
 Automated builds of the image are available on [Registry](https://hub.docker.com/r/tiredofit/openldap) and is the recommended method of installation.
 
 ```bash
-docker pull registry.selfdesign.org/docker/openldap
+docker pull tiredofit/openldap
 ```
 
 # Quick Start
