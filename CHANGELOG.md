@@ -1,3 +1,7 @@
+## 6.0.2 2018-09-13 <dave at tiredofit dot ca>
+
+* Fix for Dockerfile Build when applying OpenLDAP Patches to be displayed correctly
+
 ## 6.0.1 2018-08-27 <dave at tiredofit dot ca>
 
 * Fix with ppm.conf generation for bad characters

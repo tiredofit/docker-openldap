@@ -137,7 +137,7 @@ If you already have a check_password.conf or ppm.conf in /etc/openldap/ the foll
 | Variable | Description |
 |-----------|-------------|
 | `PPOLICY_CHECK_RDN` | Check RDN Parameter (ppm.so) - Default `0` |
-| `PPOLICY_FORBIDDEN_CHARACTERS | Forbidden Characters (ppm.so) - Default `` |
+| `PPOLICY_FORBIDDEN_CHARACTERS` | Forbidden Characters (ppm.so) - Default `` |
 | `PPOLICY_MAX_CONSEC`| Maximum Consective Character Pattern - Default `0` |
 | `PPOLICY_MIN_DIGIT` | Minimum Digit Characters - Default `0` |
 | `PPOLICY_MIN_LOWER` | Minimum Lowercase Characters - Default `0` |

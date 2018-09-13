@@ -89,7 +89,7 @@ RUN set -x && \
     \
 ### Apply Patches
     cd /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
-    for patch in ./alpine/*.patch; do echo "** Applying $Patch"; patch -p1 < $patch; done && \
+    for patch in ./alpine/*.patch; do echo "** Applying $patch"; patch -p1 < $patch; done && \
 ### Compile OpenLDAP
     cd /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
     libtoolize --force && \
