@@ -1,3 +1,7 @@
+## 6.1 2018-12-05 <dave at tiredofit dot ca>
+
+* Fix Replication upon container/pod restart
+
 ## 6.0.2 2018-09-13 <dave at tiredofit dot ca>
 
 * Fix for Dockerfile Build when applying OpenLDAP Patches to be displayed correctly
