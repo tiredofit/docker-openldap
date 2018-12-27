@@ -1,3 +1,7 @@
+## 6.2 2018-12-27 <dave at tiredofit dot ca>
+
+* OpenLDAP 2.4.47
+
 ## 6.1 2018-12-05 <dave at tiredofit dot ca>
 
 * Fix Replication upon container/pod restart
