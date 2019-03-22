@@ -181,5 +181,8 @@ RUN set -x && \
     rm -rf /tiredofit \
            /var/cache/apk/*
 
+### Networking
+EXPOSE 80 389 636 
+
 ### Add Assets
 ADD install /

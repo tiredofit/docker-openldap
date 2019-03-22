@@ -1,3 +1,7 @@
+## 6.3 2019-03-21 <dave at tiredofit dot ca>
+
+* Expose 389, 636 and 80 Ports
+
 ## 6.2 2018-12-27 <dave at tiredofit dot ca>
 
 * OpenLDAP 2.4.47
