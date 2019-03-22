@@ -170,7 +170,7 @@ RUN set -x && \
 ## Create Cracklib Dictionary
     mkdir -p /usr/share/dict && \
     cd /usr/share/dict && \
-    wget https://github.com/cracklib/cracklib/releases/download/v2.9.7/cracklib-words-2.9.7.gz
+    wget https://github.com/cracklib/cracklib/releases/download/v2.9.7/cracklib-words-2.9.7.gz && \
     create-cracklib-dict -o pw_dict cracklib-words-2.9.7.gz && \
     rm -rf cracklib-words-2.9.7.gz && \
     \
