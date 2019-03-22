@@ -1,3 +1,7 @@
+## 6.3.1 2019-03-21 <dave at tiredofit dot ca>
+
+* Update Cracklist Words to 2.9.7
+
 ## 6.3 2019-03-21 <dave at tiredofit dot ca>
 
 * Expose 389, 636 and 80 Ports

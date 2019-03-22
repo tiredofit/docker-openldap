@@ -170,9 +170,9 @@ RUN set -x && \
 ## Create Cracklib Dictionary
     mkdir -p /usr/share/dict && \
     cd /usr/share/dict && \
-    wget https://github.com/cracklib/cracklib/releases/download/cracklib-2.9.6/cracklib-words-2.9.6.gz && \
-    create-cracklib-dict -o pw_dict cracklib-words-2.9.6.gz && \
-    rm -rf cracklib-words-2.9.6.gz && \
+    wget https://github.com/cracklib/cracklib/releases/download/v2.9.7/cracklib-words-2.9.7.gz
+    create-cracklib-dict -o pw_dict cracklib-words-2.9.7.gz && \
+    rm -rf cracklib-words-2.9.7.gz && \
     \
 ### Cleanup
     apk del \
