@@ -1,3 +1,7 @@
+## 6.4 2019-03-29 <dave at tiredofit dot ca>
+
+* Repair BASE_DN variable that allows for sub DNs
+
 ## 6.3.2 2019-03-21 <dave at tiredofit dot ca>
 
 * Fixup
