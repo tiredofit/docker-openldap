@@ -1,18 +1,18 @@
 version: '2'
 services:
   openldap-app:
-    hostname: ldap.example.com
-    domainname: ldap.example.com
+    hostname: localhost
+    domainname: localhost
     container_name: openldap-app
     image: tiredofit/openldap
     ports:
       - 389:389
       - 636:636
     environment:
-      - HOSTNAME=ldap.example.com     
+      - HOSTNAME=localhost
       - BACKEND=mdb
       - LOG_LEVEL=256
-      - DOMAIN=example.org
+      - DOMAIN=example.com
       - ADMIN_PASS=admin
       - CONFIG_PASS=config
 
@@ -35,6 +35,7 @@ services:
       - REPLICATION_DB_SYNCPROV=binddn="cn=admin,dc=example,dc=org" bindmethod=simple credentials="admin" searchbase="dc=example,dc=org" type=refreshAndPersist interval=00:00:00:10 retry="60 +" timeout=1
       - REPLICATION_HOSTS=ldap://ldap1.example.com ldap://ldap2.example.com ldap://ldap3.example.com
       - REMOVE_CONFIG_AFTER_SETUP=false
+      - DEBUG_MODE=TRUE
 
       - BACKUP_CONFIG_CRON_PERIOD=0 4 * * *
       - BACKUP_DATA_CRON_PERIOD=0 4 * * *
