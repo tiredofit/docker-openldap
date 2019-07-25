@@ -46,7 +46,7 @@ function ldap_add_or_modify (){
   if grep -iq changetype $LDIF_FILE ; then
       silent ldapmodify -Y EXTERNAL -Q -H ldapi:/// -f $LDIF_FILE
   else
-      silent ldapadd -Y EXTERNAL -Q -H ldapi:/// -f $LDIF_FILE 
+      silent ldapadd -Y EXTERNAL -Q -H ldapi:/// -f $LDIF_FILE
   fi
 }
 
@@ -240,7 +240,7 @@ dn: olcDatabase=Monitor,cn=config
 objectClass: olcDatabaseConfig
 objectClass: olcMonitorConfig
 olcDatabase: Monitor
-olcAccess: to dn.subtree="cn=Monitor" by dn.exact="cn=admin,${BASE_DN}" write by users read by * none 
+olcAccess: to dn.subtree="cn=Monitor" by dn.exact="cn=admin,${BASE_DN}" write by users read by * none
 EOF
 
 set +e
@@ -254,7 +254,7 @@ silent slapadd -n 0 -F /etc/openldap/slapd.d -l /tmp/slapd.ldif
 rm -rf /tmp/slapd.ldif
 set -e
 
-chown -R ldap:ldap /etc/openldap 
+chown -R ldap:ldap /etc/openldap
 
   # Error: the database directory (/var/lib/openldap) is empty but not the config directory (/etc/openldap/slapd.d)
   elif [ -z "$(ls -A -I lost+found /var/lib/openldap)" ] && [ ! -z "$(ls -A -I lost+found /etc/openldap/slapd.d)" ]; then
@@ -304,7 +304,7 @@ chown -R ldap:ldap /etc/openldap
     [[ -z "$PREVIOUS_TLS_DH_PARAM_PATH" ]] && PREVIOUS_TLS_DH_PARAM_PATH="/assets/slapd/certs/dhparam.pem"
 
     silent ssl-helper $SSL_HELPER_PREFIX $PREVIOUS_TLS_CRT_PATH $PREVIOUS_TLS_KEY_PATH $PREVIOUS_TLS_CA_CRT_PATH
-    [ -f ${PREVIOUS_TLS_DH_PARAM_PATH} ] || silent openssl dhparam -out ${LDAP_TLS_DH_PARAM_PATH} 2048
+    [ -f ${PREVIOUS_TLS_DH_PARAM_PATH} ] || silent openssl dhparam -out ${PREVIOUS_TLS_DH_PARAM_PATH} 2048
 
     chmod 600 ${PREVIOUS_TLS_DH_PARAM_PATH}
     chown ldap:ldap $PREVIOUS_TLS_CRT_PATH $PREVIOUS_TLS_KEY_PATH $PREVIOUS_TLS_CA_CRT_PATH $PREVIOUS_TLS_DH_PARAM_PATH
@@ -328,7 +328,7 @@ chown -R ldap:ldap /etc/openldap
                 exit 1
           fi
           valid_ip=`echo $sanity_ip | awk -F'.' '$1 <=255 && $2 <= 255 && $3 <= 255 && $4 <= 255'`
-            
+
           if [ -z "$valid_ip" ] || [ -z "$sanity_ip" ]; then
                 echo "** [openldap] ERROR: It looks as if you have no DNS entry for replciation host "$sanity_host" in your schema configuration. Startup will fail!"
                 exit 1
@@ -390,7 +390,7 @@ chown -R ldap:ldap /etc/openldap
       echo "** [openldap] Processing file ${f}"
       ldap_add_or_modify "$f"
     done
-    
+
     # Add ppolicy schema
     echo "** [openldap] Adding ppolicy Schema"
     /usr/bin/schema2ldif /etc/openldap/schema/ppolicy.schema > /etc/openldap/schema/ppolicy.ldif && \
@@ -498,7 +498,7 @@ chown -R ldap:ldap /etc/openldap
     sed -i "/<REPLICATION_HOSTS_DB_SYNC_REPL>/d" /assets/slapd/config/replication/replication-enable.ldif
 
     sed -i "s|<BACKEND>|${BACKEND}|g" /assets/slapd/config/replication/replication-enable.ldif
-    
+
     silent ldapmodify -c -Y EXTERNAL -Q -H ldapi:/// -f /assets/slapd/config/replication/replication-enable.ldif
 
     [[ -f "$WAS_STARTED_WITH_REPLICATION" ]] && rm -f "$WAS_STARTED_WITH_REPLICATION"
@@ -516,7 +516,7 @@ chown -R ldap:ldap /etc/openldap
       chmod +x ${f}
       ${f}
     done
-  fi  
+  fi
 
 
   ## Configure PPolicy check_password.so + ppm.so module
@@ -545,7 +545,7 @@ EOF
 
     chown ldap. /etc/openldap/check_password.conf
   fi
-  
+
   ### ppm.so
   if [ ! -f /etc/openldap/ppm.conf ]; then
     cat <<EOF > /etc/openldap/ppm.conf
@@ -564,7 +564,7 @@ class-digit 0123456789 $PPOLICY_MIN_DIGIT 1
 class-special <>,?;.:/!§ù%*µ^¨$£²&é~"#'{([-|è\`_\ç^à@)]°=}+ $PPOLICY_MIN_PUNCT 1
 EOF
 
-    chown ldap. /etc/openldap/ppm.conf  
+    chown ldap. /etc/openldap/ppm.conf
   fi
 
   # Stop OpenLDAP
