@@ -1,3 +1,8 @@
+## 6.5 2019-08-25 <dave at tiredofit dot ca>
+
+* OpenLDAP 2.4.48
+* Alpine 3.10
+
 ## 6.4 2019-03-29 <dave at tiredofit dot ca>
 
 * Repair BASE_DN variable that allows for sub DNs

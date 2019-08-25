@@ -1,4 +1,4 @@
-FROM tiredofit/alpine:3.8
+FROM tiredofit/alpine:3.10
 LABEL maintainer="Dave Conroy <dave@tiredofit.ca>"
 
 ENV ADMIN_PASS=admin \
@@ -14,7 +14,7 @@ ENV ADMIN_PASS=admin \
     ENABLE_SMTP=FALSE \
     ENABLE_TLS=true \
     LOG_LEVEL=256 \
-    OPENLDAP_VERSION=2.4.47 \
+    OPENLDAP_VERSION=2.4.48 \
     ORGANIZATION="Example Organization" \
     READONLY_USER_PASS=readonly \
     READONLY_USER_USER=readonly \
