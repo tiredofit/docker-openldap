@@ -1,58 +1,61 @@
-version: '2'
+version: '3.7'
 services:
+
   openldap-app:
     hostname: localhost
-    domainname: localhost
-    container_name: openldap-app
     image: tiredofit/openldap
+    container_name: openldap-app
     ports:
-      - 389:389
-      - 636:636
-    environment:
-      - HOSTNAME=localhost
-      - BACKEND=mdb
-      - LOG_LEVEL=256
-      - DOMAIN=example.com
-      - ADMIN_PASS=admin
-      - CONFIG_PASS=config
-
-      - BASE_DN=dc=example,dc=org
-      - ENABLE_READONLY_USER=false
-      - READONLY_USER_USER=reader
-      - READONLY_USER_PASS=reader
-
-      - ENABLE_TLS=true
-      - TLS_CRT_FILENAME=cert.pem
-      - TLS_KEY_FILENAME=key.pem
-      - TLS_CA_CRT_FILENAME=ca.pem
-      - TLS_ENFORCE=false
-      - TLS_CIPHER_SUITE=ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AES:-DHE-DSS:-RSA:!aNULL:!MD5:!DSS:!SHA
-      - TLS_VERIFY_CLIENT=never
-      - SSL_HELPER_PREFIX=ldap
-
-      - ENABLE_REPLICATION=false
-      - REPLICATION_CONFIG_SYNCPROV=binddn="cn=admin,cn=config" bindmethod=simple credentials="admin" searchbase="cn=config" type=refreshAndPersist retry="60 +" timeout=1
-      - REPLICATION_DB_SYNCPROV=binddn="cn=admin,dc=example,dc=org" bindmethod=simple credentials="admin" searchbase="dc=example,dc=org" type=refreshAndPersist interval=00:00:00:10 retry="60 +" timeout=1
-      - REPLICATION_HOSTS=ldap://ldap1.example.com ldap://ldap2.example.com ldap://ldap3.example.com
-      - REMOVE_CONFIG_AFTER_SETUP=false
-      - DEBUG_MODE=TRUE
-
-      - BACKUP_CONFIG_CRON_PERIOD=0 4 * * *
-      - BACKUP_DATA_CRON_PERIOD=0 4 * * *
-      - BACKUP_TTL=15
-    
-      - ZABBIX_HOSTNAME=openldap-app
+    - 389:389
+    - 636:636
     volumes:
-      - ./backup:/data/backup
-      - ./data:/var/lib/openldap
-      - ./config:/etc/openldap/slapd.d
-      - ./certs:/assets/slapd/certs
-    restart: always
+    - ./backup:/data/backup
+    - ./data:/var/lib/openldap
+    - ./config:/etc/openldap/slapd.d
+    - ./certs:/assets/slapd/certs
+    environment:
+    - HOSTNAME=localhost
+    - BACKEND=mdb
+    - LOG_LEVEL=256
+    - DOMAIN=example.org
+    - ADMIN_PASS=admin
+    - CONFIG_PASS=config
+
+    - BASE_DN=dc=example,dc=org
+    - ENABLE_READONLY_USER=false
+    - READONLY_USER_USER=reader
+    - READONLY_USER_PASS=reader
+
+    - ENABLE_TLS=true
+    - TLS_CRT_FILENAME=cert.pem
+    - TLS_KEY_FILENAME=key.pem
+    - TLS_CA_CRT_FILENAME=ca.pem
+    - TLS_ENFORCE=false
+    - TLS_CIPHER_SUITE=ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AES:-DHE-DSS:-RSA:!aNULL:!MD5:!DSS:!SHA
+    - TLS_VERIFY_CLIENT=never
+    - SSL_HELPER_PREFIX=ldap
+
+    - ENABLE_REPLICATION=false
+    - REPLICATION_CONFIG_SYNCPROV=binddn="cn=admin,cn=config" bindmethod=simple credentials="admin" searchbase="cn=config" type=refreshAndPersist retry="60 +" timeout=1
+    - REPLICATION_DB_SYNCPROV=binddn="cn=admin,dc=example,dc=org" bindmethod=simple credentials="admin" searchbase="dc=example,dc=org" type=refreshAndPersist interval=00:00:00:10 retry="60 +" timeout=1
+    - REPLICATION_HOSTS=ldap://ldap1.example.com ldap://ldap2.example.com ldap://ldap3.example.com
+    - REMOVE_CONFIG_AFTER_SETUP=false
+
+    - BACKUP_CONFIG_CRON_PERIOD=0 4 * * *
+    - BACKUP_DATA_CRON_PERIOD=0 4 * * *
+    - BACKUP_TTL=15
+    
+    - ZABBIX_HOSTNAME=openldap-app
+    
     networks:
-      - proxy-tier
+    - internal
+    - services
+    restart: always
 
 networks:
-  proxy-tier:
-    external:
-      name: nginx-proxy
+  internal:
+    external: false
+  services:
+    external: true
+
 
