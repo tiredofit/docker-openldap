@@ -1,11 +1,28 @@
+## 6.6.1 2019-12-30 <dave at tiredofit dot ca>
+
+   ### Added
+      - Allow configurable ULIMIT_N environment variable for open file descriptors
+
+
+## 6.6.0 2019-12-29 <dave at tiredofit dot ca>
+
+   ### Added
+      - Update to support new tiredofit/alpine base image
+
+
+## 6.5.1 2019-12-20 <dave at tiredofit dot ca>
+
+   ### Added
+      - Alpine 3.11 Base
+
+
 ## 6.5 2019-08-25 <dave at tiredofit dot ca>
 
 * OpenLDAP 2.4.48
+
+## 6.4 2019-06-19 <dave at tiredofit dot ca>
+
 * Alpine 3.10
-
-## 6.4 2019-03-29 <dave at tiredofit dot ca>
-
-* Repair BASE_DN variable that allows for sub DNs
 
 ## 6.3.2 2019-03-21 <dave at tiredofit dot ca>
 

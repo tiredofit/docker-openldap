@@ -1,5 +1,8 @@
 #!/usr/bin/with-contenv bash
 
+source /assets/functions/*
+PROCESS_NAME="openldap"
+
 ### Functions
 function get_ldap_base_dn() {
   # if BASE_DN is empty set value from DOMAIN
@@ -25,6 +28,20 @@ function get_ldap_base_dn() {
   fi
 }
 
+
+  IFS='.' read -a domain_elems <<< "${DOMAIN}"
+  SUFFIX=""
+  ROOT=""
+
+  for elem in "${domain_elems[@]}" ; do
+      if [ "x${SUFFIX}" = x ] ; then
+          SUFFIX="dc=${elem}"
+          ROOT="${elem}"
+      else
+          BASE_DN="${SUFFIX},dc=${elem}"
+      fi
+  done
+
 function is_new_schema() {
   local COUNT=$(ldapsearch -Q -Y EXTERNAL -H ldapi:/// -b cn=schema,cn=config cn | grep -c $1)
   if [ "$COUNT" -eq 0 ]; then
@@ -36,7 +53,7 @@ function is_new_schema() {
 
 function ldap_add_or_modify (){
   local LDIF_FILE=$1
-  echo "** [openldap] Processing file ${LDIF_FILE}"
+  print_warn "Processing file ${LDIF_FILE}"
   sed -i "s|<BASE_DN>|${BASE_DN}|g" $LDIF_FILE
   sed -i "s|<BACKEND>|${BACKEND}|g" $LDIF_FILE
   if [ "${READONLY_USER,,}" == "true" ]; then
@@ -76,7 +93,7 @@ function schema2ldif (){
   silent slaptest -f convert.dat -F .
 
   if [ $? -ne 0 ] ; then
-      echo "** [openldap] ERROR: slaptest conversion failed!"
+      print_warn "ERROR: slaptest conversion failed!"
       exit
   fi
 
@@ -107,27 +124,6 @@ function schema2ldif (){
 
   popd >>/dev/null
   rm -rf $tmpd
-}
-
-silent() {
-  if [ "$DEBUG_MODE" = "TRUE" ] || [ "$DEBUG_MODE" = "true" ];  then
-    "$@"
-  else
-    "$@" > /dev/null 2>&1
-  fi
-}
-
-
-if [ "$DEBUG_MODE" = "TRUE" ] || [ "$DEBUG_MODE" = "true" ];  then
-  set -x
-fi
-
-silent() {
-  if [ "$DEBUG_MODE" = "TRUE" ] || [ "$DEBUG_MODE" = "true" ];  then
-    "$@"
-  else
-    "$@" > /dev/null 2>&1
-  fi
 }
 
 set -e
@@ -167,15 +163,15 @@ if [ ! -e "$FIRST_START_DONE" ]; then
   if [ -z "$(ls -A -I lost+found /var/lib/openldap)" ] && [ -z "$(ls -A -I lost+found /etc/openldap/slapd.d)" ]; then
 
     NEW_INSTALL=true
-    echo "** [openldap] First time install detected"
+    print_warn "First time install detected"
 
     # RFC2307bis schema
     if [ "$SCHEMA_TYPE" = "rfc2307bis" ] || [ "$SCHEMA_TYPE" = "RFC2307BIS" ]; then
-      echo "** [openldap] Using RFC2307BIS schema type"
+      print_warn "Using RFC2307BIS schema type"
       cp -R /assets/slapd/config/bootstrap/schema/rfc2307bis/rfc2307bis.schema /etc/openldap/schema/
       SCHEMA_TYPE="rfc2307bis"
     else
-      echo "** [openldap] Using NIS schema type"
+      print_warn "Using NIS schema type"
       SCHEMA_TYPE="nis"
     fi
 
@@ -258,25 +254,25 @@ chown -R ldap:ldap /etc/openldap
 
   # Error: the database directory (/var/lib/openldap) is empty but not the config directory (/etc/openldap/slapd.d)
   elif [ -z "$(ls -A -I lost+found /var/lib/openldap)" ] && [ ! -z "$(ls -A -I lost+found /etc/openldap/slapd.d)" ]; then
-    echo "** [openldap] ERROR: the database directory (/var/lib/openldap) is empty but not the config directory (/etc/openldap/slapd.d)"
+    print_error "The database directory (/var/lib/openldap) is empty but not the config directory (/etc/openldap/slapd.d)"
     exit 1
 
   # Error: the config directory (/etc/openldap/slapd.d) is empty but not the database directory (/var/lib/openldap)
   elif [ ! -z "$(ls -A -I lost+found /var/lib/openldap)" ] && [ -z "$(ls -A -I lost+found /etc/openldap/slapd.d)" ]; then
-    echo "** [openldap] ERROR: the config directory (/etc/openldap/slapd.d) is empty but not the database directory (/var/lib/openldap)"
+    print_error "The config directory (/etc/openldap/slapd.d) is empty but not the database directory (/var/lib/openldap)"
     exit 1
   fi
 
     if [ "${BACKEND}" = "mdb" ]; then
       if [ -e "/etc/openldap/slapd.d/cn=config/olcDatabase={1}hdb.ldif" ]; then
-        echo "** [openldap] WARNING: LDAP_BACKEND environment variable is set to mdb but hdb backend is detected."
-        echo "** [openldap]          Going to use hdb as LDAP_BACKEND. Set LDAP_BACKEND=hdb to discard this message."
+        print_warn "LDAP_BACKEND environment variable is set to mdb but hdb backend is detected."
+        print_warn "Going to use hdb as LDAP_BACKEND. Set LDAP_BACKEND=hdb to discard this message."
         BACKEND="hdb"
       fi
     fi
 
     if [ "${KEEP_EXISTING_CONFIG,,}" == "true" ]; then
-    echo "** [openldap] KEEP_EXISTING_CONFIG = true Configration will not be updated"
+    print_warn "KEEP_EXISTING_CONFIG = true Configration will not be updated"
   else
 
   # Get previous hostname if OpenLDAP was started with replication to avoid configuration failures
@@ -296,7 +292,7 @@ chown -R ldap:ldap /etc/openldap
   if [ -e "$WAS_STARTED_WITH_TLS" ]; then
     source $WAS_STARTED_WITH_TLS
 
-    echo "** [openldap] Checking previous TLS certificates.."
+    print_info "Checking previous TLS certificates.."
 
     [[ -z "$PREVIOUS_TLS_CA_CRT_PATH" ]] && PREVIOUS_TLS_CA_CRT_PATH="/assets/slapd/certs/TLS_CA_CRT_FILENAME"
     [[ -z "$PREVIOUS_TLS_CRT_PATH" ]] && PREVIOUS_TLS_CRT_PATH="/assets/slapd/certs/TLS_CRT_FILENAME"
@@ -319,7 +315,7 @@ chown -R ldap:ldap /etc/openldap
         if [[ $sanity_host =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
           sanity_ip=$sanity_host
           if [ -z "$sanity_ip" ]; then
-                echo "** [openldap] ERROR: It looks as if you have a malformed IP address for replciation host "$sanity_host" in your schema configuration. Startup will fail!"
+                print_error "It looks as if you have a malformed IP address for replciation host "$sanity_host" in your schema configuration. Startup will fail!"
                 exit 1
           fi
         else
@@ -330,7 +326,7 @@ chown -R ldap:ldap /etc/openldap
           valid_ip=`echo $sanity_ip | awk -F'.' '$1 <=255 && $2 <= 255 && $3 <= 255 && $4 <= 255'`
             
           if [ -z "$valid_ip" ] || [ -z "$sanity_ip" ]; then
-                echo "** [openldap] ERROR: It looks as if you have no DNS entry for replciation host "$sanity_host" in your schema configuration. Startup will fail!"
+                print_error "It looks as if you have no DNS entry for replciation host "$sanity_host" in your schema configuration. Startup will fail!"
                 exit 1
           fi
 
@@ -340,20 +336,20 @@ chown -R ldap:ldap /etc/openldap
   fi
 
   ### Start OpenLDAP
-  echo "** [openldap] Starting OpenLDAP Initialization Sequence"
+  print_info "Starting OpenLDAP Initialization Sequence"
   silent slapd -h "ldap://$HOSTNAME ldapi:///" -u ldap -g ldap -d $LOG_LEVEL &
 
 
-  echo "** [openldap] Waiting for OpenLDAP to be ready"
+  print_info "Waiting for OpenLDAP to be ready"
   while [ ! -e /run/openldap/slapd.pid ]; do sleep 0.1; done
 
   ### Setup bootstrap config - Part 2
   if $NEW_INSTALL; then
 
-    echo "** [openldap] Add bootstrap schemas"
+    print_info "Add bootstrap schemas"
 
     # Convert schemas to ldif
-    echo "** [openldap] Convert Schemas to LDIF"
+    print_info "Convert Schemas to LDIF"
     SCHEMAS=""
     for f in $(find /assets/slapd/config/bootstrap/schema -not -path "/assets/slapd/config/bootstrap/schema/rfc2307bis/*" -name \*.schema -type f); do
       SCHEMAS="$SCHEMAS ${f}"
@@ -361,44 +357,44 @@ chown -R ldap:ldap /etc/openldap
     schema2ldif "$SCHEMAS"
 
     # Add converted schemas
-    echo "** [openldap] Adding Converted Schemas"
+    print_warn "Adding Converted Schemas"
     for f in $(find /assets/slapd/config/bootstrap/schema -not -path "/assets/slapd/config/bootstrap/schema/rfc2307bis/*" -name \*.ldif -type f); do
-      echo "** [openldap] Processing file ${f}"
+      print_info "Processing file ${f}"
       # Add schema if it doesn't already exist
       SCHEMA=$(basename "${f}" .ldif)
       ADD_SCHEMA=$(is_new_schema $SCHEMA)
       if [ "$ADD_SCHEMA" -eq 1 ]; then
         silent ldapadd -c -Y EXTERNAL -Q -H ldapi:/// -f $f
       else
-        echo "** [openldap] schema ${f} already exists"
+        print_warn "schema ${f} already exists"
       fi
     done
 
     # Set config password
-    echo "** [openldap] Setting Config Password"
+    print_info "Setting Config Password"
     CONFIG_PASS_ENCRYPTED=$(slappasswd -s $CONFIG_PASS)
     sed -i "s|<CONFIG_PASS_ENCRYPTED>|${CONFIG_PASS_ENCRYPTED}|g" /assets/slapd/config/bootstrap/ldif/01-config-password.ldif
 
     # Adapt security config file
-    echo "** [openldap] Setting Security"
+    print_info "Setting Security"
     get_ldap_base_dn
     sed -i "s|<BASE_DN>|${BASE_DN}|g" /assets/slapd/config/bootstrap/ldif/02-security.ldif
 
     # Process config files (*.ldif) in bootstrap directory (do not process files in subdirectories)
-    echo "** [openldap] Add bootstrap LDIFs"
+    print_info "Add bootstrap LDIFs"
     for f in $(find /assets/slapd/config/bootstrap/ldif -mindepth 1 -maxdepth 1 -type f -name \*.ldif  | sort); do
-      echo "** [openldap] Processing file ${f}"
+      print_info "Processing file ${f}"
       ldap_add_or_modify "$f"
     done
     
     # Add ppolicy schema
-    echo "** [openldap] Adding ppolicy Schema"
+    print_info "Adding ppolicy Schema"
     /usr/bin/schema2ldif /etc/openldap/schema/ppolicy.schema > /etc/openldap/schema/ppolicy.ldif && \
     silent ldapadd -c -Y EXTERNAL -Q -H ldapi:/// -f /etc/openldap/schema/ppolicy.ldif
 
     # Read only user
     if [ "${ENABLE_READONLY_USER,,}" == "true" ]; then
-      echo "** [openldap] Adding read only user"
+      print_info "Adding read only user"
       READONLY_USER_PASS_ENCRYPTED=$(slappasswd -s $READONLY_USER_PASS)
       ldap_add_or_modify "/assets/slapd/config/bootstrap/ldif/readonly-user/readonly-user.ldif"
       ldap_add_or_modify "/assets/slapd/config/bootstrap/ldif/readonly-user/readonly-user-acl.ldif"
@@ -406,9 +402,9 @@ chown -R ldap:ldap /etc/openldap
 
     # Custom LDIF injection
     if [ -d /assets/slapd/config/bootstrap/ldif/custom ]; then
-      echo "** [openldap] Add custom bootstrap ldifs"
+      print_info "Add custom bootstrap ldifs"
       for f in $(find /assets/slapd/config/bootstrap/ldif/custom -type f -name \*.ldif  | sort); do
-          echo "** [openldap] Processing file ${f}"
+          print_info "Processing file ${f}"
           ldap_add_or_modify "$f"
       done
     fi
@@ -416,19 +412,19 @@ chown -R ldap:ldap /etc/openldap
 
   ## TLS config
   if [ -e "$WAS_STARTED_WITH_TLS" ] && [ "${ENABLE_TLS,,}" != "true" ]; then
-    echo "** [openldap] ERROR: ENABLE_TLS=false but the container was previously started with ENABLE_TLS=true"
-    echo "** [openldap]        TLS can't be disabled once added. Ignoring ENABLE_TLS=false."
+    print_error "ENABLE_TLS=false but the container was previously started with ENABLE_TLS=true"
+    print_error "TLS can't be disabled once added. Ignoring ENABLE_TLS=false."
     ENABLE_TLS=true
   fi
 
   if [ -e "$WAS_STARTED_WITH_TLS_ENFORCE" ] && [ "${TLS_ENFORCE,,}" != "true" ]; then
-    echo "** [openldap] ERROR: TLS_ENFORCE=false but the container was previously started with TLS_ENFORCE=true"
-    echo "**                   TLS enforcing can't be disabled once added. Ignoring TLS_ENFORCE=false."
+    print_error "TLS_ENFORCE=false but the container was previously started with TLS_ENFORCE=true"
+    print_error "TLS enforcing can't be disabled once added. Ignoring TLS_ENFORCE=false."
     TLS_ENFORCE=true
   fi
 
   if [ "${ENABLE_TLS,,}" == "true" ]; then
-    echo "** [openldap] Starting TLS configuration. Please wait..."
+    print_info "Starting TLS configuration. Please wait..."
 
     # Generate a certificate and key with ssl-helper tool if LDAP_CRT and LDAP_KEY files don't exist
     silent ssl-helper $SSL_HELPER_PREFIX $TLS_CRT_PATH $TLS_KEY_PATH $TLS_CA_CRT_PATH
@@ -459,7 +455,7 @@ chown -R ldap:ldap /etc/openldap
 
     # Enforce TLS
     if [ "${TLS_ENFORCE,,}" == "true" ]; then
-      echo "** [openldap] Adding TLS enforcement"
+      print_info "Adding TLS enforcement"
       silent ldapmodify -Y EXTERNAL -Q -H ldapi:/// -f /assets/slapd/config/tls/tls-enforce-enable.ldif
       touch $WAS_STARTED_WITH_TLS_ENFORCE
     fi
@@ -475,7 +471,7 @@ chown -R ldap:ldap /etc/openldap
 
   if [ "${ENABLE_REPLICATION,,}" == "true" ]; then
 
-    echo "** [openldap] Configuring replication"
+    print_info "Configuring replication"
     disableReplication || true
 
     i=1
@@ -504,15 +500,15 @@ chown -R ldap:ldap /etc/openldap
     [[ -f "$WAS_STARTED_WITH_REPLICATION" ]] && rm -f "$WAS_STARTED_WITH_REPLICATION"
     echo "export PREVIOUS_HOSTNAME=${HOSTNAME}" > $WAS_STARTED_WITH_REPLICATION
   else
-    echo "** [openldap] Disabling replication config"
+    print_info "Disabling replication config"
     disableReplication || true
   fi
 
   ## Execute Custom Scripts (To be used for example for tiredofit/openldap-fusiondirectory)
   if [ -d /assets/custom-scripts/ ] ; then
-    echo '** [openldap] Found Custom Scripts to Execute'
+    print_info "Found Custom Scripts to Execute"
     for f in $(find /assets/custom-scripts/ -name \*.sh -type f); do
-      echo "** [openldap] Running Script ${f}"
+      print_info "Running Script ${f}"
       chmod +x ${f}
       ${f}
     done
@@ -568,7 +564,7 @@ EOF
   fi
 
   # Stop OpenLDAP
-  echo "** [openldap] Finished OpenLDAP Initialization"
+  print_info "Finished OpenLDAP Initialization"
 
   SLAPD_PID=$(cat /run/openldap/slapd.pid)
   kill -15 $SLAPD_PID
@@ -576,7 +572,7 @@ EOF
   fi
 
   ## Configure LDAP Client
-  echo "** [openldap] Configuring ldap client"
+  print_info "Configuring ldap client"
   cat <<EOF > /etc/openldap/ldap.conf
 BASE $BASE_DN
 URI  ldap://$HOSTNAME
@@ -596,7 +592,7 @@ EOF
 
   ## Remove config files
   if [ "${REMOVE_CONFIG_AFTER_SETUP,,}" == "true" ]; then
-    echo "** [openldap] Removing config files"
+    print_info "Removing config files"
     rm -rf /assets/slapd/config
   fi
 
@@ -605,7 +601,7 @@ EOF
   sed -i -e "s/<BACKUP_DATA_CRON_PERIOD>/$BACKUP_DATA_CRON_PERIOD/g" /assets/cron/crontab.txt
 
   # setup done
-  echo "** [openldap] Ready to start OpenLDAP"
+  print_info "Ready to start OpenLDAP"
   touch $FIRST_START_DONE
 fi
 
@@ -617,5 +613,4 @@ ETC_HOSTS=$(cat /etc/hosts | sed "/$HOSTNAME/d")
 echo "0.0.0.0 $HOSTNAME" > /etc/hosts
 echo "$ETC_HOSTS" >> /etc/hosts
 
-mkdir -p /tmp/state
-touch /tmp/state/10-openldap-init
+liftoff

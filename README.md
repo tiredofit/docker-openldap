@@ -65,7 +65,7 @@ None.
 Automated builds of the image are available on [Registry](https://hub.docker.com/r/tiredofit/openldap) and is the recommended method of installation.
 
 ```bash
-docker pull tiredofit/openldap
+docker pull registry.selfdesign.org/docker/openldap
 ```
 
 # Quick Start
@@ -111,7 +111,7 @@ Required and used for new ldap server only:
 | `CONFIG_PASS` | Ldap Config password. Default  `config` |
 | `ORGANIZATION` | Organization Name Default: `Example Organization` |
 | `ENABLE_READONLY_USER` | Add a read only user. Default`false` |
-| `READONLY_USER_USER` | Read only user username. Default `readonly |
+| `READONLY_USER_USER` | Read only user username. Default `readonly` |
 | `READONLY_USER_PASS` | Read only user password. Default `readonly` |
 | `SCHEMA_TYPE` | Use `nis` or `rfc2307bis` core schema. Default `nis` |
 
@@ -120,7 +120,7 @@ Required and used for new ldap server only:
 |-----------|-------------|
 | `BACKEND` | Ldap backend. `bdb` `hdb` `mdb` and others. Default `mdb` |
 | `LOG_LEVEL` | Set LDAP Log Level - Default `256`
-    
+| `ULIMIT_N` | Set Open File Descriptor Limit - Default `1024` |    
 
 Backup Options:
 

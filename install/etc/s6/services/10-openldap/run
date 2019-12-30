@@ -1,12 +1,14 @@
 #!/usr/bin/with-contenv bash
 
-while [ ! -f /tmp/state/10-openldap-init ]
-do
-  sleep 1
-done
+source /assets/functions/*
+PROCESS_NAME="openldap"
+check_initialized
+ULIMIT_N=${ULIMIT_N:-1024}
+ulimit -n ${ULIMIT_N}
 
-ulimit -n 1024
+liftoff
+
 
 ### OpenLDAP
-echo '** [openldap] Starting OpenLDAP'
+print_info "Starting OpenLDAP ${OPENDAP_VERSION}"
 /usr/sbin/slapd -h "ldap://$HOSTNAME ldaps://$HOSTNAME ldapi:///" -u ldap -g ldap -d $LOG_LEVEL
