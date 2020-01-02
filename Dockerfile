@@ -1,4 +1,4 @@
-FROM tiredofit/alpine:3.10
+FROM tiredofit/alpine:3.11
 LABEL maintainer="Dave Conroy <dave@tiredofit.ca>"
 
 ENV ADMIN_PASS=admin \

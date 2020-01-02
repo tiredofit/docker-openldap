@@ -1,3 +1,12 @@
+## 6.6.2 2020-01-02 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Change to use LibreSSL instead of OpenSSL for creating dhparam.pem
+      - Change warnings to notices
+      - Fix when ENABLE_NGINX=FALSE container fails to initialize
+      - Fix with Nginx run script looping with error
+
+
 ## 6.6.1 2019-12-30 <dave at tiredofit dot ca>
 
    ### Added

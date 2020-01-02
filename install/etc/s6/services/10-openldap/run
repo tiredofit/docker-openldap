@@ -1,13 +1,12 @@
 #!/usr/bin/with-contenv bash
 
-source /assets/functions/*
+for s in /assets/functions/*; do source $s; done
 PROCESS_NAME="openldap"
-check_initialized
+check_container_initialized
+check_service_initialized init
 ULIMIT_N=${ULIMIT_N:-1024}
 ulimit -n ${ULIMIT_N}
-
 liftoff
-
 
 ### OpenLDAP
 print_info "Starting OpenLDAP ${OPENDAP_VERSION}"

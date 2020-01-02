@@ -1,12 +1,13 @@
 #!/usr/bin/with-contenv bash
 
-source /assets/functions/*
+for s in /assets/functions/*; do source $s; done
 PROCESS_NAME="nginx"
 
 ### Check to see if Enabled/Disabled
 if [ "$ENABLE_NGINX" = "FALSE" ];  then
-  print_warn "Disabling nginx"
+  print_notice "Disabling nginx"
   s6-svc -d /var/run/s6/services/09-nginx
+  liftoff
   exit 0
 fi
 

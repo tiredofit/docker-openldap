@@ -1,6 +1,6 @@
 #!/usr/bin/with-contenv bash
 
-source /assets/functions/*
+for s in /assets/functions/*; do source $s; done
 PROCESS_NAME="openldap"
 
 ### Functions
@@ -53,7 +53,7 @@ function is_new_schema() {
 
 function ldap_add_or_modify (){
   local LDIF_FILE=$1
-  print_warn "Processing file ${LDIF_FILE}"
+  print_notice "Processing file ${LDIF_FILE}"
   sed -i "s|<BASE_DN>|${BASE_DN}|g" $LDIF_FILE
   sed -i "s|<BACKEND>|${BACKEND}|g" $LDIF_FILE
   if [ "${READONLY_USER,,}" == "true" ]; then
@@ -93,7 +93,7 @@ function schema2ldif (){
   silent slaptest -f convert.dat -F .
 
   if [ $? -ne 0 ] ; then
-      print_warn "ERROR: slaptest conversion failed!"
+      print_error "slaptest conversion failed!"
       exit
   fi
 
@@ -167,11 +167,11 @@ if [ ! -e "$FIRST_START_DONE" ]; then
 
     # RFC2307bis schema
     if [ "$SCHEMA_TYPE" = "rfc2307bis" ] || [ "$SCHEMA_TYPE" = "RFC2307BIS" ]; then
-      print_warn "Using RFC2307BIS schema type"
+      print_notice "Using RFC2307BIS schema type"
       cp -R /assets/slapd/config/bootstrap/schema/rfc2307bis/rfc2307bis.schema /etc/openldap/schema/
       SCHEMA_TYPE="rfc2307bis"
     else
-      print_warn "Using NIS schema type"
+      print_notice "Using NIS schema type"
       SCHEMA_TYPE="nis"
     fi
 
@@ -272,7 +272,7 @@ chown -R ldap:ldap /etc/openldap
     fi
 
     if [ "${KEEP_EXISTING_CONFIG,,}" == "true" ]; then
-    print_warn "KEEP_EXISTING_CONFIG = true Configration will not be updated"
+    print_notice "KEEP_EXISTING_CONFIG = true Configration will not be updated"
   else
 
   # Get previous hostname if OpenLDAP was started with replication to avoid configuration failures
@@ -300,7 +300,7 @@ chown -R ldap:ldap /etc/openldap
     [[ -z "$PREVIOUS_TLS_DH_PARAM_PATH" ]] && PREVIOUS_TLS_DH_PARAM_PATH="/assets/slapd/certs/dhparam.pem"
 
     silent ssl-helper $SSL_HELPER_PREFIX $PREVIOUS_TLS_CRT_PATH $PREVIOUS_TLS_KEY_PATH $PREVIOUS_TLS_CA_CRT_PATH
-    [ -f ${PREVIOUS_TLS_DH_PARAM_PATH} ] || silent openssl dhparam -out ${LDAP_TLS_DH_PARAM_PATH} 2048
+    [ -f ${PREVIOUS_TLS_DH_PARAM_PATH} ] || silent libressl dhparam -out ${LDAP_TLS_DH_PARAM_PATH} 2048
 
     chmod 600 ${PREVIOUS_TLS_DH_PARAM_PATH}
     chown ldap:ldap $PREVIOUS_TLS_CRT_PATH $PREVIOUS_TLS_KEY_PATH $PREVIOUS_TLS_CA_CRT_PATH $PREVIOUS_TLS_DH_PARAM_PATH
@@ -346,10 +346,10 @@ chown -R ldap:ldap /etc/openldap
   ### Setup bootstrap config - Part 2
   if $NEW_INSTALL; then
 
-    print_info "Add bootstrap schemas"
+    print_notice "Add bootstrap schemas"
 
     # Convert schemas to ldif
-    print_info "Convert Schemas to LDIF"
+    print_notice "Convert Schemas to LDIF"
     SCHEMAS=""
     for f in $(find /assets/slapd/config/bootstrap/schema -not -path "/assets/slapd/config/bootstrap/schema/rfc2307bis/*" -name \*.schema -type f); do
       SCHEMAS="$SCHEMAS ${f}"
@@ -357,9 +357,9 @@ chown -R ldap:ldap /etc/openldap
     schema2ldif "$SCHEMAS"
 
     # Add converted schemas
-    print_warn "Adding Converted Schemas"
+    print_notice "Adding Converted Schemas"
     for f in $(find /assets/slapd/config/bootstrap/schema -not -path "/assets/slapd/config/bootstrap/schema/rfc2307bis/*" -name \*.ldif -type f); do
-      print_info "Processing file ${f}"
+      print_notice "Processing file ${f}"
       # Add schema if it doesn't already exist
       SCHEMA=$(basename "${f}" .ldif)
       ADD_SCHEMA=$(is_new_schema $SCHEMA)
@@ -371,30 +371,30 @@ chown -R ldap:ldap /etc/openldap
     done
 
     # Set config password
-    print_info "Setting Config Password"
+    print_notice "Setting Config Password"
     CONFIG_PASS_ENCRYPTED=$(slappasswd -s $CONFIG_PASS)
     sed -i "s|<CONFIG_PASS_ENCRYPTED>|${CONFIG_PASS_ENCRYPTED}|g" /assets/slapd/config/bootstrap/ldif/01-config-password.ldif
 
     # Adapt security config file
-    print_info "Setting Security"
+    print_notice "Setting Security"
     get_ldap_base_dn
     sed -i "s|<BASE_DN>|${BASE_DN}|g" /assets/slapd/config/bootstrap/ldif/02-security.ldif
 
     # Process config files (*.ldif) in bootstrap directory (do not process files in subdirectories)
-    print_info "Add bootstrap LDIFs"
+    print_notice "Add bootstrap LDIFs"
     for f in $(find /assets/slapd/config/bootstrap/ldif -mindepth 1 -maxdepth 1 -type f -name \*.ldif  | sort); do
-      print_info "Processing file ${f}"
+      print_notice "Processing file ${f}"
       ldap_add_or_modify "$f"
     done
     
     # Add ppolicy schema
-    print_info "Adding ppolicy Schema"
+    print_notice "Adding ppolicy Schema"
     /usr/bin/schema2ldif /etc/openldap/schema/ppolicy.schema > /etc/openldap/schema/ppolicy.ldif && \
     silent ldapadd -c -Y EXTERNAL -Q -H ldapi:/// -f /etc/openldap/schema/ppolicy.ldif
 
     # Read only user
     if [ "${ENABLE_READONLY_USER,,}" == "true" ]; then
-      print_info "Adding read only user"
+      print_notice "Adding read only user"
       READONLY_USER_PASS_ENCRYPTED=$(slappasswd -s $READONLY_USER_PASS)
       ldap_add_or_modify "/assets/slapd/config/bootstrap/ldif/readonly-user/readonly-user.ldif"
       ldap_add_or_modify "/assets/slapd/config/bootstrap/ldif/readonly-user/readonly-user-acl.ldif"
@@ -402,9 +402,9 @@ chown -R ldap:ldap /etc/openldap
 
     # Custom LDIF injection
     if [ -d /assets/slapd/config/bootstrap/ldif/custom ]; then
-      print_info "Add custom bootstrap ldifs"
+      print_notice "Add custom bootstrap ldifs"
       for f in $(find /assets/slapd/config/bootstrap/ldif/custom -type f -name \*.ldif  | sort); do
-          print_info "Processing file ${f}"
+          print_notice "Processing file ${f}"
           ldap_add_or_modify "$f"
       done
     fi
@@ -430,7 +430,7 @@ chown -R ldap:ldap /etc/openldap
     silent ssl-helper $SSL_HELPER_PREFIX $TLS_CRT_PATH $TLS_KEY_PATH $TLS_CA_CRT_PATH
 
     # Create DHParamFile if not found
-    [ -f ${TLS_DH_PARAM_PATH} ] || silent openssl dhparam -out ${TLS_DH_PARAM_PATH} 2048
+    [ -f ${TLS_DH_PARAM_PATH} ] || silent libressl dhparam -out ${TLS_DH_PARAM_PATH} 2048
     chmod 600 ${TLS_DH_PARAM_PATH}
 
     # Fix file permissions
@@ -455,7 +455,7 @@ chown -R ldap:ldap /etc/openldap
 
     # Enforce TLS
     if [ "${TLS_ENFORCE,,}" == "true" ]; then
-      print_info "Adding TLS enforcement"
+      print_notice "Adding TLS enforcement"
       silent ldapmodify -Y EXTERNAL -Q -H ldapi:/// -f /assets/slapd/config/tls/tls-enforce-enable.ldif
       touch $WAS_STARTED_WITH_TLS_ENFORCE
     fi
@@ -592,7 +592,7 @@ EOF
 
   ## Remove config files
   if [ "${REMOVE_CONFIG_AFTER_SETUP,,}" == "true" ]; then
-    print_info "Removing config files"
+    print_notice "Removing config files"
     rm -rf /assets/slapd/config
   fi
 
@@ -601,7 +601,7 @@ EOF
   sed -i -e "s/<BACKUP_DATA_CRON_PERIOD>/$BACKUP_DATA_CRON_PERIOD/g" /assets/cron/crontab.txt
 
   # setup done
-  print_info "Ready to start OpenLDAP"
+  print_notice "Ready to start OpenLDAP"
   touch $FIRST_START_DONE
 fi
 
