@@ -28,6 +28,23 @@ function get_ldap_base_dn() {
   fi
 }
 
+function file_env () {
+  local var="$1"
+  local fileVar="${var}_FILE"
+  local def="${2:-}"
+  local val="$def"
+  if [ "${!fileVar:-}" ]; then
+    val="$(cat "${!fileVar}")"
+  elif [ "${!var:-}" ]; then
+    val="${!var}"
+  fi
+  if [ -z ${val} ]; then
+    print_error "error: neither $var nor $fileVar are set but are required"
+    exit 1
+  fi
+  export "$var"="$val"
+  unset "$fileVar"
+}
 
   IFS='.' read -a domain_elems <<< "${DOMAIN}"
   SUFFIX=""
@@ -157,6 +174,10 @@ if [ ! -e "$FIRST_START_DONE" ]; then
 
   # Global variables
   NEW_INSTALL=false
+
+  file_env 'CONFIG_PASS'
+  file_env 'ADMIN_PASS'
+  file_env 'READONLY_USER_PASS'
 
   # database and config directory are empty
   # setup bootstrap config - Part 1
