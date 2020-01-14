@@ -1,3 +1,9 @@
+## 6.7.0 2020-01-14 <sargreal@github>
+
+   ### Added
+      - Add Secrets support for `CONFIG_PASS` `ADMIN_PASS` `READONLY_USER_PASS`
+
+
 ## 6.6.2 2020-01-02 <dave at tiredofit dot ca>
 
    ### Changed
