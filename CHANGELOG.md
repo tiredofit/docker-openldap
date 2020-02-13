@@ -1,3 +1,9 @@
+## 6.7.1 2020-02-13 <dave at tiredofit dot ca>
+
+   ### Added
+      - OpenLDAP 2.4.49
+
+
 ## 6.7.0 2020-01-14 <sargreal@github>
 
    ### Added
