@@ -6,7 +6,7 @@ PROCESS_NAME="nginx"
 ### Check to see if Enabled/Disabled
 if [ "$ENABLE_NGINX" = "FALSE" ];  then
   print_notice "Disabling nginx"
-  s6-svc -d /var/run/s6/services/09-nginx
+  service_stop 09-nginx
   liftoff
   exit 0
 fi
