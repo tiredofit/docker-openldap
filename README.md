@@ -22,7 +22,7 @@ Upon starting this image it will give you a ready to run server with many config
 * Two Password Checking Modules - check_password.so and ppm.so
 * Zabbix Monitoring templates included
 
-* This Container uses a [customized Alpine Linux base](https://hub.docker.com/r/tiredofit/alpine) which includes [s6 overlay](https://github.com/just-containers/s6-overlay) enabled for PID 1 Init capabilities, [zabbix-agent](https://zabbix.org) based on 3.4 Packages for individual container monitoring, Cron also installed along with other tools (bash,curl, less, logrotate, mariadb-client, nano, vim) for easier management. It also supports sending to external SMTP servers..
+* This Container uses a [customized Alpine Linux base](https://hub.docker.com/r/tiredofit/alpine) which includes [s6 overlay](https://github.com/just-containers/s6-overlay) enabled for PID 1 Init capabilities, [zabbix-agent](https://zabbix.org) for individual container monitoring, Cron also installed along with other tools (bash,curl, less, logrotate, mariadb-client, nano, vim) for easier management. It also supports sending to external SMTP servers..
 
 
 [Changelog](CHANGELOG.md)
@@ -65,7 +65,7 @@ None.
 Automated builds of the image are available on [Registry](https://hub.docker.com/r/tiredofit/openldap) and is the recommended method of installation.
 
 ```bash
-docker pull registry.selfdesign.org/docker/openldap
+docker pull tiredofit/openldap
 ```
 
 # Quick Start
@@ -93,7 +93,7 @@ The following directories are used for configuration and can be mapped for persi
 | `/var/lib/openldap` | Data Directory |
 | `/etc/openldap/slapd.d` | Configuration Directory |
 | `/assets/custom-scripts/` | If you'd like to execute a script during the initialization process drop it here (Useful for using this image as a base)
-| `/assets/slapd/certs/` | Drop TLS Certificates here |
+| `/assets/slapd/certs/` | Drop TLS Certificates here (or use your own path) |
 | `/data/backup` | Backup Directory |   
 | `/www/html` | If you want to put a landing page if using Nginx for LetsEncrypt SSL Place it here |      
 
@@ -151,11 +151,19 @@ TLS options:
 | Variable | Description |
 |-----------|-------------|
 | `ENABLE_TLS` | Add TLS capabilities. Can't be removed once set to `true`. Defaults `true` |
-| `TLS_CRT_FILENAME` | Ldap ssl certificate filename. Default `cert.pem` |
-| `TLS_KEY_FILENAME` | Ldap ssl certificate private key filename. Default `key.pem` |
-| `TLS_CA_CRT_FILENAME` | Ldap ssl CA certificate filename. Default `ca.pem` |
-| `TLS_ENFORCE` | Enforce TLS. Can't be disabled once set to `true`. Defaults `false` |
+
+| `TLS_CA_CRT_FILENAME` | TLS CA certificate filename. Default `ca.pem` |
+| `TLS_CA_CRT_PATH` | TLS CA certificate path. Default `/assets/slapd/certs` |
 | `TLS_CIPHER_SUITE` | TLS cipher suite. Default `ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AES:-DHE-DSS:-RSA:!aNULL:!MD5:!DSS:!SHA` |
+| `TLS_CRT_FILENAME` | TLS certificate filename. Default `cert.pem` |
+| `TLS_CRT_PATH` | TLS certificate path. Default `/assets/slapd/certs` |
+| `TLS_DH_PARAM_FILENAME` | TLS DHParam Filename. Default `dhparam.pem` |
+| `TLS_DH_PARAM_KEYSIZE` | TLS DHParam Keysize. Default `2048` |
+| `TLS_DH_PARAM_PATH` | TLS DHParam path. Default `/assets/slapd/certs` |
+| `TLS_ENFORCE` | Enforce TLS. Can't be disabled once set to `true`. Defaults `false` |
+| `TLS_KEY_FILENAME` | TLS certificate private key filename. Default `key.pem` |
+| `TLS_KEY_PATH` | TLS certificate private key path. Default `/assets/slapd/certs` |
+| `TLS_RESET_PERMISSIONS` | Change ownership and reset permissions on Certificates on startup. Default `TRUE` |
 | `TLS_VERIFY_CLIENT` | TLS verify client. Default  `try`
 
     Help: http://www.openldap.org/doc/admin24/tls.html

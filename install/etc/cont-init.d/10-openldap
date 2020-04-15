@@ -3,155 +3,11 @@
 for s in /assets/functions/*; do source $s; done
 PROCESS_NAME="openldap"
 
-### Functions
-function get_ldap_base_dn() {
-  # if BASE_DN is empty set value from DOMAIN
-  if [ -z "$BASE_DN" ]; then
-    IFS='.' read -ra BASE_DN_TABLE <<< "$DOMAIN"
-    for i in "${BASE_DN_TABLE[@]}"; do
-      EXT="dc=$i,"
-      BASE_DN=$BASE_DN$EXT
-    done
-
-    IFS='.' read -a domain_elems <<< "${DOMAIN}"
-    SUFFIX=""
-    ROOT=""
-
-    for elem in "${domain_elems[@]}" ; do
-        if [ "x${SUFFIX}" = x ] ; then
-            SUFFIX="dc=${elem}"
-            ROOT="${elem}"
-        fi
-    done
-
-    BASE_DN=${BASE_DN::-1}
-  fi
-}
-
-# usage: file_env VAR [DEFAULT]
-#    ie: file_env 'XYZ_DB_PASSWORD' 'example'
-# (will allow for "$XYZ_DB_PASSWORD_FILE" to fill in the value of
-#  "$XYZ_DB_PASSWORD" from a file, especially for Docker's secrets feature)
-function file_env () {
-  local var="$1"
-  local fileVar="${var}_FILE"
-  local def="${2:-}"
-  local val="$def"
-  if [ "${!fileVar:-}" ]; then
-    val="$(cat "${!fileVar}")"
-  elif [ "${!var:-}" ]; then
-    val="${!var}"
-  fi
-  if [ -z ${val} ]; then
-    print_error "error: neither $var nor $fileVar are set but are required"
-    exit 1
-  fi
-  export "$var"="$val"
-  unset "$fileVar"
-}
-
-  IFS='.' read -a domain_elems <<< "${DOMAIN}"
-  SUFFIX=""
-  ROOT=""
-
-  for elem in "${domain_elems[@]}" ; do
-      if [ "x${SUFFIX}" = x ] ; then
-          SUFFIX="dc=${elem}"
-          ROOT="${elem}"
-      else
-          BASE_DN="${SUFFIX},dc=${elem}"
-      fi
-  done
-
-function is_new_schema() {
-  local COUNT=$(ldapsearch -Q -Y EXTERNAL -H ldapi:/// -b cn=schema,cn=config cn | grep -c $1)
-  if [ "$COUNT" -eq 0 ]; then
-    echo 1
-  else
-    echo 0
-  fi
-}
-
-function ldap_add_or_modify (){
-  local LDIF_FILE=$1
-  print_notice "Processing file ${LDIF_FILE}"
-  sed -i "s|<BASE_DN>|${BASE_DN}|g" $LDIF_FILE
-  sed -i "s|<BACKEND>|${BACKEND}|g" $LDIF_FILE
-  if [ "${READONLY_USER,,}" == "true" ]; then
-    sed -i "s|<READONLY_USER_USER>|${READONLY_USER_USER}|g" $LDIF_FILE
-    sed -i "s|<READONLY_USER_PASS_ENCRYPTED>|${READONLY_USER_PASS_ENCRYPTED}|g" $LDIF_FILE
-  fi
-  if grep -iq changetype $LDIF_FILE ; then
-      silent ldapmodify -Y EXTERNAL -Q -H ldapi:/// -f $LDIF_FILE
-  else
-      silent ldapadd -Y EXTERNAL -Q -H ldapi:/// -f $LDIF_FILE 
-  fi
-}
-
-function schema2ldif (){
-  SCHEMAS=$1
-
-# Dual Schema Support
-  if [ "$SCHEMA_TYPE" = "rfc2307bis" ] || [ "$SCHEMA_TYPE" = "RFC2307BIS" ]; then
-    cp -R /assets/slapd/config/bootstrap/schema/rfc2307bis/rfc2307bis.schema /etc/openldap/schema/
-    SCHEMA_TYPE="rfc2307bis"
-  else
-    SCHEMA_TYPE="nis"
-  fi
-
-  tmpd=`mktemp -d`
-  pushd ${tmpd} >>/dev/null
-
-  echo "include /etc/openldap/schema/core.schema" >> convert.dat
-  echo "include /etc/openldap/schema/cosine.schema" >> convert.dat
-  echo "include /etc/openldap/schema/${SCHEMA_TYPE}.schema" >> convert.dat
-  echo "include /etc/openldap/schema/inetorgperson.schema" >> convert.dat
-
-  for schema in ${SCHEMAS} ; do
-      echo "include ${schema}" >> convert.dat
-  done
-
-  silent slaptest -f convert.dat -F .
-
-  if [ $? -ne 0 ] ; then
-      print_error "slaptest conversion failed!"
-      exit
-  fi
-
-  for schema in ${SCHEMAS} ; do
-      fullpath=${schema}
-      schema_name=`basename ${fullpath} .schema`
-      schema_dir=`dirname ${fullpath}`
-      ldif_file=${schema_name}.ldif
-
-      find . -name *\}${schema_name}.ldif -exec mv '{}' ./${ldif_file} \;
-
-      # TODO: these sed invocations could all be combined
-      sed -i "/dn:/ c dn: cn=${schema_name},cn=schema,cn=config" ${ldif_file}
-      sed -i "/cn:/ c cn: ${schema_name}" ${ldif_file}
-      sed -i '/structuralObjectClass/ d' ${ldif_file}
-      sed -i '/entryUUID/ d' ${ldif_file}
-      sed -i '/creatorsName/ d' ${ldif_file}
-      sed -i '/createTimestamp/ d' ${ldif_file}
-      sed -i '/entryCSN/ d' ${ldif_file}
-      sed -i '/modifiersName/ d' ${ldif_file}
-      sed -i '/modifyTimestamp/ d' ${ldif_file}
-
-      # slapd seems to be very sensitive to how a file ends. There should be no blank lines.
-      sed -i '/^ *$/d' ${ldif_file}
-
-      mv ${ldif_file} ${schema_dir}
-  done
-
-  popd >>/dev/null
-  rm -rf $tmpd
-}
-
 set -e
 set -o pipefail
 
 ### Reduce maximum number of number of open file descriptors to 1024 otherwise slapd consumes two orders of magnitude more of RAM
-ulimit -n 1024
+ulimit -n ${ULIMIT_N}
 
 ### Create data directories if they don't already exist
 [ -d /var/lib/openldap ] || mkdir -p /var/lib/openldap
@@ -164,14 +20,6 @@ chown -R ldap:ldap /etc/openldap
 chown -R ldap:ldap /assets/slapd
 
 ### Sanity Testers
-FIRST_START_DONE="/assets/state/slapd-first-start-done"
-WAS_STARTED_WITH_TLS="/etc/openldap/slapd.d/docker-openldap-was-started-with-tls"
-WAS_STARTED_WITH_TLS_ENFORCE="/etc/openldap/slapd.d/docker-openldap-was-started-with-tls-enforce"
-WAS_STARTED_WITH_REPLICATION="/etc/openldap/slapd.d/docker-openldap-was-started-with-replication"
-TLS_CA_CRT_PATH="/assets/slapd/certs/$TLS_CA_CRT_FILENAME"
-TLS_CRT_PATH="/assets/slapd/certs/$TLS_CRT_FILENAME"
-TLS_KEY_PATH="/assets/slapd/certs/$TLS_KEY_FILENAME"
-TLS_DH_PARAM_PATH="/assets/slapd/certs/dhparam.pem"
 
 ### Container first start
 if [ ! -e "$FIRST_START_DONE" ]; then
@@ -319,16 +167,18 @@ chown -R ldap:ldap /etc/openldap
 
     print_info "Checking previous TLS certificates.."
 
-    [[ -z "$PREVIOUS_TLS_CA_CRT_PATH" ]] && PREVIOUS_TLS_CA_CRT_PATH="/assets/slapd/certs/TLS_CA_CRT_FILENAME"
-    [[ -z "$PREVIOUS_TLS_CRT_PATH" ]] && PREVIOUS_TLS_CRT_PATH="/assets/slapd/certs/TLS_CRT_FILENAME"
-    [[ -z "$PREVIOUS_TLS_KEY_PATH" ]] && PREVIOUS_TLS_KEY_PATH="/assets/slapd/certs/TLS_KEY_FILENAME"
-    [[ -z "$PREVIOUS_TLS_DH_PARAM_PATH" ]] && PREVIOUS_TLS_DH_PARAM_PATH="/assets/slapd/certs/dhparam.pem"
+    [[ -z "$PREVIOUS_TLS_CA_CRT_PATH" ]] && PREVIOUS_TLS_CA_CRT_PATH="${TLS_CA_CRT_PATH}/${TLS_CA_CRT_FILENAME}"
+    [[ -z "$PREVIOUS_TLS_CRT_PATH" ]] && PREVIOUS_TLS_CRT_PATH="${TLS_CRT_PATH}/${TLS_CRT_FILENAME}"
+    [[ -z "$PREVIOUS_TLS_KEY_PATH" ]] && PREVIOUS_TLS_KEY_PATH="${TLS_KEY_PATH}/${TLS_KEY_FILENAME}"
+    [[ -z "$PREVIOUS_TLS_DH_PARAM_PATH" ]] && PREVIOUS_TLS_DH_PARAM_PATH="${TLS_DHPARAM_PATH}/${TLS_DH_PARAM_FILENAME}"
 
     silent ssl-helper $SSL_HELPER_PREFIX $PREVIOUS_TLS_CRT_PATH $PREVIOUS_TLS_KEY_PATH $PREVIOUS_TLS_CA_CRT_PATH
-    [ -f ${PREVIOUS_TLS_DH_PARAM_PATH} ] || silent libressl dhparam -out ${LDAP_TLS_DH_PARAM_PATH} 2048
+    [ -f ${PREVIOUS_TLS_DH_PARAM_PATH} ] || silent libressl dhparam -out ${TLS_DH_PARAM_PATH}/${TLS_DH_PARAM_FILENAME} ${TLS_DH_PARAM_KEYSIZE}
 
-    chmod 600 ${PREVIOUS_TLS_DH_PARAM_PATH}
-    chown ldap:ldap $PREVIOUS_TLS_CRT_PATH $PREVIOUS_TLS_KEY_PATH $PREVIOUS_TLS_CA_CRT_PATH $PREVIOUS_TLS_DH_PARAM_PATH
+    if [ "${TLS_RESET_PERMISSIONS}" = "TRUE" ] || [ "${TLS_RESET_PERMISSIONS}" = "TRUE" ] ; then
+      chmod 600 ${PREVIOUS_TLS_DH_PARAM_PATH}
+      chown ldap:ldap $PREVIOUS_TLS_CRT_PATH $PREVIOUS_TLS_KEY_PATH $PREVIOUS_TLS_CA_CRT_PATH $PREVIOUS_TLS_DH_PARAM_PATH
+    fi
   fi
 
   ### Replication Sanity Tester
@@ -452,20 +302,26 @@ chown -R ldap:ldap /etc/openldap
     print_info "Starting TLS configuration. Please wait..."
 
     # Generate a certificate and key with ssl-helper tool if LDAP_CRT and LDAP_KEY files don't exist
-    silent ssl-helper $SSL_HELPER_PREFIX $TLS_CRT_PATH $TLS_KEY_PATH $TLS_CA_CRT_PATH
+    silent ssl-helper $SSL_HELPER_PREFIX ${TLS_CRT_PATH}/${TLS_CRT_FILENAME} ${TLS_KEY_PATH}/${TLS_KEY_FILENAME} ${TLS_CA_CRT_PATH}/${TLS_CA_CRT_FILENAME}
 
     # Create DHParamFile if not found
-    [ -f ${TLS_DH_PARAM_PATH} ] || silent libressl dhparam -out ${TLS_DH_PARAM_PATH} 2048
-    chmod 600 ${TLS_DH_PARAM_PATH}
+    [ -f ${TLS_DH_PARAM_PATH}/${TLS_DH_PARAM_FILENAME} ] || silent libressl dhparam -out ${TLS_DH_PARAM_PATH}${TLS_DH_PARAM_FILENAME} ${TLS_DH_PARAM_KEYSIZE}
+    if [ "${TLS_RESET_PERMISSIONS}" = "TRUE" ] || [ "${TLS_RESET_PERMISSIONS}" = "TRUE" ] ; then
+      chmod 600 ${TLS_DH_PARAM_PATH}/${TLS_DH_PARAM_FILENAME}
+    fi
 
     # Fix file permissions
     chown -R ldap:ldap /assets/slapd
 
     # Adapt TLS ldif
     sed -i "s|<TLS_CA_CRT_PATH>|${TLS_CA_CRT_PATH}|g" /assets/slapd/config/tls/tls-enable.ldif
+    sed -i "s|<TLS_CA_CRT_FILENAME>|${TLS_CA_CRT_FILENAME}|g" /assets/slapd/config/tls/tls-enable.ldif
     sed -i "s|<TLS_CRT_PATH>|${TLS_CRT_PATH}|g" /assets/slapd/config/tls/tls-enable.ldif
+    sed -i "s|<TLS_CRT_FILENAME>|${TLS_CRT_FILENAME}|g" /assets/slapd/config/tls/tls-enable.ldif
     sed -i "s|<TLS_KEY_PATH>|${TLS_KEY_PATH}|g" /assets/slapd/config/tls/tls-enable.ldif
+    sed -i "s|<TLS_KEY_FILENAME>|${TLS_KEY_FILENAME}|g" /assets/slapd/config/tls/tls-enable.ldif
     sed -i "s|<TLS_DH_PARAM_PATH>|${TLS_DH_PARAM_PATH}|g" /assets/slapd/config/tls/tls-enable.ldif
+    sed -i "s|<TLS_DH_PARAM_FILENAME>|${TLS_DH_PARAM_FILENAME}|g" /assets/slapd/config/tls/tls-enable.ldif
 
     sed -i "s|<TLS_CIPHER_SUITE>|${TLS_CIPHER_SUITE}|g" /assets/slapd/config/tls/tls-enable.ldif
     sed -i "s|<TLS_VERIFY_CLIENT>|${TLS_VERIFY_CLIENT}|g" /assets/slapd/config/tls/tls-enable.ldif
@@ -473,10 +329,10 @@ chown -R ldap:ldap /etc/openldap
     silent ldapmodify -Y EXTERNAL -Q -H ldapi:/// -f /assets/slapd/config/tls/tls-enable.ldif
 
     [[ -f "$WAS_STARTED_WITH_TLS" ]] && rm -f "$WAS_STARTED_WITH_TLS"
-    echo "export PREVIOUS_TLS_CA_CRT_PATH=${TLS_CA_CRT_PATH}" > $WAS_STARTED_WITH_TLS
-    echo "export PREVIOUS_TLS_CRT_PATH=${TLS_CRT_PATH}" >> $WAS_STARTED_WITH_TLS
-    echo "export PREVIOUS_TLS_KEY_PATH=${TLS_KEY_PATH}" >> $WAS_STARTED_WITH_TLS
-    echo "export PREVIOUS_TLS_DH_PARAM_PATH=${TLS_DH_PARAM_PATH}" >> $WAS_STARTED_WITH_TLS
+    echo "export PREVIOUS_TLS_CA_CRT_PATH=${TLS_CA_CRT_PATH}/${TLS_CA_CRT_FILENAME}" > $WAS_STARTED_WITH_TLS
+    echo "export PREVIOUS_TLS_CRT_PATH=${TLS_CRT_PATH}/${TLS_CRT_FILENAME}" >> $WAS_STARTED_WITH_TLS
+    echo "export PREVIOUS_TLS_KEY_PATH=${TLS_KEY_PATH}/${TLS_KEY_FILENAME}" >> $WAS_STARTED_WITH_TLS
+    echo "export PREVIOUS_TLS_DH_PARAM_PATH=${TLS_DH_PARAM_PATH}/${TLS_DH_PARAM_FILENAME}" >> $WAS_STARTED_WITH_TLS
 
     # Enforce TLS
     if [ "${TLS_ENFORCE,,}" == "true" ]; then

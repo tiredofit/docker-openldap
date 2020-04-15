@@ -4,16 +4,16 @@ replace: olcTLSCipherSuite
 olcTLSCipherSuite: <TLS_CIPHER_SUITE>
 -
 replace: olcTLSCACertificateFile
-olcTLSCACertificateFile: <TLS_CA_CRT_PATH>
+olcTLSCACertificateFile: <TLS_CA_CRT_PATH>/<TLS_CA_CRT_FILENAME>
 -
 replace: olcTLSCertificateFile
-olcTLSCertificateFile: <TLS_CRT_PATH>
+olcTLSCertificateFile: <TLS_CRT_PATH>/<TLS_CRT_FILENAME>
 -
 replace: olcTLSCertificateKeyFile
-olcTLSCertificateKeyFile: <TLS_KEY_PATH>
+olcTLSCertificateKeyFile: <TLS_KEY_PATH>/<TLS_KEY_FILENAME>
 -
 replace: olcTLSDHParamFile
-olcTLSDHParamFile: <TLS_DH_PARAM_PATH>
+olcTLSDHParamFile: <TLS_DH_PARAM_PATH>/<TLS_DHPARAM_FILENAME>
 -
 replace: olcTLSVerifyClient
 olcTLSVerifyClient: <TLS_VERIFY_CLIENT>

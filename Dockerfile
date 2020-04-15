@@ -1,35 +1,10 @@
 FROM tiredofit/alpine:3.11
-LABEL maintainer="Dave Conroy <dave@tiredofit.ca>"
+LABEL maintainer="Dave Conroy <dave at tiredofit dot ca>"
 
-ENV ADMIN_PASS=admin \
-    BACKEND=mdb \
-    BACKUP_CONFIG_CRON_PERIOD="0 4 * * *" \
-    BACKUP_DATA_CRON_PERIOD="0 4 * * *" \
-    BACKUP_TTL=15 \
-    CONFIG_PASS=config \
-    DOMAIN=example.org \
-    ENABLE_NGINX=false \
-    ENABLE_READONLY_USER=false \
-    ENABLE_REPLICATION=false \
-    ENABLE_SMTP=FALSE \
-    ENABLE_TLS=true \
-    LOG_LEVEL=256 \
-    OPENLDAP_VERSION=2.4.49 \
-    ORGANIZATION="Example Organization" \
-    READONLY_USER_PASS=readonly \
-    READONLY_USER_USER=readonly \
-    REMOVE_CONFIG_AFTER_SETUP=false \
+ENV OPENLDAP_VERSION=2.4.49 \
     SCHEMA2LDIF_VERSION=1.3 \
-    SCHEMA_TYPE=nis \
-    SSL_HELPER_PREFIX=ldap \
-    TLS_CA_CRT_FILENAME=ca.pem \
-    TLS_CIPHER_SUITE="ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AES:-DHE-DSS:-RSA:!aNULL:!MD5:!DSS:!SHA" \
-    TLS_CRT_FILENAME=cert.pem \
-    TLS_ENFORCE=false \
-    TLS_KEY_FILENAME=key.pem \
-    TLS_VERIFY_CLIENT=try \
-    ZABBIX_HOSTNAME=openldap-app
-
+    ZABBIX_HOSTNAME=openldap-app \
+    ENABLE_SMTP=FALSE
 
 COPY CHANGELOG.md /tiredofit/
 

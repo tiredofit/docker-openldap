@@ -1,3 +1,17 @@
+## 6.8.0 2020-04-15 <dave at tiredofit dot ca>
+
+   ### Added
+      - Environment Variables to control keysize of DH Param file
+      - New variables to define custom TLS Patches
+      - New variables to skip changing ownership on TLS Certificates
+
+   ### Changed
+      - Moved environment variable defaults to /assets/functions/10-openldap
+      - Cleanup of TLS functionality to support new environment variables
+      - Properly support ULIMIT_N environment variable
+      - Fix Default for Nginx
+
+
 ## 6.7.2 2020-03-04 <dave at tiredofit dot ca>
 
    ### Added
