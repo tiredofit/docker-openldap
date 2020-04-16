@@ -3,7 +3,7 @@
    ### Changed
       - Fix for SLAPD_ARGS variable default
       - Fix for TLS_RESET_PERMISSIONS
-      - Fix for generating dhparam.pem files on read only file systems
+      - Fix for generating dhparam.pem files on read only file systems (credit eduardosan@github)
 
 
 ## 6.8.1 2020-04-16 <frebib@github>
