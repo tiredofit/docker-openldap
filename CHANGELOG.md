@@ -1,3 +1,11 @@
+## 6.8.1 2020-04-16 <frebib@github>
+
+   ### Added 
+      - Allow overriding slapd runtime arguments
+  
+   ### Changed
+      - Fixed spelling mistake for OpenLDAP version
+
 ## 6.8.0 2020-04-15 <dave at tiredofit dot ca>
 
    ### Added
