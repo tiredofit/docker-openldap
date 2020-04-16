@@ -10,4 +10,4 @@ liftoff
 
 ### OpenLDAP
 print_info "Starting OpenLDAP ${OPENLDAP_VERSION}"
-/usr/sbin/slapd -h "ldap://$HOSTNAME ldaps://$HOSTNAME ldapi:///" -u ldap -g ldap -d $LOG_LEVEL
+/usr/sbin/slapd $SLAPD_ARGS -h "$SLAPD_HOSTS" -u ldap -g ldap -d $LOG_LEVEL
