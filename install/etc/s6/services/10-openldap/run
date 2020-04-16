@@ -9,5 +9,5 @@ ulimit -n ${ULIMIT_N}
 liftoff
 
 ### OpenLDAP
-print_info "Starting OpenLDAP ${OPENDAP_VERSION}"
+print_info "Starting OpenLDAP ${OPENLDAP_VERSION}"
 /usr/sbin/slapd -h "ldap://$HOSTNAME ldaps://$HOSTNAME ldapi:///" -u ldap -g ldap -d $LOG_LEVEL
