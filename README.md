@@ -62,7 +62,7 @@ None.
 
 # Installation
 
-Automated builds of the image are available on [Registry](https://hub.docker.com/r/tiredofit/openldap) and is the recommended method of installation.
+Automated builds of the image are available on [Docker Hub](https://hub.docker.com/r/tiredofit/openldap) and is the recommended method of installation.
 
 ```bash
 docker pull tiredofit/openldap
@@ -81,7 +81,7 @@ Start openldap using:
 ```bash
 docker-compose up
 ```
-__NOTE__: Please allow up to 2 minutes for the application to start for the first time if you are generating TLS certificates.
+__NOTE__: Please allow up to 2 minutes for the application to start for the first time if you are generating self signed TLS certificates.
 
 ## Data-Volumes
 
@@ -184,6 +184,8 @@ Replication options:
 |-----------|-------------|
 | `ENABLE_NGINX` | If you want to use automatic LetsEncrypt certificates for your server, set this to `true`
 | `REMOVE_CONFIG_AFTER_SETUP` | Delete config folder after setup. Default  `true` |
+| `SLAPD_ARGS` | If you want to override slapd runtime arguments place here . Default (null)
+| `SLAPD_HOSTS` | Allow overriding the default listen parameters - Default `ldap://$HOSTNAME ldaps://$HOSTNAME ldapi:///`
 | `SSL_HELPER_PREFIX` | Ssl-helper environment variables prefix. Default  `ldap`, ssl-helper first search config from `SSL_HELPER_*` variables, before `SSL_HELPER_*` variables. |
 
 

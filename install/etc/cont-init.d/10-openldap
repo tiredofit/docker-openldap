@@ -173,9 +173,9 @@ chown -R ldap:ldap /etc/openldap
     [[ -z "$PREVIOUS_TLS_DH_PARAM_PATH" ]] && PREVIOUS_TLS_DH_PARAM_PATH="${TLS_DHPARAM_PATH}/${TLS_DH_PARAM_FILENAME}"
 
     silent ssl-helper $SSL_HELPER_PREFIX $PREVIOUS_TLS_CRT_PATH $PREVIOUS_TLS_KEY_PATH $PREVIOUS_TLS_CA_CRT_PATH
-    [ -f ${PREVIOUS_TLS_DH_PARAM_PATH} ] || silent libressl dhparam -out ${TLS_DH_PARAM_PATH}/${TLS_DH_PARAM_FILENAME} ${TLS_DH_PARAM_KEYSIZE}
+    [ -f ${PREVIOUS_TLS_DH_PARAM_PATH} ] || silent libressl dhparam -out ${PREVIOUS_TLS_DH_PARAM_PATH} ${TLS_DH_PARAM_KEYSIZE}
 
-    if [ "${TLS_RESET_PERMISSIONS}" = "TRUE" ] || [ "${TLS_RESET_PERMISSIONS}" = "TRUE" ] ; then
+    if [ "${TLS_RESET_PERMISSIONS}" = "TRUE" ] || [ "${TLS_RESET_PERMISSIONS}" = "true" ] ; then
       chmod 600 ${PREVIOUS_TLS_DH_PARAM_PATH}
       chown ldap:ldap $PREVIOUS_TLS_CRT_PATH $PREVIOUS_TLS_KEY_PATH $PREVIOUS_TLS_CA_CRT_PATH $PREVIOUS_TLS_DH_PARAM_PATH
     fi
@@ -306,8 +306,9 @@ chown -R ldap:ldap /etc/openldap
 
     # Create DHParamFile if not found
     [ -f ${TLS_DH_PARAM_PATH}/${TLS_DH_PARAM_FILENAME} ] || silent libressl dhparam -out ${TLS_DH_PARAM_PATH}${TLS_DH_PARAM_FILENAME} ${TLS_DH_PARAM_KEYSIZE}
-    if [ "${TLS_RESET_PERMISSIONS}" = "TRUE" ] || [ "${TLS_RESET_PERMISSIONS}" = "TRUE" ] ; then
+    if [ "${TLS_RESET_PERMISSIONS}" = "TRUE" ] || [ "${TLS_RESET_PERMISSIONS}" = "true" ] ; then
       chmod 600 ${TLS_DH_PARAM_PATH}/${TLS_DH_PARAM_FILENAME}
+      chown ldap:ldap ${TLS_DH_PARAM_PATH}/${TLS_DH_PARAM_FILENAME}
     fi
 
     # Fix file permissions
