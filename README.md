@@ -34,18 +34,18 @@ Upon starting this image it will give you a ready to run server with many config
 # Table of Contents
 
 - [Introduction](#introduction)
-	- [Changelog](CHANGELOG.md)
+    - [Changelog](CHANGELOG.md)
 - [Prerequisites](#prerequisites)
 - [Dependencies](#dependendcies)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Configuration](#configuration)
-	- [Data Volumes](#data-volumes)
-	- [Database](#database)
-	- [Environment Variables](#environmentvariables)   
-	- [Networking](#networking)
+    - [Data Volumes](#data-volumes)
+    - [Database](#database)
+    - [Environment Variables](#environmentvariables)   
+    - [Networking](#networking)
 - [Maintenance](#maintenance)
-	- [Shell Access](#shell-access)
+    - [Shell Access](#shell-access)
 - [References](#references)
 
 
@@ -151,7 +151,6 @@ TLS options:
 | Variable | Description |
 |-----------|-------------|
 | `ENABLE_TLS` | Add TLS capabilities. Can't be removed once set to `true`. Defaults `true` |
-
 | `TLS_CA_CRT_FILENAME` | TLS CA certificate filename. Default `ca.pem` |
 | `TLS_CA_CRT_PATH` | TLS CA certificate path. Default `/assets/slapd/certs` |
 | `TLS_CIPHER_SUITE` | TLS cipher suite. Default `ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AES:-DHE-DSS:-RSA:!aNULL:!MD5:!DSS:!SHA` |
