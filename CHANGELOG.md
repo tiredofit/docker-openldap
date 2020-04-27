@@ -1,3 +1,9 @@
+## 6.8.3 2020-04-27 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Patchup for DHParam not utilizing full path when generating
+
+
 ## 6.8.2 2020-04-16 <dave at tiredofit dot ca>
 
    ### Changed
