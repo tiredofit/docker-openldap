@@ -87,19 +87,6 @@ function file_env () {
   unset "$fileVar"
 }
 
-  IFS='.' read -a domain_elems <<< "${DOMAIN}"
-  SUFFIX=""
-  ROOT=""
-
-  for elem in "${domain_elems[@]}" ; do
-      if [ "x${SUFFIX}" = x ] ; then
-          SUFFIX="dc=${elem}"
-          ROOT="${elem}"
-      else
-          BASE_DN="${SUFFIX},dc=${elem}"
-      fi
-  done
-
 function is_new_schema() {
   local COUNT=$(ldapsearch -Q -Y EXTERNAL -H ldapi:/// -b cn=schema,cn=config cn | grep -c $1)
   if [ "$COUNT" -eq 0 ]; then

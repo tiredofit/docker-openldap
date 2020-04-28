@@ -19,7 +19,18 @@ chown -R ldap:ldap /var/lib/openldap
 chown -R ldap:ldap /etc/openldap
 chown -R ldap:ldap /assets/slapd
 
-### Sanity Testers
+IFS='.' read -a domain_elems <<< "${DOMAIN}"
+SUFFIX=""
+ROOT=""
+
+for elem in "${domain_elems[@]}" ; do
+    if [ "x${SUFFIX}" = x ] ; then
+        SUFFIX="dc=${elem}"
+        ROOT="${elem}"
+    else
+        BASE_DN="${SUFFIX},dc=${elem}"
+    fi
+done
 
 ### Container first start
 if [ ! -e "$FIRST_START_DONE" ]; then

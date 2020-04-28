@@ -1,3 +1,9 @@
+## 6.8.5 2020-04-28 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Move code that was not a function out of functions file
+
+
 ## 6.8.3 2020-04-27 <dave at tiredofit dot ca>
 
    ### Changed
