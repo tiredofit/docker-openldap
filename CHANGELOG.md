@@ -1,3 +1,9 @@
+## 6.8.7 2020-05-06 <dave at tiredofit dot ca>
+
+   ### Added
+      - OpenLDAP 2.4.50
+
+
 ## 6.8.6 2020-05-06 <dave at tiredofit dot ca>
 
    ### Changed
