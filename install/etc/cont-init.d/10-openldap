@@ -188,7 +188,7 @@ chown -R ldap:ldap /etc/openldap
 
     if var_true $TLS_RESET_PERMISSIONS ; then
       chmod 600 ${PREVIOUS_TLS_DH_PARAM_PATH}
-      chown ldap:ldap $PREVIOUS_TLS_CRT_PATH $PREVIOUS_TLS_KEY_PATH $PREVIOUS_TLS_CA_CRT_PATH $PREVIOUS_TLS_DH_PARAM_PATH
+      chown ldap:ldap $PREVIOUS_TLS_CRT_PATH $PREVIOUS_TLS_KEY_PATH $PREVIOUS_TLS_CA_CRT_PATH $PREVIOUS_TLS_DH_PARAM_PATH || true
     fi
   fi
 
@@ -323,7 +323,7 @@ chown -R ldap:ldap /etc/openldap
     fi
 
     # Fix file permissions
-    chown -R ldap:ldap /assets/slapd
+    chown -R ldap:ldap /assets/slapd || true
 
     # Adapt TLS ldif
     sed -i "s|<TLS_CA_CRT_PATH>|${TLS_CA_CRT_PATH}|g" /assets/slapd/config/tls/tls-enable.ldif
