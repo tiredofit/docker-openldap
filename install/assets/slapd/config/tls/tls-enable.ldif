@@ -13,7 +13,7 @@ replace: olcTLSCertificateKeyFile
 olcTLSCertificateKeyFile: <TLS_KEY_PATH>/<TLS_KEY_FILENAME>
 -
 replace: olcTLSDHParamFile
-olcTLSDHParamFile: <TLS_DH_PARAM_PATH>/<TLS_DHPARAM_FILENAME>
+olcTLSDHParamFile: <TLS_DH_PARAM_PATH>/<TLS_DH_PARAM_FILENAME>
 -
 replace: olcTLSVerifyClient
 olcTLSVerifyClient: <TLS_VERIFY_CLIENT>

@@ -1,3 +1,9 @@
+## 6.8.6 2020-05-06 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Fix for TLS DH_PARAM environment variable substitution
+
+
 ## 6.8.5 2020-04-28 <dave at tiredofit dot ca>
 
    ### Changed
