@@ -473,13 +473,13 @@ EOF
   chmod 0600 /etc/openldap/ldap.conf
   chown ldap:ldap /etc/openldap/ldap.conf
   if [ "${ENABLE_TLS,,}" == "true" ]; then
-    echo "TLS_CACERT ${TLS_CA_CRT_PATH}" >> /etc/openldap/ldap.conf
+    echo "TLS_CACERT ${TLS_CA_CRT_PATH}/${TLS_CA_CRT_FILENAME}" >> /etc/openldap/ldap.conf
     echo "TLS_REQCERT ${TLS_VERIFY_CLIENT}" >> /etc/openldap/ldap.conf
     cp -f /etc/openldap/ldap.conf /assets/slapd/ldap.conf
 
     [[ -f "$HOME/.ldaprc" ]] && rm -f $HOME/.ldaprc
-    echo "TLS_CERT ${TLS_CRT_PATH}" > $HOME/.ldaprc
-    echo "TLS_KEY ${TLS_KEY_PATH}" >> $HOME/.ldaprc
+    echo "TLS_CERT ${TLS_CRT_PATH}/{$TLS_CRT_FILENAME}" > $HOME/.ldaprc
+    echo "TLS_KEY ${TLS_KEY_PATH}/${TLS_KEY_FILENAME}" >> $HOME/.ldaprc
     cp -f $HOME/.ldaprc /assets/slapd/.ldaprc
   fi
 

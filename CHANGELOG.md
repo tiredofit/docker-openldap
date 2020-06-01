@@ -1,3 +1,9 @@
+## 6.8.8 2020-06-01 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Repairs for LDAP local client referencing proper TLS CA, Cert, and Key Files
+
+
 ## 6.8.7 2020-05-06 <dave at tiredofit dot ca>
 
    ### Added
