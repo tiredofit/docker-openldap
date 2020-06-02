@@ -1,3 +1,9 @@
+## 6.8.9 2020-06-01 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Patchup for 6.8.8
+
+
 ## 6.8.8 2020-06-01 <dave at tiredofit dot ca>
 
    ### Changed

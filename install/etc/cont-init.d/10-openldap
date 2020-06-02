@@ -478,7 +478,7 @@ EOF
     cp -f /etc/openldap/ldap.conf /assets/slapd/ldap.conf
 
     [[ -f "$HOME/.ldaprc" ]] && rm -f $HOME/.ldaprc
-    echo "TLS_CERT ${TLS_CRT_PATH}/{$TLS_CRT_FILENAME}" > $HOME/.ldaprc
+    echo "TLS_CERT ${TLS_CRT_PATH}/${TLS_CRT_FILENAME}" > $HOME/.ldaprc
     echo "TLS_KEY ${TLS_KEY_PATH}/${TLS_KEY_FILENAME}" >> $HOME/.ldaprc
     cp -f $HOME/.ldaprc /assets/slapd/.ldaprc
   fi
