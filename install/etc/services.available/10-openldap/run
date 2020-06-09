@@ -1,10 +1,11 @@
 #!/usr/bin/with-contenv bash
 
-for s in /assets/functions/*; do source $s; done
+source /assets/functions/00-container
+prepare_service defaults single
+
 PROCESS_NAME="openldap"
 check_container_initialized
 check_service_initialized init
-ULIMIT_N=${ULIMIT_N:-1024}
 ulimit -n ${ULIMIT_N}
 liftoff
 

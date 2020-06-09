@@ -1,46 +1,5 @@
 #!/usr/bin/with-contenv bash
 
-### Set Defaults
-ADMIN_PASS=${ADMIN_PASS:-"admin"}
-BACKEND=${BACKEND:-"mdb"}
-BACKUP_CONFIG_CRON_PERIOD=${BACKUP_CONFIG_CRON_PERIOD:-"0 4 * * *"}
-BACKUP_DATA_CRON_PERIOD=${BACKUP_DATA_CRON_PERIOD:-"0 4 * * *"}
-BACKUP_TTL=${BACKUP_TTL:-15}
-CONFIG_PASS=${CONFIG_PASS:-"config"}
-DOMAIN=${DOMAIN:-"example.org"}
-ENABLE_NGINX=${ENABLE_NGINX:-"FALSE"}
-ENABLE_READONLY_USER=${ENABLE_READONLY_USER:-"false"}
-ENABLE_REPLICATION=${ENABLE_REPLICATION:-"false"}
-ENABLE_TLS=${ENABLE_TLS:-"true"}
-FIRST_START_DONE="/assets/state/slapd-first-start-done"
-LOG_LEVEL=${LOG_LEVEL:-256}
-ORGANIZATION=${ORGANIZATION:-"Example Organization"}
-READONLY_USER_PASS=${READONLY_USER_PASS:-"readonly"}
-READONLY_USER_USER=${READONLY_USER_USER:-"readonly"}
-REMOVE_CONFIG_AFTER_SETUP=${REMOVE_CONFIG_AFTER_SETUP:-"false"}
-SCHEMA_TYPE=${SCHEMA_TYPE:-"nis"}
-SLAPD_ARGS=${SLAPD_ARGS:-""}
-SLAPD_HOSTS=${SLAPD_HOSTS:-"ldap://$HOSTNAME ldaps://$HOSTNAME ldapi:///"}
-SSL_HELPER_PREFIX=${SSL_HELPER_PREFIX:-"ldap"}
-TLS_CA_CRT_FILENAME=${TLS_CA_CRT_FILENAME:-"ca.pem"}
-TLS_CA_CRT_PATH=${TLS_CA_CRT_PATH:-"/assets/slapd/certs"}
-TLS_CIPHER_SUITE=${TLS_CIPHER_SUITE:-"ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AES:-DHE-DSS:-RSA:!aNULL:!MD5:!DSS:!SHA"}
-TLS_CRT_FILENAME=${TLS_CRT_FILENAME:-"cert.pem"}
-TLS_CRT_PATH=${TLS_CRT_PATH:-"/assets/slapd/certs"}
-TLS_DH_PARAM_FILENAME=${TLS_DH_PARAM_FILENAME:-"dhparam.pem"}
-TLS_DH_PARAM_KEYSIZE=${TLS_DH_PARAM_KEYSIZE:-2048}
-TLS_DH_PARAM_PATH=${TLS_DH_PARAM_PATH:-"/assets/slapd/certs"}
-TLS_ENFORCE=${TLS_ENFORCE:-"false"}
-TLS_KEY_FILENAME=${TLS_KEY_FILENAME:-"key.pem"}
-TLS_KEY_PATH=${TLS_KEY_PATH:-"/assets/slapd/certs"}
-TLS_RESET_PERMISSIONS=${TLS_RESET_PERMISSIONS:-"TRUE"}
-TLS_VERIFY_CLIENT=${TLS_VERIFY_CLIENT:-"try"}
-ULIMIT_N=${ULIMIT_N:-1024}
-WAS_STARTED_WITH_REPLICATION="/etc/openldap/slapd.d/docker-openldap-was-started-with-replication"
-WAS_STARTED_WITH_TLS="/etc/openldap/slapd.d/docker-openldap-was-started-with-tls"
-WAS_STARTED_WITH_TLS_ENFORCE="/etc/openldap/slapd.d/docker-openldap-was-started-with-tls-enforce"
-
-### Functions
 function get_ldap_base_dn() {
   # if BASE_DN is empty set value from DOMAIN
   if [ -z "$BASE_DN" ]; then
@@ -63,28 +22,6 @@ function get_ldap_base_dn() {
 
     BASE_DN=${BASE_DN::-1}
   fi
-}
-
-# usage: file_env VAR [DEFAULT]
-#    ie: file_env 'XYZ_DB_PASSWORD' 'example'
-# (will allow for "$XYZ_DB_PASSWORD_FILE" to fill in the value of
-#  "$XYZ_DB_PASSWORD" from a file, especially for Docker's secrets feature)
-function file_env () {
-  local var="$1"
-  local fileVar="${var}_FILE"
-  local def="${2:-}"
-  local val="$def"
-  if [ "${!fileVar:-}" ]; then
-    val="$(cat "${!fileVar}")"
-  elif [ "${!var:-}" ]; then
-    val="${!var}"
-  fi
-  if [ -z ${val} ]; then
-    print_error "error: neither $var nor $fileVar are set but are required"
-    exit 1
-  fi
-  export "$var"="$val"
-  unset "$fileVar"
 }
 
 function is_new_schema() {
