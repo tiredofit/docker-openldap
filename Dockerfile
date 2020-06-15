@@ -1,4 +1,4 @@
-FROM tiredofit/alpine:3.11
+FROM tiredofit/alpine:3.12
 LABEL maintainer="Dave Conroy <dave at tiredofit dot ca>"
 
 ENV OPENLDAP_VERSION=2.4.50 \
