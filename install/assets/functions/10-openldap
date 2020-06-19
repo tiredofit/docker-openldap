@@ -648,7 +648,7 @@ create_data_directories() {
 
   chown -R ldap:ldap ${DB_PATH}
   chown -R ldap:ldap ${CONFIG_PATH}
-  chown -R ldap:ldap /assets/slapd
+  chown -R ldap:ldap /assets/slapd || true
 }
 
 configure_networking() {
