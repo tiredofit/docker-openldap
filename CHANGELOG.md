@@ -1,3 +1,9 @@
+## 7.0.1 2020-06-25 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Patchup for READONLY user not adjusting LDIF properly
+
+
 ## 7.0.0 2020-06-25 <dave at tiredofit dot ca>
 
    ### Added

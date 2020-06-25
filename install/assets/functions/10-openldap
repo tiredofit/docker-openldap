@@ -445,6 +445,8 @@ EOF
         if var_true $ENABLE_READONLY_USER; then
           print_notice "Adding read only (DSA) user"
           READONLY_USER_PASS_ENCRYPTED=$(slappasswd -s $READONLY_USER_PASS)
+          sed -i "s|<READONLY_USER_USER>|${READONLY_USER_USER}|g" /assets/slapd/config/bootstrap/ldif/readonly-user/*.ldif
+          sed -i "s|<READONLY_USER_PASS_ENCRYPTED>|${READONLY_USER_PASS_ENCRYPTED}|g" /assets/slapd/config/bootstrap/ldif/readonly-user/*.ldif
           ldap_add_or_modify "/assets/slapd/config/bootstrap/ldif/readonly-user/readonly-user.ldif"
           ldap_add_or_modify "/assets/slapd/config/bootstrap/ldif/readonly-user/readonly-user-acl.ldif"
         fi
@@ -689,10 +691,6 @@ function ldap_add_or_modify() {
   local ldif_file=$1
   sed -i "s|<BASE_DN>|${BASE_DN}|g" $ldif_file
   sed -i "s|<BACKEND>|${BACKEND}|g" $ldif_file
-  if var_true READONLY_USER; then
-    sed -i "s|<READONLY_USER_USER>|${READONLY_USER_USER}|g" $ldif_file
-    sed -i "s|<READONLY_USER_PASS_ENCRYPTED>|${READONLY_USER_PASS_ENCRYPTED}|g" $ldif_file
-  fi
   if grep -iq changetype $ldif_file; then
     silent ldapmodify -Y EXTERNAL -Q -H ldapi:/// -f $ldif_file
   else
