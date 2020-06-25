@@ -25,7 +25,7 @@ services:
       - READONLY_USER_USER=reader
       - READONLY_USER_PASS=reader
 
-      - ENABLE_TLS=true
+      - ENABLE_TLS=TRUE
       - TLS_CRT_FILENAME=cert.pem
       - TLS_KEY_FILENAME=key.pem
       - TLS_CA_CRT_FILENAME=ca.pem
