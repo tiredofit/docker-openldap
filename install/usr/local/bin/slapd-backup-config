@@ -1,0 +1,3 @@
+#!/usr/bin/with-contenv bash
+
+/usr/local/bin/slapd-backup 0 config

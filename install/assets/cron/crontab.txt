@@ -1,3 +1,0 @@
-<BACKUP_CONFIG_CRON_PERIOD> /usr/sbin/slapd-backup-config 
-<BACKUP_DATA_CRON_PERIOD> /usr/sbin/slapd-backup-data
-

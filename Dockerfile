@@ -4,6 +4,7 @@ LABEL maintainer="Dave Conroy <dave at tiredofit dot ca>"
 ENV OPENLDAP_VERSION=2.4.50 \
     SCHEMA2LDIF_VERSION=1.3 \
     ZABBIX_HOSTNAME=openldap-app \
+    ENABLE_CRON=FALSE \
     ENABLE_SMTP=FALSE
 
 COPY CHANGELOG.md /tiredofit/
@@ -16,37 +17,56 @@ RUN set -x && \
 ### Fetch Build Dependencies
     apk update && \
     apk add -t .openldap-build-deps \
-        autoconf \
-        automake \
-        build-base \
-        cracklib-dev \
-        cyrus-sasl-dev \
-        db-dev \
-        git \
-        groff \
-        libressl-dev \
-        libtool \
-        m4 \
-        mosquitto-dev \
-        unixodbc-dev \
-        util-linux-dev \
-        && \
+                autoconf \
+                automake \
+                build-base \
+                cracklib-dev \
+                cyrus-sasl-dev \
+                db-dev \
+                bzip2-dev \
+                xz-dev \
+                libarchive-dev \
+                git \
+                groff \
+                openssl-dev \
+                libtool \
+                m4 \
+                mosquitto-dev \
+                unixodbc-dev \
+                util-linux-dev \
+                && \
     \
 ### Fetch Runtime Dependencies
     apk add -t .openldap-run-deps \
-        cyrus-sasl \
-        coreutils \
-        cracklib \
-        libressl \
-        libltdl \
-        libuuid \
-        libintl \
-        nginx \
-        perl \
-        sed \
-        sudo \
-        unixodbc \
-        && \
+                bzip2 \
+                cyrus-sasl \
+                coreutils \
+                cracklib \
+                libltdl \
+                libuuid \
+                libintl \
+                nginx \
+                openssl \
+                perl \
+                pigz \
+                sed \
+                unixodbc \
+                xz \
+                zstd \
+                && \
+    \
+    mkdir -p /usr/src/pixz && \
+    curl -ssL https://github.com/vasi/pixz/releases/download/v1.0.6/pixz-1.0.6.tar.gz | tar xvfz - --strip=1 -C /usr/src/pixz && \
+    cd /usr/src/pixz && \
+    ./configure && \
+    make -j$(getconf _NPROCESSORS_ONLN) && \
+    make install && \
+    \
+    mkdir -p /usr/src/pbzip2 && \
+    curl -ssL https://launchpad.net/pbzip2/1.1/1.1.13/+download/pbzip2-1.1.13.tar.gz | tar xvfz - --strip=1 -C /usr/src/pbzip2 && \
+    cd /usr/src/pbzip2 && \
+    make -j$(getconf _NPROCESSORS_ONLN) && \
+    make install && \
     \
 ### Grab OpenLDAP Source, Alpine Patches and Check ppolicy module
     \
@@ -102,17 +122,16 @@ RUN set -x && \
         --with-cyrus-sasl \
         && \
     \
-    make DESTDIR="" install && \
+    make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" install && \
     \
     ## Build MQTT overlay.
-    make DESTDIR="" prefix=/usr libexec=/usr/lib -C contrib/slapd-modules/mqtt install && \
-    #\
+    make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexec=/usr/lib -C contrib/slapd-modules/mqtt install && \
     ## Build passwd pbkdf2.
-    make DESTDIR="" prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/passwd/pbkdf2 install && \
+    make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/passwd/pbkdf2 install && \
     #\
     ## Build ppolicy-check Module
     cd /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
-    make prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/ppolicy-check-password LDAP_INC_PATH=/tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}` && \
+    make -j$(getconf _NPROCESSORS_ONLN) prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/ppolicy-check-password LDAP_INC_PATH=/tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}` && \
     cp /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/contrib/slapd-modules/ppolicy-check-password/check_password.so /usr/lib/openldap && \
     ## Build Alternative PPM Module
     cd /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
@@ -131,12 +150,6 @@ RUN set -x && \
     mkdir -p /run/openldap && \
     chown -R ldap:ldap /run/openldap && \
     \
-### SSL Helpers
-    curl -o /usr/sbin/cfssl -SL https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 && \
-    chmod 700 /usr/sbin/cfssl && \
-    curl -o /usr/sbin/cfssljson -SL https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 && \
-    chmod 700 /usr/sbin/cfssljson && \
-    \
 ## Install Schema2LDIF
     curl https://codeload.github.com/fusiondirectory/schema2ldif/tar.gz/${SCHEMA2LDIF_VERSION} | tar xvfz - --strip 1 -C /usr && \
     rm -rf /usr/Changelog && \
@@ -154,6 +167,7 @@ RUN set -x && \
         .openldap-build-deps \
         && \
     rm -rf /tiredofit \
+           /usr/src \
            /var/cache/apk/*
 
 ### Networking

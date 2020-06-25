@@ -1,14 +1,14 @@
 #!/usr/bin/with-contenv bash
 
 source /assets/functions/00-container
-prepare_service defaults single
+prepare_service both single
 
 PROCESS_NAME="openldap"
 check_container_initialized
 check_service_initialized init
+configure_logging
 ulimit -n ${ULIMIT_N}
 liftoff
 
-### OpenLDAP
 print_info "Starting OpenLDAP ${OPENLDAP_VERSION}"
-/usr/sbin/slapd $SLAPD_ARGS -h "$SLAPD_HOSTS" -u ldap -g ldap -d $LOG_LEVEL
+/usr/sbin/slapd $SLAPD_ARGS -h "${SLAPD_HOSTS}" -u ldap -g ldap ${log_level} >>${log_argument} 2>&1

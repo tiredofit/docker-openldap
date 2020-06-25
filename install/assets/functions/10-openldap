@@ -1,7 +1,659 @@
 #!/usr/bin/with-contenv bash
 
+certificates() {
+  certificates_create_certificate_authority() {
+    if [ ! -f ${TLS_CA_CRT_PATH}/${TLS_CA_CRT_FILENAME} ]; then
+
+      print_debug "Certificates: Creating Self Signed Certificate Authority"
+      mkdir -p ${TLS_CA_CRT_PATH}
+      echo "000a" >${TLS_CA_CRT_PATH}/serial
+      touch ${TLS_CA_CRT_PATH}/certindex
+
+      silent eval "openssl req \
+            -newkey rsa:4096 -keyout ${TLS_CA_CRT_PATH}/${TLS_CA_KEY_FILENAME} \
+            -x509 -days 3650 -nodes -out ${TLS_CA_CRT_PATH}/${TLS_CA_CRT_FILENAME} \
+            -subj \"${TLS_CA_CRT_SUBJECT}\""
+
+      cat > ${TLS_CA_CRT_PATH}/${TLS_CA_NAME}.conf <<EOF
+      [ ca ]
+      default_ca = ${TLS_CA_NAME}
+      [ ${TLS_CA_NAME} ]
+      unique_subject = no
+      new_certs_dir = .
+      certificate = ${TLS_CA_CRT_PATH}/${TLS_CA_CRT_FILENAME}
+      database = ${TLS_CA_CRT_PATH}/certindex
+      private_key = ${TLS_CA_CRT_PATH}/${TLS_CA_KEY_FILENAME}
+      serial = ${TLS_CA_CRT_PATH}/serial
+      default_days = 3650
+      default_md = default
+      policy = ${TLS_CA_NAME}_policy
+      x509_extensions = ${TLS_CA_NAME}_extensions
+
+      [ ${TLS_CA_NAME}_policy ]
+      commonName = supplied
+      stateOrProvinceName = supplied
+      countryName = supplied
+      emailAddress = optional
+      organizationName = supplied
+      organizationalUnitName = optional
+
+      [ ${TLS_CA_NAME}_extensions ]
+      basicConstraints = CA:false
+      subjectKeyIdentifier = hash
+      authorityKeyIdentifier = keyid:always
+      keyUsage = digitalSignature,keyEncipherment
+      extendedKeyUsage = serverAuth,clientAuth
+
+      [ req ]
+      default_bits    = 2048
+
+      [default_conf]
+      ssl_conf = ssl_sect
+
+      [ssl_sect]
+      system_default = system_default_sect
+
+      [system_default_sect]
+      MinProtocol = TLSv1.1
+      MaxProtocol = TLSv1.2
+      CipherString = DEFAULT
+EOF
+    else
+      print_debug "Certificates: CA Already Exists"
+    fi
+  }
+
+  certificates_create_certificate() {
+    if [ "$1" != "" ]; then
+
+      if var_true $TLS_CREATE_CA; then
+        if [ ! -f ${TLS_CRT_PATH}/${TLS_CRT_FILENAME} ] || [ ! -f ${TLS_CA_CRT_PATH}/${TLS_CA_KEY_FILENAME} ]; then
+          print_debug "Certificates: No CA Found - Creating before generating certificates"
+          certificates_create_certificate_authority
+        fi
+      fi
+
+      CERT_SUBJECT="${TLS_CA_SUBJECT}${HOSTNAME}"
+
+      if var_true $TLS_CREATE_CA; then
+        if [ ! -f ${TLS_KEY_PATH}/${TLS_KEY_FILENAME} ]; then
+          print_debug "Certificates: Creating Certificate: ${1}"
+          silent eval "openssl req \
+                 -newkey rsa:2048 -keyout ${TLS_KEY_PATH}/${TLS_KEY_FILENAME} \
+                 -nodes -out ${TLS_CRT_PATH}/${TLS_CRT_FILENAME%%.*}.csr \
+                 -subj \"${CERT_SUBJECT}\""
+        fi
+      else
+        if [ ! -f ${TLS_KEY_PATH}/${TLS_KEY_FILENAME} ]; then
+          print_debug "Certificates: Creating Certificate: ${1}"
+          silent eval "openssl req \
+                -new -x509 -nodes -days 3650 \
+                -config /etc/ssl/openssl.cnf \
+                -out ${TLS_CRT_PATH}/${TLS_CRT_FILENAME} \
+                -keyout ${TLS_KEY_PATH}/${TLS_KEY_FILENAME}"
+        fi
+      fi
+
+      if var_true $TLS_CREATE_CA; then
+        if [ ! -f ${1%%.*}.cert ]; then
+          print_debug "Certificates: Signing Certificate: ${1}"
+          silent eval "openssl ca \
+                 -batch \
+                 -config ${TLS_CA_CRT_PATH}/${TLS_CA_NAME}.conf \
+                 -notext \
+                 -in ${TLS_CRT_PATH}/${TLS_CRT_FILENAME%%.*}.csr \
+                 -out ${TLS_CRT_PATH}/${TLS_CRT_FILENAME}"
+          rm -rf $(tail -n 1 ${TLS_CA_CRT_PATH}/certindex | awk '{print $3}').pem
+          rm -rf ${TLS_CRT_PATH}/${TLS_CRT_FILENAME%%.*}.csr
+        fi
+      fi
+    fi
+  }
+
+  certificates_check_certificates() {
+    print_debug "Certificates: Checking existence of ${1}"
+    if [ ! -f ${1} ]; then
+      mkdir -p $(dirname ${1})
+      certificates_create_certificate ${1}
+    fi
+  }
+
+  certificates_check_dhparam() {
+    print_debug "Certificates: DH Param - Checking existence of ${TLS_DH_PARAM_PATH}/${TLS_DH_PARAM_FILENAME}"
+    if [ ! -f ${TLS_DH_PARAM_PATH}/${TLS_DH_PARAM_FILENAME} ]; then
+      certificates_create_dhparam
+    fi
+  }
+
+  certificates_create_dhparam() {
+    print_notice "Certificates: DH Param - Creating ${TLS_DH_PARAM_PATH}/${TLS_DH_PARAM_FILENAME}"
+    mkdir -p ${TLS_DH_PARAM_PATH}
+    silent openssl dhparam -out ${TLS_DH_PARAM_PATH}/${TLS_DH_PARAM_FILENAME} ${TLS_DH_PARAM_KEYSIZE}
+  }
+
+  certificates_trust_ca() {
+    if var_true $TLS_CREATE_CA; then
+      if [ -f ${TLS_CA_CRT_PATH}/${TLS_CA_CRT_FILENAME} ]; then
+        if [ ! -L /usr/local/share/ca-certificates/${TLS_CA_CRT_FILENAME} ]; then
+          print_debug "Certificates: Trusting CA ${TLS_CA_NAME}"
+          ln -sf ${TLS_CA_CRT_PATH}/${TLS_CA_CRT_FILENAME} /usr/local/share/ca-certificates/
+          update-ca-certificates > /dev/null 2>&1
+        fi
+      fi
+    fi
+  }
+
+  case "$1" in
+  "DHPARAM" | "dhparam")
+    if var_true $ENABLE_TLS; then
+      certificates_check_dhparam
+    fi
+    ;;
+  *)
+    if var_true $ENABLE_TLS; then
+      certificates_check_certificates ${1}
+      certificates_trust_ca
+    fi
+    ;;
+  esac
+}
+
+configure_backup() {
+  if var_true $ENABLE_BACKUP; then
+    print_notice "Enabling OpenLDAP scheduled backup routines"
+  else
+    service_stop 20-openldap-backup
+  fi
+}
+
+configure_ldap_client() {
+  print_notice "Configuring LDAP client"
+  cat <<EOF >${CONFIG_PATH}ldap.conf
+BASE $BASE_DN
+URI  ldap://$HOSTNAME
+EOF
+
+  chmod 0600 ${CONFIG_PATH}ldap.conf
+  chown ldap:ldap ${CONFIG_PATH}ldap.conf
+
+  if var_true $ENABLE_TLS; then
+    echo "TLS_CACERT ${TLS_CA_CRT_PATH}/${TLS_CA_CRT_FILENAME}" >>${CONFIG_PATH}ldap.conf
+    echo "TLS_REQCERT ${TLS_VERIFY_CLIENT}" >>${CONFIG_PATH}ldap.conf
+    cp -f ${CONFIG_PATH}ldap.conf /assets/slapd/ldap.conf
+
+    if [ -f "$HOME/.ldaprc" ]; then rm -f $HOME/.ldaprc; fi
+    echo "TLS_CERT ${TLS_CRT_PATH}/${TLS_CRT_FILENAME}" >$HOME/.ldaprc
+    echo "TLS_KEY ${TLS_KEY_PATH}/${TLS_KEY_FILENAME}" >>$HOME/.ldaprc
+    cp -f $HOME/.ldaprc /assets/slapd/.ldaprc
+  fi
+
+  ln -sf /assets/slapd/.ldaprc $HOME/.ldaprc
+  ln -sf /assets/slapd/ldap.conf ${CONFIG_PATH}ldap.conf
+}
+
+configure_ldap_server() {
+  print_notice "Configuring OpenLDAP server"
+  set -e
+  set -o pipefail
+
+  IFS='.' read -a domain_elems <<< "${DOMAIN}"
+  SUFFIX=""
+  ROOT=""
+
+  for elem in "${domain_elems[@]}" ; do
+    if [ "x${SUFFIX}" = x ] ; then
+        SUFFIX="dc=${elem}"
+        ROOT="${elem}"
+    else
+        BASE_DN="${SUFFIX},dc=${elem}"
+    fi
+  done
+
+  if [ ! -e "$first_start_done" ]; then
+    new_install=false
+
+    file_env 'CONFIG_PASS'
+    file_env 'ADMIN_PASS'
+    if var_true $ENABLE_READONLY_USER ; then
+      file_env 'READONLY_USER_PASS'
+    fi
+
+    # setup bootstrap config - Part 1
+    if [ -z "$(ls -A -I lost+found ${DB_PATH})" ] && [ -z "$(ls -A -I lost+found ${CONFIG_PATH}slapd.d)" ]; then
+      new_install=true
+      print_warn "First time install detected"
+
+      # RFC2307bis schema
+      if [ "$SCHEMA_TYPE" = "rfc2307bis" ] || [ "$SCHEMA_TYPE" = "RFC2307BIS" ]; then
+        print_notice "Using RFC2307BIS schema type"
+        cp -R /assets/slapd/config/bootstrap/schema/rfc2307bis/rfc2307bis.schema ${CONFIG_PATH}schema/
+        SCHEMA_TYPE="rfc2307bis"
+      else
+        print_notice "Using NIS schema type"
+        SCHEMA_TYPE="nis"
+      fi
+
+      get_ldap_base_dn
+
+      ### Create Sample Configuration to Populate Schema
+      print_debug "Create core openldap configuration"
+    cat <<EOF > /tmp/slapd.ldif
+dn: cn=config
+objectClass: olcGlobal
+cn: config
+olcPidFile: /run/openldap/slapd.pid
+olcArgsFile: /run/openldap/slapd.args
+
+dn: cn=module,cn=config
+objectClass: olcModuleList
+cn: module
+olcModulepath:  /usr/lib/openldap
+olcModuleload:  back_mdb.so
+
+dn: cn=schema,cn=config
+objectClass: olcSchemaConfig
+cn: schema
+
+include: file:///etc/openldap/schema/core.ldif
+include: file:///etc/openldap/schema/cosine.ldif
+include: file:///etc/openldap/schema/inetorgperson.ldif
+include: file:///etc/openldap/schema/${SCHEMA_TYPE}.ldif
+
+# Frontend settings
+dn: olcDatabase=frontend,cn=config
+objectClass: olcDatabaseConfig
+objectClass: olcFrontendConfig
+olcDatabase: frontend
+olcAccess: to dn.base="" by * read
+olcAccess: to dn.base="cn=Subschema" by * read
+olcAccess: to *
+  by self write
+  by users read
+  by anonymous auth
+
+# Config Settings
+dn: olcDatabase=config,cn=config
+objectClass: olcDatabaseConfig
+olcDatabase: config
+olcRootPW: `slappasswd -s ${CONFIG_PASS}`
+olcAccess: to *
+  by dn.exact="gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth" manage by break
+  by * break
+
+dn: olcDatabase=mdb,cn=config
+objectClass: olcDatabaseConfig
+objectClass: olcMdbConfig
+olcDatabase: mdb
+olcSuffix: ${BASE_DN}
+OlcDbMaxSize: 1073741824
+olcDbDirectory: /var/lib/openldap
+olcRootDN: cn=admin,${BASE_DN}
+olcRootPW: `slappasswd -s ${ADMIN_PASS}`
+olcDbIndex: objectClass eq
+
+dn: olcDatabase=Monitor,cn=config
+objectClass: olcDatabaseConfig
+objectClass: olcMonitorConfig
+olcDatabase: Monitor
+olcAccess: to dn.subtree="cn=Monitor" by dn.exact="cn=admin,${BASE_DN}" write by users read by * none 
+EOF
+
+      set +e
+      /usr/bin/schema2ldif ${CONFIG_PATH}schema/core.schema >${CONFIG_PATH}schema/core.ldif
+      /usr/bin/schema2ldif ${CONFIG_PATH}schema/cosine.schema >${CONFIG_PATH}schema/cosine.ldif
+      /usr/bin/schema2ldif ${CONFIG_PATH}schema/inetorgperson.schema >${CONFIG_PATH}schema/inetorgperson.ldif
+      /usr/bin/schema2ldif ${CONFIG_PATH}schema/${SCHEMA_TYPE}.schema >${CONFIG_PATH}schema/${SCHEMA_TYPE}.ldif
+      silent slapadd -n 0 -F ${CONFIG_PATH}slapd.d -l /tmp/slapd.ldif
+      rm -rf /tmp/slapd.ldif
+      set -e
+
+      chown -R ldap:ldap ${CONFIG_PATH}
+
+    # Error: the database directory (${DB_PATH}) is empty but not the config directory (${CONFIG_PATH}slapd.d)
+    elif [ -z "$(ls -A -I lost+found ${DB_PATH})" ] && [ ! -z "$(ls -A -I lost+found ${CONFIG_PATH}slapd.d)" ]; then
+      print_error "The database directory (${DB_PATH}) is empty but not the config directory (${CONFIG_PATH}slapd.d)"
+      exit 1
+
+    # Error: the config directory (${CONFIG_PATH}slapd.d) is empty but not the database directory (${DB_PATH})
+    elif [ ! -z "$(ls -A -I lost+found ${DB_PATH})" ] && [ -z "$(ls -A -I lost+found ${CONFIG_PATH}slapd.d)" ]; then
+      print_error "The config directory (${CONFIG_PATH}slapd.d) is empty but not the database directory (${DB_PATH})"
+      exit 1
+    fi
+
+    if [ -e "${CONFIG_PATH}slapd.d/cn=config/olcDatabase={1}hdb.ldif" ]; then
+      print_error "Detected existing install with HDB Backend - Revert to an earlier major release or convert your database to MDB. Exiting.."
+      exit 1
+    fi
+
+    if var_true $KEEP_EXISTING_CONFIG ; then
+      print_warn "Skipping Configuration - Using existing configuration"
+    else
+      # Get previous hostname if OpenLDAP was started with replication to avoid configuration failures
+      PREVIOUS_HOSTNAME_PARAM=""
+      if [ -e "$was_started_with_replication" ]; then
+        source $was_started_with_replication
+
+        # If previous hostname != current hostname set previous hostname to a loopback ip in /etc/hosts
+        if [ "$PREVIOUS_HOSTNAME" != "$HOSTNAME" ]; then
+          echo "127.0.0.2 $PREVIOUS_HOSTNAME" >>/etc/hosts
+          PREVIOUS_HOSTNAME_PARAM="ldap://$PREVIOUS_HOSTNAME"
+        fi
+      fi
+
+      # If the config was bootstraped with TLS we create fake temporary certificates if they do not exist
+      if [ -e "$was_started_with_tls" ]; then
+        source $was_started_with_tls
+
+        print_debug "Checking previous TLS certificates.."
+
+        [[ -z "$PREVIOUS_TLS_CA_CRT_PATH" ]] && PREVIOUS_TLS_CA_CRT_PATH="${TLS_CA_CRT_PATH}/${TLS_CA_CRT_FILENAME}"
+        [[ -z "$PREVIOUS_TLS_CRT_PATH" ]] && PREVIOUS_TLS_CRT_PATH="${TLS_CRT_PATH}/${TLS_CRT_FILENAME}"
+        [[ -z "$PREVIOUS_TLS_KEY_PATH" ]] && PREVIOUS_TLS_KEY_PATH="${TLS_KEY_PATH}/${TLS_KEY_FILENAME}"
+        [[ -z "$PREVIOUS_TLS_DH_PARAM_PATH" ]] && PREVIOUS_TLS_DH_PARAM_PATH="${TLS_DH_PARAM_PATH}/${TLS_DH_PARAM_FILENAME}"
+
+        # Generate a self signed certificate and key along with CA if not found
+        certificates ${TLS_CRT_PATH}/${TLS_CRT_FILENAME}
+
+        # Create DHParamFile if not found
+        certificates dhparam
+
+        if var_true $TLS_RESET_PERMISSIONS ; then
+          chown ldap:ldap $PREVIOUS_TLS_CRT_PATH $PREVIOUS_TLS_KEY_PATH $PREVIOUS_TLS_CA_CRT_PATH $PREVIOUS_TLS_DH_PARAM_PATH || true
+          chmod 600 ${PREVIOUS_TLS_DH_PARAM_PATH}
+        fi
+        
+        #silent ssl-helper $SSL_HELPER_PREFIX $PREVIOUS_TLS_CRT_PATH $PREVIOUS_TLS_KEY_PATH $PREVIOUS_TLS_CA_CRT_PATH
+      fi
+
+      ### Replication Sanity Tester
+      if [ -e "$was_started_with_replication" ]; then
+        set +e
+        replhosts_sanity=$(grep -o -h "provider=ldap.*//.*." ${CONFIG_PATH}slapd.d/cn\=config/olcDatabase*.ldif | awk -F '[//]' '{ print $3 }' | awk -F 'binddn' '{ print $1 }' | awk '!a[$0]++' | tr '\n' ' ' | awk '!a[$0]++' | sed 's/  / /g')
+        if [ ! -z "$replhosts_sanity" ]; then
+          for sanity_host in $replhosts_sanity; do
+            if [[ $sanity_host =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              sanity_ip=$sanity_host
+              if [ -z "$sanity_ip" ]; then
+                print_error "It looks as if you have a malformed IP address for replication host "$sanity_host" in your schema configuration. Startup will fail!"
+                exit 1
+              fi
+            else
+              sanity_ip=$(getent hosts $sanity_host | awk '{ print $1 }')
+              if [ -z "$sanity_ip" ]; then
+                exit 1
+              fi
+              valid_ip=$(echo $sanity_ip | awk -F'.' '$1 <=255 && $2 <= 255 && $3 <= 255 && $4 <= 255')
+
+              if [ -z "$valid_ip" ] || [ -z "$sanity_ip" ]; then
+                print_error "It looks as if you have no DNS entry for replication host "$sanity_host" in your schema configuration. Startup will fail!"
+                exit 1
+              fi
+
+            fi
+          done
+          set -e
+        fi
+      fi
+
+      ### Start OpenLDAP
+      print_debug "Starting OpenLDAP Initialization Sequence"
+      silent slapd -h "ldap://$HOSTNAME ldapi:///" -u ldap -g ldap -d $LOG_LEVEL &
+      print_debug "Waiting for OpenLDAP to be ready"
+      while [ ! -e /run/openldap/slapd.pid ]; do sleep 2.0; done
+
+      ### Setup bootstrap config - Part 2
+      if var_true $new_install ; then
+        # Convert schemas to ldif
+        print_notice "Converting schemas to LDIF"
+        schemas=""
+        for f in $(find /assets/slapd/config/bootstrap/schema -not -path "/assets/slapd/config/bootstrap/schema/rfc2307bis/*" -name \*.schema -type f); do
+          schemas="$schemas ${f}"
+        done
+        schema2ldif "$schemas"
+
+        # Add converted schemas
+        print_notice "Adding converted schemas"
+        for f in $(find /assets/slapd/config/bootstrap/schema -not -path "/assets/slapd/config/bootstrap/schema/rfc2307bis/*" -name \*.ldif -type f); do
+          # Add schema if it doesn't already exist
+          schema=$(basename "${f}" .ldif)
+          add_schema=$(is_new_schema $schema)
+          if [ "$add_schema" -eq 1 ]; then
+            silent ldapadd -c -Y EXTERNAL -Q -H ldapi:/// -f $f
+          else
+            print_warn "schema ${f} already exists"
+          fi
+        done
+
+        # Adapt security and ACLs
+        print_notice "Setting Security and ACLs"
+        get_ldap_base_dn
+        sed -i "s|<BASE_DN>|${BASE_DN}|g" /assets/slapd/config/bootstrap/ldif/01-acls.ldif
+
+        # Process config files (*.ldif) in bootstrap directory
+        print_notice "Add bootstrap LDIFs"
+        for f in $(find /assets/slapd/config/bootstrap/ldif -mindepth 1 -maxdepth 1 -type f -name \*.ldif | sort); do
+          print_debug "Bootstrap LDIF: Processing file ${f}"
+          ldap_add_or_modify "$f"
+        done
+
+        # Add ppolicy schema
+        print_debug "Adding ppolicy Schema"
+        /usr/bin/schema2ldif ${CONFIG_PATH}schema/ppolicy.schema >${CONFIG_PATH}schema/ppolicy.ldif
+        ldap_add_or_modify ${CONFIG_PATH}schema/ppolicy.ldif
+        
+        # Read only user
+        if var_true $ENABLE_READONLY_USER; then
+          print_notice "Adding read only (DSA) user"
+          READONLY_USER_PASS_ENCRYPTED=$(slappasswd -s $READONLY_USER_PASS)
+          ldap_add_or_modify "/assets/slapd/config/bootstrap/ldif/readonly-user/readonly-user.ldif"
+          ldap_add_or_modify "/assets/slapd/config/bootstrap/ldif/readonly-user/readonly-user-acl.ldif"
+        fi
+
+        # Custom LDIF injection
+        if [ -d /assets/slapd/config/bootstrap/ldif/custom ]; then
+          print_notice "Add custom bootstrap ldifs"
+          for f in $(find /assets/slapd/config/bootstrap/ldif/custom -type f -name \*.ldif | sort); do
+            print_debug "LDIF: Processing file ${f}"
+            ldap_add_or_modify "$f"
+          done
+        fi
+      fi
+
+      ## TLS
+      if [ -e "$was_started_with_tls" ] && [ "${ENABLE_TLS,,}" != "true" ]; then
+        print_error "ENABLE_TLS=false but the container was previously started with ENABLE_TLS=true"
+        print_error "TLS can't be disabled once added. Ignoring ENABLE_TLS=false."
+        ENABLE_TLS=true
+      fi
+
+      if [ -e "$was_started_with_tls_enforce" ] && [ "${TLS_ENFORCE,,}" != "true" ]; then
+        print_error "TLS_ENFORCE=false but the container was previously started with TLS_ENFORCE=true"
+        print_error "TLS enforcing can't be disabled once added. Ignoring TLS_ENFORCE=false."
+        TLS_ENFORCE=true
+      fi
+
+      if var_true $ENABLE_TLS; then
+        print_notice "Starting TLS configuration. Please wait"
+
+        # Generate a self signed certificate and key along with CA if not found
+        certificates ${TLS_CRT_PATH}/${TLS_CRT_FILENAME}
+
+        # Create DHParamFile if not found
+        certificates dhparam
+
+        if var_true $TLS_RESET_PERMISSIONS ; then
+          chmod 600 ${TLS_CRT_PATH}/${TLS_CRT_FILENAME} ${TLS_KEY_PATH}/${TLS_KEY_FILENAME} ${TLS_DH_PARAM_PATH}/${TLS_DH_PARAM_FILENAME}
+          chown ldap:ldap ${TLS_CRT_PATH}/${TLS_CRT_FILENAME} ${TLS_KEY_PATH}/${TLS_KEY_FILENAME} ${TLS_DH_PARAM_PATH}/${TLS_DH_PARAM_FILENAME}
+        fi
+
+        # Fix file permissions
+        chown -R ldap:ldap /assets/slapd || true
+
+        # Adapt TLS ldif
+        sed -i "s|<TLS_CA_CRT_PATH>|${TLS_CA_CRT_PATH}|g" /assets/slapd/config/tls/tls-enable.ldif
+        sed -i "s|<TLS_CA_CRT_FILENAME>|${TLS_CA_CRT_FILENAME}|g" /assets/slapd/config/tls/tls-enable.ldif
+        sed -i "s|<TLS_CRT_PATH>|${TLS_CRT_PATH}|g" /assets/slapd/config/tls/tls-enable.ldif
+        sed -i "s|<TLS_CRT_FILENAME>|${TLS_CRT_FILENAME}|g" /assets/slapd/config/tls/tls-enable.ldif
+        sed -i "s|<TLS_KEY_PATH>|${TLS_KEY_PATH}|g" /assets/slapd/config/tls/tls-enable.ldif
+        sed -i "s|<TLS_KEY_FILENAME>|${TLS_KEY_FILENAME}|g" /assets/slapd/config/tls/tls-enable.ldif
+        sed -i "s|<TLS_DH_PARAM_PATH>|${TLS_DH_PARAM_PATH}|g" /assets/slapd/config/tls/tls-enable.ldif
+        sed -i "s|<TLS_DH_PARAM_FILENAME>|${TLS_DH_PARAM_FILENAME}|g" /assets/slapd/config/tls/tls-enable.ldif
+
+        sed -i "s|<TLS_CIPHER_SUITE>|${TLS_CIPHER_SUITE}|g" /assets/slapd/config/tls/tls-enable.ldif
+        sed -i "s|<TLS_VERIFY_CLIENT>|${TLS_VERIFY_CLIENT}|g" /assets/slapd/config/tls/tls-enable.ldif
+
+        silent ldapmodify -Y EXTERNAL -Q -H ldapi:/// -f /assets/slapd/config/tls/tls-enable.ldif
+
+        [[ -f "$was_started_with_tls" ]] && rm -f "$was_started_with_tls"
+        echo "export PREVIOUS_TLS_CA_CRT_PATH=${TLS_CA_CRT_PATH}/${TLS_CA_CRT_FILENAME}" > $was_started_with_tls
+        echo "export PREVIOUS_TLS_CRT_PATH=${TLS_CRT_PATH}/${TLS_CRT_FILENAME}" >> $was_started_with_tls
+        echo "export PREVIOUS_TLS_KEY_PATH=${TLS_KEY_PATH}/${TLS_KEY_FILENAME}" >> $was_started_with_tls
+        echo "export PREVIOUS_TLS_DH_PARAM_PATH=${TLS_DH_PARAM_PATH}/${TLS_DH_PARAM_FILENAME}" >> $was_started_with_tls
+
+        # Enforce TLS
+        if var_true $TLS_ENFORCE; then
+          print_notice "Adding TLS enforcement"
+          silent ldapmodify -Y EXTERNAL -Q -H ldapi:/// -f /assets/slapd/config/tls/tls-enforce-enable.ldif
+          touch $was_started_with_tls_enforce
+        fi
+      fi
+
+      ## Replication
+      set +e
+      if var_true $ENABLE_REPLICATION ; then
+        print_notice "Configuring replication"
+        replication_disable || true
+
+        i=1
+        replhosts=$(echo $REPLICATION_HOSTS | tr " " "\n")
+        for replhost in $replhosts; do
+          sed -i "s|<REPLICATION_HOSTS>|olcServerID: $i $replhost\n<REPLICATION_HOSTS>|g" /assets/slapd/config/replication/replication-enable.ldif
+          sed -i "s|<REPLICATION_HOSTS_CONFIG_SYNC_REPL>|olcSyncRepl: rid=00$i provider=$replhost ${REPLICATION_CONFIG_SYNCPROV}\n<REPLICATION_HOSTS_CONFIG_SYNC_REPL>|g" /assets/slapd/config/replication/replication-enable.ldif
+          sed -i "s|<REPLICATION_HOSTS_DB_SYNC_REPL>|olcSyncRepl: rid=10$i provider=$replhost ${REPLICATION_DB_SYNCPROV}\n<REPLICATION_HOSTS_DB_SYNC_REPL>|g" /assets/slapd/config/replication/replication-enable.ldif
+          ((i++))
+        done
+
+        get_ldap_base_dn
+        sed -i "/<REPLICATION_HOSTS>/d" /assets/slapd/config/replication/replication-enable.ldif
+        sed -i "/<REPLICATION_HOSTS_CONFIG_SYNC_REPL>/d" /assets/slapd/config/replication/replication-enable.ldif
+        sed -i "/<REPLICATION_HOSTS_DB_SYNC_REPL>/d" /assets/slapd/config/replication/replication-enable.ldif
+        sed -i "s|<BACKEND>|${BACKEND}|g" /assets/slapd/config/replication/replication-enable.ldif
+
+        silent ldapmodify -c -Y EXTERNAL -Q -H ldapi:/// -f /assets/slapd/config/replication/replication-enable.ldif
+
+        [[ -f "$was_started_with_replication" ]] && rm -f "$was_started_with_replication"
+        echo "export PREVIOUS_HOSTNAME=${HOSTNAME}" >$was_started_with_replication
+      else
+        print_debug "Disabling replication config"
+        replication_disable || true
+      fi
+      
+      ## Execute Custom Scripts (To be used for example for tiredofit/openldap-fusiondirectory)
+      if [ -d /assets/custom-scripts/ ]; then
+        print_notice "Found custom scripts to execute"
+        for f in $(find /assets/custom-scripts/ -name \*.sh -type f); do
+          print_debug "Running Script ${f}"
+          chmod +x ${f}
+          ${f}
+        done
+      else
+        if var_true $ADD_DEFAULT_DATA ; then
+          print_notice "Adding default top level data configuration"
+          chmod +x /assets/slapd/config/bootstrap/default/default.sh
+          /assets/slapd/config/bootstrap/default/default.sh
+        fi
+      fi
+
+      # Stop OpenLDAP
+      print_debug "Stopping OpenLDAP initialization routines"
+      slapd_pid=$(cat /run/openldap/slapd.pid)
+      kill -15 $slapd_pid
+      while [ -e /proc/$slapd_pid ]; do sleep 0.1; done # wait until slapd is terminated
+    fi
+
+    touch $first_start_done
+  fi
+}
+
+configure_logging() {
+  print_debug "Setting up Logging"
+  if [ "${LOG_TYPE}" = "FILE" ] || [ "${LOG_TYPE}" = "file" ] ; then
+    mkdir -p ${LOG_PATH}
+    touch ${LOG_PATH}${LOG_FILE}
+    chown -R ldap: ${LOG_PATH}${LOG_FILE}
+    sed -i "s#<LOG_LOCATION>#${LOG_PATH}#g" /etc/logrotate.d/openldap
+    log_argument="${LOG_PATH}/${LOG_FILE}"
+  else
+    rm -rf /etc/logrotate.d/openldap
+    log_argument="/dev/stderr"
+  fi
+
+  log_level_array=$(echo $LOG_LEVEL | tr "," "\n")
+  for level in $log_level_array
+      do
+      log_level="${log_level} -d ${level} "
+  done 
+}
+
+configure_ppolicy_check_modules() {
+  if var_true $ENABLE_PPOLICY; then
+    print_notice "Configuring PPolicy check modules"
+    ### check_password.so
+    if [ ! -f ${CONFIG_PATH}check_password.conf ]; then
+      cat <<EOF >${CONFIG_PATH}check_password.conf
+## check_password.conf
+## Auto Generated by Container, any changes will be reset on container restart!
+min_points $PPOLICY_MIN_POINTS
+min_upper $PPOLICY_MIN_UPPER
+min_lower $PPOLICY_MIN_LOWER
+min_digit $PPOLICY_MIN_DIGIT
+min_punct $PPOLICY_MIN_PUNCT
+max_consecutive_per_class $PPOLICY_MAX_CONSEC
+EOF
+      chown ldap. ${CONFIG_PATH}check_password.conf
+    fi
+
+    ### ppm.so
+    if [ ! -f ${CONFIG_PATH}ppm.conf ]; then
+      cat <<EOF >${CONFIG_PATH}ppm.conf
+## ppm.conf
+## Auto Generated by Container, any changes will be reset on container restart!
+minQuality $PPOLICY_MIN_POINTS
+maxLength $PPOLICY_MAX_LENGTH
+checkRDN $POLICY_CHECK_RDN
+forbiddenChars $PPOLICY_FORBIDDEN_CHARACTERS
+maxConsecutivePerClass $PPOLICY_MAX_CONSEC
+useCracklib $PPOLICY_USE_CRACKLIB
+cracklibDict /usr/share/dict/pw_dict
+class-upperCase ABCDEFGHIJKLMNOPQRSTUVWXYZ $PPOLICY_MIN_UPPER 1
+class-lowerCase abcdefghijklmnopqrstuvwxyz $PPOLICY_MIN_LOWER 1
+class-digit 0123456789 $PPOLICY_MIN_DIGIT 1
+class-special <>,?;.:/!§ù%*µ^¨$£²&é~"#'{([-|è\`_\ç^à@)]°=}+ $PPOLICY_MIN_PUNCT 1
+EOF
+      chown ldap. ${CONFIG_PATH}ppm.conf
+    fi
+  fi
+}
+
+create_data_directories() {
+  print_notice "Setting up directories"
+  if [ ! -d ${DB_PATH} ]; then mkdir -p ${DB_PATH}; fi
+  if [ ! -d ${CONFIG_PATH}slapd.d ]; then mkdir -p ${CONFIG_PATH}/slapd.d; fi
+  if [ ! -d /assets/state ]; then mkdir -p /assets/state; fi
+
+  chown -R ldap:ldap ${DB_PATH}
+  chown -R ldap:ldap ${CONFIG_PATH}
+  chown -R ldap:ldap /assets/slapd
+}
+
+configure_networking() {
+  print_debug "Configuring Networking"
+  etc_hosts=$(cat /etc/hosts | sed "/$HOSTNAME/d")
+  echo "0.0.0.0 $HOSTNAME" >/etc/hosts
+  echo "$etc_hosts" >>/etc/hosts
+}
+
 function get_ldap_base_dn() {
-  # if BASE_DN is empty set value from DOMAIN
   if [ -z "$BASE_DN" ]; then
     IFS='.' read -ra BASE_DN_TABLE <<< "$DOMAIN"
     for i in "${BASE_DN_TABLE[@]}"; do
@@ -25,34 +677,33 @@ function get_ldap_base_dn() {
 }
 
 function is_new_schema() {
-  local COUNT=$(ldapsearch -Q -Y EXTERNAL -H ldapi:/// -b cn=schema,cn=config cn | grep -c $1)
-  if [ "$COUNT" -eq 0 ]; then
+  local count=$(ldapsearch -Q -Y EXTERNAL -H ldapi:/// -b cn=schema,cn=config cn | grep -c $1)
+  if [ "$count" -eq 0 ]; then
     echo 1
   else
     echo 0
   fi
 }
 
-function ldap_add_or_modify (){
-  local LDIF_FILE=$1
-  print_notice "Processing file ${LDIF_FILE}"
-  sed -i "s|<BASE_DN>|${BASE_DN}|g" $LDIF_FILE
-  sed -i "s|<BACKEND>|${BACKEND}|g" $LDIF_FILE
-  if [ "${READONLY_USER,,}" == "true" ]; then
-    sed -i "s|<READONLY_USER_USER>|${READONLY_USER_USER}|g" $LDIF_FILE
-    sed -i "s|<READONLY_USER_PASS_ENCRYPTED>|${READONLY_USER_PASS_ENCRYPTED}|g" $LDIF_FILE
+function ldap_add_or_modify() {
+  local ldif_file=$1
+  sed -i "s|<BASE_DN>|${BASE_DN}|g" $ldif_file
+  sed -i "s|<BACKEND>|${BACKEND}|g" $ldif_file
+  if var_true READONLY_USER; then
+    sed -i "s|<READONLY_USER_USER>|${READONLY_USER_USER}|g" $ldif_file
+    sed -i "s|<READONLY_USER_PASS_ENCRYPTED>|${READONLY_USER_PASS_ENCRYPTED}|g" $ldif_file
   fi
-  if grep -iq changetype $LDIF_FILE ; then
-      silent ldapmodify -Y EXTERNAL -Q -H ldapi:/// -f $LDIF_FILE
+  if grep -iq changetype $ldif_file; then
+    silent ldapmodify -Y EXTERNAL -Q -H ldapi:/// -f $ldif_file
   else
-      silent ldapadd -Y EXTERNAL -Q -H ldapi:/// -f $LDIF_FILE 
+    silent ldapadd -Y EXTERNAL -Q -H ldapi:/// -f $ldif_file
   fi
 }
 
-function schema2ldif (){
-  SCHEMAS=$1
+function schema2ldif() {
+  schemas=$1
 
-# Dual Schema Support
+  # Dual Schema Support
   if [ "$SCHEMA_TYPE" = "rfc2307bis" ] || [ "$SCHEMA_TYPE" = "RFC2307BIS" ]; then
     cp -R /assets/slapd/config/bootstrap/schema/rfc2307bis/rfc2307bis.schema /etc/openldap/schema/
     SCHEMA_TYPE="rfc2307bis"
@@ -60,50 +711,56 @@ function schema2ldif (){
     SCHEMA_TYPE="nis"
   fi
 
-  tmpd=`mktemp -d`
+  tmpd=$(mktemp -d)
   pushd ${tmpd} >>/dev/null
 
-  echo "include /etc/openldap/schema/core.schema" >> convert.dat
-  echo "include /etc/openldap/schema/cosine.schema" >> convert.dat
-  echo "include /etc/openldap/schema/${SCHEMA_TYPE}.schema" >> convert.dat
-  echo "include /etc/openldap/schema/inetorgperson.schema" >> convert.dat
+  echo "include /etc/openldap/schema/core.schema" >>convert.dat
+  echo "include /etc/openldap/schema/cosine.schema" >>convert.dat
+  echo "include /etc/openldap/schema/${SCHEMA_TYPE}.schema" >>convert.dat
+  echo "include /etc/openldap/schema/inetorgperson.schema" >>convert.dat
 
-  for schema in ${SCHEMAS} ; do
-      echo "include ${schema}" >> convert.dat
+  for schema in ${schemas}; do
+    echo "include ${schema}" >>convert.dat
   done
 
   silent slaptest -f convert.dat -F .
 
-  if [ $? -ne 0 ] ; then
-      print_error "slaptest conversion failed!"
-      exit
+  if [ $? -ne 0 ]; then
+    print_error "slaptest conversion failed!"
+    exit
   fi
 
-  for schema in ${SCHEMAS} ; do
-      fullpath=${schema}
-      schema_name=`basename ${fullpath} .schema`
-      schema_dir=`dirname ${fullpath}`
-      ldif_file=${schema_name}.ldif
+  for schema in ${schemas}; do
+    fullpath=${schema}
+    schema_name=$(basename ${fullpath} .schema)
+    schema_dir=$(dirname ${fullpath})
+    ldif_file=${schema_name}.ldif
 
-      find . -name *\}${schema_name}.ldif -exec mv '{}' ./${ldif_file} \;
+    find . -name *\}${schema_name}.ldif -exec mv '{}' ./${ldif_file} \;
 
-      # TODO: these sed invocations could all be combined
-      sed -i "/dn:/ c dn: cn=${schema_name},cn=schema,cn=config" ${ldif_file}
-      sed -i "/cn:/ c cn: ${schema_name}" ${ldif_file}
-      sed -i '/structuralObjectClass/ d' ${ldif_file}
-      sed -i '/entryUUID/ d' ${ldif_file}
-      sed -i '/creatorsName/ d' ${ldif_file}
-      sed -i '/createTimestamp/ d' ${ldif_file}
-      sed -i '/entryCSN/ d' ${ldif_file}
-      sed -i '/modifiersName/ d' ${ldif_file}
-      sed -i '/modifyTimestamp/ d' ${ldif_file}
+    # TODO: these sed invocations could all be combined
+    sed -i "/dn:/ c dn: cn=${schema_name},cn=schema,cn=config" ${ldif_file}
+    sed -i "/cn:/ c cn: ${schema_name}" ${ldif_file}
+    sed -i '/structuralObjectClass/ d' ${ldif_file}
+    sed -i '/entryUUID/ d' ${ldif_file}
+    sed -i '/creatorsName/ d' ${ldif_file}
+    sed -i '/createTimestamp/ d' ${ldif_file}
+    sed -i '/entryCSN/ d' ${ldif_file}
+    sed -i '/modifiersName/ d' ${ldif_file}
+    sed -i '/modifyTimestamp/ d' ${ldif_file}
 
-      # slapd seems to be very sensitive to how a file ends. There should be no blank lines.
-      sed -i '/^ *$/d' ${ldif_file}
+    # slapd seems to be very sensitive to how a file ends. There should be no blank lines.
+    sed -i '/^ *$/d' ${ldif_file}
 
-      mv ${ldif_file} ${schema_dir}
+    mv ${ldif_file} ${schema_dir}
   done
 
   popd >>/dev/null
   rm -rf $tmpd
+}
+
+function replication_disable() {
+  sed -i "s|<BACKEND>|${BACKEND}|g" /assets/slapd/config/replication/replication-disable.ldif
+  silent ldapmodify -c -Y EXTERNAL -Q -H ldapi:/// -f /assets/slapd/config/replication/replication-disable.ldif
+  [[ -f "$was_started_with_replication" ]] && rm -f "$was_started_with_replication"
 }

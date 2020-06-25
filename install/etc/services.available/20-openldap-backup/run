@@ -1,0 +1,226 @@
+#!/usr/bin/with-contenv bash
+
+source /assets/functions/00-container
+prepare_service defaults 10-openldap
+PROCESS_NAME="openldap-backup"
+check_container_initialized
+check_service_initialized init 10-openldap
+liftoff
+date >/dev/null
+
+if [ "$1" != "NOW" ]; then
+    sleep 10
+fi
+
+tmpdir=/tmp/backups
+
+if [ "BACKUP_TYPE" = "S3" ] || [ "BACKUP_TYPE" = "s3" ] || [ "BACKUP_TYPE" = "MINIO" ] || [ "BACKUP_TYPE" = "minio" ] ; then
+    S3_PROTOCOL=${S3_PROTOCOL:-"https"}
+    sanity_var S3_HOST "S3 Host"
+    sanity_var S3_BUCKET "S3 Bucket"
+    sanity_var S3_KEY_ID "S3 Key ID"
+    sanity_var S3_KEY_SECRET "S3 Key Secret"
+    sanity_var S3_URI_STYLE "S3 URI Style (Virtualhost or Path)"
+    sanity_var S3_PATH "S3 Path"
+    file_env 'S3_KEY_ID'
+    file_env 'S3_KEY_SECRET'
+fi
+
+if [ "$1" = "NOW" ]; then
+    BACKUP_BEGIN=+0
+    MANUAL=TRUE
+fi
+
+### Set Compression Options
+if var_true $BACKUP_PARALLEL_COMPRESSION ; then
+    bzip="pbzip2 -${BACKUP_COMPRESSION_LEVEL}"
+    gzip="pigz -${BACKUP_COMPRESSION_LEVEL}"
+    xzip="pixz -${BACKUP_COMPRESSION_LEVEL}"
+    zstd="zstd --rm -${BACKUP_COMPRESSION_LEVEL}"
+else
+    bzip="bzip2 -${BACKUP_COMPRESSION_LEVEL}"
+    gzip="gzip -${BACKUP_COMPRESSION_LEVEL}"
+    xzip="xz -${BACKUP_COMPRESSION_LEVEL} "
+    zstd="zstd --rm -${BACKUP_COMPRESSION_LEVEL}"
+fi
+
+backup_openldap() {
+        # Schemas
+        print_notice "Backing up configuration schemas"
+        target=${now}_openldap_config
+        compression
+        /usr/sbin/slapcat -F ${CONFIG_PATH}slapd.d -n 0 | $dumpoutput > ${tmpdir}/${target}
+        generate_md5
+        move_backup
+        # Data
+        print_notice "Backing up user data"
+        target=${now}_openldap_data
+        compression
+        /usr/sbin/slapcat -F ${CONFIG_PATH}slapd.d -n 1 | $dumpoutput > ${tmpdir}/${target}
+        generate_md5
+        move_backup
+}
+
+compression() {
+   case "$BACKUP_COMPRESSION" in
+        "GZ" | "gz" | "gzip" | "GZIP")
+            print_notice "Compressing backup with gzip"
+            target=${target}.gz
+            dumpoutput="$gzip "
+        ;;
+        "BZ" | "bz" | "bzip2" | "BZIP2" | "bzip" | "BZIP" | "bz2" | "BZ2")
+            print_notice "Compressing backup with bzip2"
+            target=${target}.bz2
+            dumpoutput="$bzip "
+        ;;
+        "XZ" | "xz" | "XZIP" | "xzip" )
+            print_notice "Compressing backup with xzip"
+            target=${target}.xz
+            dumpoutput="$xzip "
+        ;;
+        "ZSTD" | "zstd" | "ZST" | "zst" )
+            print_notice "Compressing backup with zstd"
+            target=${target}.zst
+            dumpoutput="$zstd "
+        ;;
+        "NONE" | "none" | "FALSE" | "false")
+            dumpoutput="cat "
+        ;;
+    esac
+}
+
+generate_md5() {
+if var_true $BACKUP_MD5 ; then
+    print_notice "Generating MD5 for ${target}"
+    cd $tmpdir
+    md5sum ${target} > ${target}.md5
+    MD5VALUE=$(md5sum ${target} | awk '{ print $1}')
+fi
+}
+
+move_backup() {
+    case "$BACKUP_SIZE_VALUE" in
+        "b" | "bytes" )
+            BACKUP_SIZE_VALUE=1
+
+        ;;
+        "[kK]" | "[kK][bB]" | "kilobytes" | "[mM]" | "[mM][bB]" | "megabytes" )
+            BACKUP_SIZE_VALUE="-h"
+        ;;
+        *)
+            BACKUP_SIZE_VALUE=1
+        ;;
+    esac
+    if [ "$BACKUP_SIZE_VALUE" = "1" ] ; then
+        FILESIZE=$(stat -c%s "${tmpdir}/${target}")
+        print_notice "Backup of ${target} created with the size of ${FILESIZE} bytes"
+    else
+        FILESIZE=$(du -h "${tmpdir}/${target}" | awk '{ print $1}')
+        print_notice "Backup of ${target} created with the size of ${FILESIZE}"
+    fi
+    
+    case "${BACKUP_TYPE}" in
+        "FILE" | "file" | "filesystem" | "FILESYSTEM" )
+            mkdir -p ${BACKUP_PATH}
+            mv ${tmpdir}/*.md5 ${BACKUP_PATH}/
+            mv ${tmpdir}/${target} ${BACKUP_PATH}/${target}
+        ;;
+        "S3" | "s3" | "MINIO" | "minio" )
+            s3_content_type="application/octet-stream"
+            if [ "$S3_URI_STYLE" = "VIRTUALHOST" ] || [ "$S3_URI_STYLE" = "VHOST" ] [ "$S3_URI_STYLE" = "virtualhost" ] [ "$S3_URI_STYLE" = "vhost" ] ; then
+                s3_url="${S3_BUCKET}.${S3_HOST}"
+            else
+                s3_url="${S3_HOST}/${S3_BUCKET}"
+            fi
+            
+            if var_true $BACKUP_MD5 ; then
+                s3_date="$(LC_ALL=C date -u +"%a, %d %b %Y %X %z")"
+                s3_md5="$(libressl md5 -binary < "${tmpdir}/${target}.md5" | base64)"
+                sig="$(printf "PUT\n$s3_md5\n${s3_content_type}\n$s3_date\n/$S3_BUCKET/$S3_PATH/${target}.md5" | libressl sha1 -binary -hmac "${S3_KEY_SECRET}" | base64)"
+                print_debug "Uploading ${target}.md5 to S3"
+                curl -T "${tmpdir}/${target}.md5" ${S3_PROTOCOL}://${s3_url}/${S3_PATH}/${target}.md5 \
+                     -H "Date: $date" \
+                     -H "Authorization: AWS ${S3_KEY_ID}:$sig" \
+                     -H "Content-Type: ${s3_content_type}" \
+                     -H "Content-MD5: ${s3_md5}"
+            fi
+
+            s3_date="$(LC_ALL=C date -u +"%a, %d %b %Y %X %z")"
+            s3_md5="$(libressl md5 -binary < "${tmpdir}/${target}" | base64)"
+            sig="$(printf "PUT\n$s3_md5\n${s3_content_type}\n$s3_date\n/$S3_BUCKET/$S3_PATH/${target}" | libressl sha1 -binary -hmac "${S3_KEY_SECRET}" | base64)"
+            print_debug "Uploading ${target} to S3"
+            curl -T ${tmpdir}/${target} ${S3_PROTOCOL}://${s3_url}/${S3_PATH}/${target} \
+                 -H "Date: $s3_date" \
+                 -H "Authorization: AWS ${S3_KEY_ID}:$sig" \
+                 -H "Content-Type: ${s3_content_type}" \
+                 -H "Content-MD5: ${s3_md5}"
+
+            rm -rf ${tmpdir}/*.md5
+            rm -rf ${tmpdir}/${target}
+        ;;
+    esac
+}
+
+###
+### Container Startup
+print_debug "Backup routines Initialized on `date`"
+
+### Wait for Next time to start backup
+  current_time=$(date +"%s")
+  today=$(date +"%Y%m%d")
+
+  if [[ $BACKUP_BEGIN =~ ^\+(.*)$ ]]; then
+        waittime=$(( ${BASH_REMATCH[1]} * 60 ))
+  else
+        target_time=$(date --date="${today} ${BACKUP_BEGIN}" +"%s")
+    if [[ "$target_time" < "$current_time" ]]; then
+        target_time=$(($target_time + 24*60*60))
+    fi
+    waittime=$(($target_time - $current_time))
+  fi
+  
+  print_notice "Next Backup at `date -d @${target_time} +"%Y-%m-%d %T %Z"`"
+  sleep $waittime
+
+### Commence Backup
+  while true; do
+    # make sure the directory exists
+    mkdir -p $tmpdir
+    now=$(date +"%Y%m%d-%H%M%S")
+    now_time=$(date +"%H:%M:%S")
+    now_date=$(date +"%Y-%m-%d")
+    backup_openldap
+
+### Zabbix
+    if var_true $ENABLE_ZABBIX ; then
+        print_notice "Sending Backup Statistics to Zabbix"
+        silent zabbix_sender -c /etc/zabbix/zabbix_agentd.conf -k dbbackup.size -o `stat -c%s ${BACKUP_PATH}/${target}`
+        silent zabbix_sender -c /etc/zabbix/zabbix_agentd.conf -k dbbackup.datetime -o `date -r  ${BACKUP_PATH}/${target} +'%s'`
+    fi
+
+### Automatic Cleanup
+    if [[ -n "$BACKUP_RETENTION" ]]; then
+        print_notice "Cleaning up old backups"
+        find $BACKUP_PATH/  -mmin +$BACKUP_RETENTION -iname "*" -exec rm {} \;
+    fi
+
+### Post Backup Custom Script Support
+    if [ -d /assets/custom-scripts/ ] ; then
+    print_notice "Found Custom Scripts to Execute"
+    for f in $(find /assets/custom-scripts/ -name \*.sh -type f); do
+      print_notice "Running Script ${f}"
+      ## script DATE TIME BACKUP_FILENAME FILESIZE MD5_VALUE 
+      chmod +x ${f} 
+      ${f} "${now_date}" "${now_time}" "${target}" "${FILESIZE}" "${MD5VALUE}"
+    done
+    fi  
+
+    ### Go back to Sleep until next Backup time
+    if var_true $MANUAL ; then
+        exit 1;
+    else
+        sleep $(($BACKUP_INTERVAL*60))
+    fi
+
+  done
+fi

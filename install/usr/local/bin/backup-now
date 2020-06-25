@@ -1,0 +1,8 @@
+
+#!/usr/bin/with-contenv bash
+
+source /assets/functions/00-container
+source /assets/defaults/10-openldap
+
+echo '** Performing Manual Backup'
+/etc/services.available/20-openldap-backup/run NOW

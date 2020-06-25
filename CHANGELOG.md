@@ -1,3 +1,20 @@
+## 7.0.0 2020-06-25 <dave at tiredofit dot ca>
+
+   ### Added
+      - Rewrote entire image seperating into functions
+      - Rewrote TLS functionality, now generating CA, KEY, CERT via image instead of Cloudflare helper scripts - Check your settings!
+      - Implemented Logging to File functionality with logrotate `LOG_TYPE=FILE`)
+      - Rewrote Backup Routines - Now has the capabilities of backing up multiple times per day and various compression options
+      - Support multiple log levels
+
+   ### Changed
+      - Reworked some Ppolicy routines
+
+   ### Reverted
+      - Helper scripts removed
+      - Removed HDB Database functionality, only supporting mdb going forward
+
+
 ## 6.9.2 2020-06-18 <tiredofit>
 
    ### Changed

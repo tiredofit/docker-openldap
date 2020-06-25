@@ -27,14 +27,14 @@ add: olcMirrorMode
 olcMirrorMode: TRUE
 
 # Add syncprov on backend
-dn: olcOverlay=syncprov,olcDatabase={1}<BACKEND>,cn=config
+dn: olcOverlay=syncprov,olcDatabase={1}mdb,cn=config
 changetype: add
 objectClass: olcOverlayConfig
 objectClass: olcSyncProvConfig
 olcOverlay: syncprov
 
 # Add sync replication on backend
-dn: olcDatabase={1}<BACKEND>,cn=config
+dn: olcDatabase={1}mdb,cn=config
 changetype: modify
 add: olcSyncRepl
 <REPLICATION_HOSTS_DB_SYNC_REPL>

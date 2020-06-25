@@ -3,6 +3,6 @@
 # Usage: /sbin/slapd-restore-data file [gunzipFile]
 file=$1
 
-/usr/sbin/slapd-restore 1 $file
+/usr/local/bin/slapd-restore 1 $file
 
 exit 0
