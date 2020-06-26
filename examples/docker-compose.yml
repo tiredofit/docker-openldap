@@ -2,7 +2,7 @@ version: '3.7'
 services:
 
   openldap-app:
-    hostname: localhost
+    hostname: ldap.example.org
     image: tiredofit/openldap
     container_name: openldap-app
     ports:
@@ -14,13 +14,14 @@ services:
       - ./config:/etc/openldap/slapd.d
       - ./certs:/certs
     environment:
-      - HOSTNAME=localhost
-      - LOG_LEVEL=256,128
+      - HOSTNAME=ldap.example.org
+      - LOG_LEVEL=256
       - DOMAIN=example.org
+      - BASE_DN=dc=example,dc=org
       - ADMIN_PASS=admin
       - CONFIG_PASS=config
+      - DEBUG_MODE=FALSE
 
-      - BASE_DN=dc=example,dc=org
       - ENABLE_READONLY_USER=FALSE
       - READONLY_USER_USER=reader
       - READONLY_USER_PASS=reader
@@ -28,7 +29,6 @@ services:
       - ENABLE_TLS=TRUE
       - TLS_CRT_FILENAME=cert.pem
       - TLS_KEY_FILENAME=key.pem
-      - TLS_CA_CRT_FILENAME=ca.pem
       - TLS_ENFORCE=FALSE
       - TLS_CIPHER_SUITE=ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:RSA+AESGCM:RSA+AES:-DHE-DSS:-RSA:!aNULL:!MD5:!DSS:!SHA
       - TLS_VERIFY_CLIENT=never
@@ -41,9 +41,8 @@ services:
       - REMOVE_CONFIG_AFTER_SETUP=false
 
       - ENABLE_BACKUP=TRUE
-      - BACKUP_CONFIG_CRON_PERIOD=0 4 * * *
-      - BACKUP_DATA_CRON_PERIOD=0 4 * * *
-      - BACKUP_TTL=15
+      - BACKUP_INTERVAL=0400
+      - BACKUP_RETENTION=10080
 
       - ENABLE_ZABBIX=TRUE    
       - ZABBIX_HOSTNAME=openldap-app

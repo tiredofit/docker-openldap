@@ -1,10 +1,4 @@
-## 7.0.1 2020-06-25 <dave at tiredofit dot ca>
-
-   ### Changed
-      - Patchup for READONLY user not adjusting LDIF properly
-
-
-## 7.0.0 2020-06-25 <dave at tiredofit dot ca>
+## 7.0.2 2020-06-25 <dave at tiredofit dot ca>
 
    ### Added
       - Rewrote entire image seperating into functions
@@ -21,7 +15,7 @@
       - Removed HDB Database functionality, only supporting mdb going forward
 
 
-## 6.9.2 2020-06-18 <tiredofit>
+## 6.9.2 2020-06-18 <dave at tiredofit dot ca>
 
    ### Changed
       - Fixed initialization script not pulling defaults properly

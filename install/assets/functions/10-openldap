@@ -361,8 +361,6 @@ EOF
           chown ldap:ldap $PREVIOUS_TLS_CRT_PATH $PREVIOUS_TLS_KEY_PATH $PREVIOUS_TLS_CA_CRT_PATH $PREVIOUS_TLS_DH_PARAM_PATH || true
           chmod 600 ${PREVIOUS_TLS_DH_PARAM_PATH}
         fi
-        
-        #silent ssl-helper $SSL_HELPER_PREFIX $PREVIOUS_TLS_CRT_PATH $PREVIOUS_TLS_KEY_PATH $PREVIOUS_TLS_CA_CRT_PATH
       fi
 
       ### Replication Sanity Tester
@@ -397,7 +395,7 @@ EOF
 
       ### Start OpenLDAP
       print_debug "Starting OpenLDAP Initialization Sequence"
-      silent slapd -h "ldap://$HOSTNAME ldapi:///" -u ldap -g ldap -d $LOG_LEVEL &
+      silent slapd -h "ldap://$HOSTNAME ldapi:///" -u ldap -g ldap -d 256 &
       print_debug "Waiting for OpenLDAP to be ready"
       while [ ! -e /run/openldap/slapd.pid ]; do sleep 2.0; done
 
@@ -424,6 +422,13 @@ EOF
           fi
         done
 
+        if var_true $ENABLE_READONLY_USER; then
+          READONLY_USER_PASS_ENCRYPTED=$(slappasswd -s $READONLY_USER_PASS)
+          sed -i "s|<BASE_DN>|${BASE_DN}|g" /assets/slapd/config/bootstrap/ldif/readonly-user/*.ldif
+          sed -i "s|<READONLY_USER_USER>|${READONLY_USER_USER}|g" /assets/slapd/config/bootstrap/ldif/readonly-user/*.ldif
+          sed -i "s|<READONLY_USER_PASS_ENCRYPTED>|${READONLY_USER_PASS_ENCRYPTED}|g" /assets/slapd/config/bootstrap/ldif/readonly-user/*.ldif
+        fi
+
         # Adapt security and ACLs
         print_notice "Setting Security and ACLs"
         get_ldap_base_dn
@@ -441,16 +446,6 @@ EOF
         /usr/bin/schema2ldif ${CONFIG_PATH}schema/ppolicy.schema >${CONFIG_PATH}schema/ppolicy.ldif
         ldap_add_or_modify ${CONFIG_PATH}schema/ppolicy.ldif
         
-        # Read only user
-        if var_true $ENABLE_READONLY_USER; then
-          print_notice "Adding read only (DSA) user"
-          READONLY_USER_PASS_ENCRYPTED=$(slappasswd -s $READONLY_USER_PASS)
-          sed -i "s|<READONLY_USER_USER>|${READONLY_USER_USER}|g" /assets/slapd/config/bootstrap/ldif/readonly-user/*.ldif
-          sed -i "s|<READONLY_USER_PASS_ENCRYPTED>|${READONLY_USER_PASS_ENCRYPTED}|g" /assets/slapd/config/bootstrap/ldif/readonly-user/*.ldif
-          ldap_add_or_modify "/assets/slapd/config/bootstrap/ldif/readonly-user/readonly-user.ldif"
-          ldap_add_or_modify "/assets/slapd/config/bootstrap/ldif/readonly-user/readonly-user-acl.ldif"
-        fi
-
         # Custom LDIF injection
         if [ -d /assets/slapd/config/bootstrap/ldif/custom ]; then
           print_notice "Add custom bootstrap ldifs"
@@ -563,6 +558,12 @@ EOF
           print_notice "Adding default top level data configuration"
           chmod +x /assets/slapd/config/bootstrap/default/default.sh
           /assets/slapd/config/bootstrap/default/default.sh
+        # Read only user
+        if var_true $ENABLE_READONLY_USER; then
+          print_notice "Adding read only (DSA) user"
+          ldap_add_or_modify "/assets/slapd/config/bootstrap/ldif/readonly-user/readonly-user.ldif"
+          ldapmodify -H 'ldapi:///' -f /assets/slapd/config/bootstrap/ldif/readonly-user/readonly-user-acl.ldif
+        fi
         fi
       fi
 
