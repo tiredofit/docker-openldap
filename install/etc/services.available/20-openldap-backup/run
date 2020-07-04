@@ -14,7 +14,7 @@ fi
 
 tmpdir=/tmp/backups
 
-if [ "BACKUP_TYPE" = "S3" ] || [ "BACKUP_TYPE" = "s3" ] || [ "BACKUP_TYPE" = "MINIO" ] || [ "BACKUP_TYPE" = "minio" ] ; then
+if [ "$BACKUP_TYPE" = "S3" ] || [ "$BACKUP_TYPE" = "s3" ] || [ "$BACKUP_TYPE" = "MINIO" ] || [ "$BACKUP_TYPE" = "minio" ] ; then
     S3_PROTOCOL=${S3_PROTOCOL:-"https"}
     sanity_var S3_HOST "S3 Host"
     sanity_var S3_BUCKET "S3 Bucket"
@@ -32,7 +32,7 @@ if [ "$1" = "NOW" ]; then
 fi
 
 ### Set Compression Options
-if var_true $BACKUP_PARALLEL_COMPRESSION ; then
+if var_true "$BACKUP_PARALLEL_COMPRESSION" ; then
     bzip="pbzip2 -${BACKUP_COMPRESSION_LEVEL}"
     gzip="pigz -${BACKUP_COMPRESSION_LEVEL}"
     xzip="pixz -${BACKUP_COMPRESSION_LEVEL}"
@@ -49,14 +49,14 @@ backup_openldap() {
         print_notice "Backing up configuration schemas"
         target=${now}_openldap_config
         compression
-        /usr/sbin/slapcat -F ${CONFIG_PATH}slapd.d -n 0 | $dumpoutput > ${tmpdir}/${target}
+        /usr/sbin/slapcat -F "${CONFIG_PATH}"slapd.d -n 0 | $dumpoutput > ${tmpdir}/"${target}"
         generate_md5
         move_backup
         # Data
         print_notice "Backing up user data"
         target=${now}_openldap_data
         compression
-        /usr/sbin/slapcat -F ${CONFIG_PATH}slapd.d -n 1 | $dumpoutput > ${tmpdir}/${target}
+        /usr/sbin/slapcat -F "${CONFIG_PATH}"slapd.d -n 1 | $dumpoutput > ${tmpdir}/"${target}"
         generate_md5
         move_backup
 }
@@ -90,11 +90,11 @@ compression() {
 }
 
 generate_md5() {
-if var_true $BACKUP_MD5 ; then
+if var_true "$BACKUP_MD5" ; then
     print_notice "Generating MD5 for ${target}"
     cd $tmpdir
-    md5sum ${target} > ${target}.md5
-    MD5VALUE=$(md5sum ${target} | awk '{ print $1}')
+    md5sum "${target}" > "${target}".md5
+    MD5VALUE=$(md5sum "${target}" | awk '{ print $1}')
 fi
 }
 
@@ -118,27 +118,27 @@ move_backup() {
         FILESIZE=$(du -h "${tmpdir}/${target}" | awk '{ print $1}')
         print_notice "Backup of ${target} created with the size of ${FILESIZE}"
     fi
-    
+
     case "${BACKUP_TYPE}" in
         "FILE" | "file" | "filesystem" | "FILESYSTEM" )
-            mkdir -p ${BACKUP_PATH}
-            mv ${tmpdir}/*.md5 ${BACKUP_PATH}/
-            mv ${tmpdir}/${target} ${BACKUP_PATH}/${target}
+            mkdir -p "${BACKUP_PATH}"
+            mv ${tmpdir}/*.md5 "${BACKUP_PATH}"/
+            mv ${tmpdir}/"${target}" "${BACKUP_PATH}"/"${target}"
         ;;
         "S3" | "s3" | "MINIO" | "minio" )
             s3_content_type="application/octet-stream"
-            if [ "$S3_URI_STYLE" = "VIRTUALHOST" ] || [ "$S3_URI_STYLE" = "VHOST" ] [ "$S3_URI_STYLE" = "virtualhost" ] [ "$S3_URI_STYLE" = "vhost" ] ; then
+            if [ "$S3_URI_STYLE" = "VIRTUALHOST" ] || [ "$S3_URI_STYLE" = "VHOST" ] || [ "$S3_URI_STYLE" = "virtualhost" ] || [ "$S3_URI_STYLE" = "vhost" ] ; then
                 s3_url="${S3_BUCKET}.${S3_HOST}"
             else
                 s3_url="${S3_HOST}/${S3_BUCKET}"
             fi
-            
-            if var_true $BACKUP_MD5 ; then
+
+            if var_true "$BACKUP_MD5" ; then
                 s3_date="$(LC_ALL=C date -u +"%a, %d %b %Y %X %z")"
                 s3_md5="$(libressl md5 -binary < "${tmpdir}/${target}.md5" | base64)"
                 sig="$(printf "PUT\n$s3_md5\n${s3_content_type}\n$s3_date\n/$S3_BUCKET/$S3_PATH/${target}.md5" | libressl sha1 -binary -hmac "${S3_KEY_SECRET}" | base64)"
                 print_debug "Uploading ${target}.md5 to S3"
-                curl -T "${tmpdir}/${target}.md5" ${S3_PROTOCOL}://${s3_url}/${S3_PATH}/${target}.md5 \
+                curl -T "${tmpdir}/${target}.md5" "${S3_PROTOCOL}"://"${s3_url}"/"${S3_PATH}"/"${target}".md5 \
                      -H "Date: $date" \
                      -H "Authorization: AWS ${S3_KEY_ID}:$sig" \
                      -H "Content-Type: ${s3_content_type}" \
@@ -149,21 +149,21 @@ move_backup() {
             s3_md5="$(libressl md5 -binary < "${tmpdir}/${target}" | base64)"
             sig="$(printf "PUT\n$s3_md5\n${s3_content_type}\n$s3_date\n/$S3_BUCKET/$S3_PATH/${target}" | libressl sha1 -binary -hmac "${S3_KEY_SECRET}" | base64)"
             print_debug "Uploading ${target} to S3"
-            curl -T ${tmpdir}/${target} ${S3_PROTOCOL}://${s3_url}/${S3_PATH}/${target} \
+            curl -T ${tmpdir}/"${target}" "${S3_PROTOCOL}"://"${s3_url}"/"${S3_PATH}"/"${target}" \
                  -H "Date: $s3_date" \
                  -H "Authorization: AWS ${S3_KEY_ID}:$sig" \
                  -H "Content-Type: ${s3_content_type}" \
                  -H "Content-MD5: ${s3_md5}"
 
             rm -rf ${tmpdir}/*.md5
-            rm -rf ${tmpdir}/${target}
+            rm -rf ${tmpdir}/"${target}"
         ;;
     esac
 }
 
 ###
 ### Container Startup
-print_debug "Backup routines Initialized on `date`"
+print_debug "Backup routines Initialized on $(date)"
 
 ### Wait for Next time to start backup
   current_time=$(date +"%s")
@@ -178,8 +178,8 @@ print_debug "Backup routines Initialized on `date`"
     fi
     waittime=$(($target_time - $current_time))
   fi
-  
-  print_notice "Next Backup at `date -d @${target_time} +"%Y-%m-%d %T %Z"`"
+
+  print_notice "Next Backup at $(date -d @${target_time} +"%Y-%m-%d %T %Z")"
   sleep $waittime
 
 ### Commence Backup
@@ -192,16 +192,16 @@ print_debug "Backup routines Initialized on `date`"
     backup_openldap
 
 ### Zabbix
-    if var_true $ENABLE_ZABBIX ; then
+    if var_true "$ENABLE_ZABBIX" ; then
         print_notice "Sending Backup Statistics to Zabbix"
-        silent zabbix_sender -c /etc/zabbix/zabbix_agentd.conf -k dbbackup.size -o `stat -c%s ${BACKUP_PATH}/${target}`
-        silent zabbix_sender -c /etc/zabbix/zabbix_agentd.conf -k dbbackup.datetime -o `date -r  ${BACKUP_PATH}/${target} +'%s'`
+        silent zabbix_sender -c /etc/zabbix/zabbix_agentd.conf -k dbbackup.size -o $(stat -c%s "${BACKUP_PATH}"/"${target}")
+        silent zabbix_sender -c /etc/zabbix/zabbix_agentd.conf -k dbbackup.datetime -o $(date -r  "${BACKUP_PATH}"/"${target}" +'%s')
     fi
 
 ### Automatic Cleanup
     if [[ -n "$BACKUP_RETENTION" ]]; then
         print_notice "Cleaning up old backups"
-        find $BACKUP_PATH/  -mmin +$BACKUP_RETENTION -iname "*" -exec rm {} \;
+        find "$BACKUP_PATH"/  -mmin +"$BACKUP_RETENTION" -iname "*" -exec rm {} \;
     fi
 
 ### Post Backup Custom Script Support
@@ -209,11 +209,11 @@ print_debug "Backup routines Initialized on `date`"
     print_notice "Found Custom Scripts to Execute"
     for f in $(find /assets/custom-scripts/ -name \*.sh -type f); do
       print_notice "Running Script ${f}"
-      ## script DATE TIME BACKUP_FILENAME FILESIZE MD5_VALUE 
-      chmod +x ${f} 
+      ## script DATE TIME BACKUP_FILENAME FILESIZE MD5_VALUE
+      chmod +x "${f}"
       ${f} "${now_date}" "${now_time}" "${target}" "${FILESIZE}" "${MD5VALUE}"
     done
-    fi  
+    fi
 
     ### Go back to Sleep until next Backup time
     if var_true $MANUAL ; then
