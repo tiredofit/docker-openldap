@@ -1,3 +1,9 @@
+## 7.0.3 2020-07-26 <dave at tiredofit dot ca>
+
+   ### Added
+      - Add change-password shell script for quickly changing config/schema passwords
+
+
 ## 7.0.2 2020-06-25 <dave at tiredofit dot ca>
 
    ### Added
