@@ -16,9 +16,9 @@ Upon starting this image it will give you a ready to run server with many config
 * All overlays compiled
 * Supports TLS encryption
 * Supports Replication
-* Optional Web Server included to take advantage of Let's Encrypt certificates
 * Scheduled Backups of Data
 * Ability to choose NIS or rfc2307bis Schema
+* Additional Password Modules (Argon, SHA2, PBKDF2)
 * Two Password Checking Modules - check_password.so and ppm.so
 * Zabbix Monitoring templates included
 
@@ -100,7 +100,6 @@ The following directories are used for configuration and can be mapped for persi
 | `/assets/custom-scripts/` | If you'd like to execute a script during the initialization process drop it here (Useful for using this image as a base) |
 | `/certs/`                 | Drop TLS Certificates here (or use your own path)                                                                        |
 | `/data/backup`            | Backup Directory                                                                                                         |
-| `/www/html`               | If you want to put a landing page if using Nginx for LetsEncrypt SSL Place it here                                       |
 
 ### Environment Varables
 
@@ -122,6 +121,7 @@ available options that can be used to customize your installation.
 | `SCHEMA_TYPE`          | Use `nis` or `rfc2307bis` core schema.                        | `nis`                  |
 
 #### Logging Options
+
 | Variable    | Description                   | Default        |
 | ----------- | ----------------------------- | -------------- |
 | `LOG_FILE`  | Filename for logging          | `openldap.log` |
@@ -219,7 +219,6 @@ If you already have a check_password.conf or ppm.conf in /etc/openldap/ the foll
 | --------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------- |
 | `CONFIG_PATH`               | Configuration files path                                                                  | `/etc/openldap`                                |
 | `DB_PATH`                   | Data Files path                                                                           | `/var/lib/openldap`                            |
-| `ENABLE_NGINX`              | If you want to use automatic LetsEncrypt certificates for your server, set this to `true` | `FALSE`                                        |
 | `REMOVE_CONFIG_AFTER_SETUP` | Delete config folder after setup.                                                         | `true`                                         |
 | `SLAPD_ARGS`                | If you want to override slapd runtime arguments place here . Default (null)               |                                                |
 | `SLAPD_HOSTS`               | Allow overriding the default listen parameters                                            | `ldap://$HOSTNAME ldaps://$HOSTNAME ldapi:///` |
@@ -231,8 +230,7 @@ The following ports are exposed and available to public interfaces
 
 | Port  | Description                                   |
 | ----- | --------------------------------------------- |
-| `80`  | Nginx - For Automatic LetsEncrypt Certficates |
-| `389` | Unecrypted LDAP                               |
+| `389` | LDAP                                          |
 | `636` | TLS Encrypted LDAP                            |
 
 ## Maintenance

@@ -295,7 +295,7 @@ dn: olcDatabase=Monitor,cn=config
 objectClass: olcDatabaseConfig
 objectClass: olcMonitorConfig
 olcDatabase: Monitor
-olcAccess: to dn.subtree="cn=Monitor" by dn.exact="cn=admin,${BASE_DN}" write by users read by * none 
+olcAccess: to dn.subtree="cn=Monitor" by dn.exact="cn=admin,${BASE_DN}" write by users read by * none
 EOF
 
       set +e
@@ -445,7 +445,7 @@ EOF
         print_debug "Adding ppolicy Schema"
         /usr/bin/schema2ldif ${CONFIG_PATH}schema/ppolicy.schema >${CONFIG_PATH}schema/ppolicy.ldif
         ldap_add_or_modify ${CONFIG_PATH}schema/ppolicy.ldif
-        
+
         # Custom LDIF injection
         if [ -d /assets/slapd/config/bootstrap/ldif/custom ]; then
           print_notice "Add custom bootstrap ldifs"
@@ -544,7 +544,7 @@ EOF
         print_debug "Disabling replication config"
         replication_disable || true
       fi
-      
+
       ## Execute Custom Scripts (To be used for example for tiredofit/openldap-fusiondirectory)
       if [ -d /assets/custom-scripts/ ]; then
         print_notice "Found custom scripts to execute"
@@ -595,7 +595,7 @@ configure_logging() {
   for level in $log_level_array
       do
       log_level="${log_level} -d ${level} "
-  done 
+  done
 }
 
 configure_ppolicy_check_modules() {

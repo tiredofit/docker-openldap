@@ -1,3 +1,13 @@
+## 7.1.0 2020-08-11 <dave at tiredofit dot ca>
+
+   ### Added
+      - Add SHA2 password support
+      - Add Argon password support
+
+   ### Reverted
+      - Remove Nginx for Letsencrypt Certificate Generation - It served its purpose, there are better ways now.
+
+
 ## 7.0.3 2020-07-26 <dave at tiredofit dot ca>
 
    ### Added

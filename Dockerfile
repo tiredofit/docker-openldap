@@ -29,6 +29,7 @@ RUN set -x && \
                 git \
                 groff \
                 openssl-dev \
+                libsodium-dev \
                 libtool \
                 m4 \
                 mosquitto-dev \
@@ -45,7 +46,7 @@ RUN set -x && \
                 libltdl \
                 libuuid \
                 libintl \
-                nginx \
+                libsodium \
                 openssl \
                 perl \
                 pigz \
@@ -128,7 +129,11 @@ RUN set -x && \
     make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexec=/usr/lib -C contrib/slapd-modules/mqtt install && \
     ## Build passwd pbkdf2.
     make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/passwd/pbkdf2 install && \
-    #\
+    ## Build passwd SHA2
+    make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/passwd/sha2 install && \
+    ## Build passwd Argon2
+    make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/passwd/argon2 install && \
+    #
     ## Build ppolicy-check Module
     cd /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
     make -j$(getconf _NPROCESSORS_ONLN) prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/ppolicy-check-password LDAP_INC_PATH=/tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}` && \
@@ -137,7 +142,7 @@ RUN set -x && \
     cd /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
     make prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/ppm LDAP_INC_PATH=/tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}` && \
     cp /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/contrib/slapd-modules/ppm/ppm.so /usr/lib/openldap && \
-    \
+
 ### OpenLDAP Setup
     ln -s /usr/lib/slapd /usr/sbin && \
     mkdir -p /usr/share/doc/openldap && \
@@ -171,7 +176,7 @@ RUN set -x && \
            /var/cache/apk/*
 
 ### Networking
-EXPOSE 80 389 636 
+EXPOSE 389 636
 
 ### Add Assets
 ADD install /
