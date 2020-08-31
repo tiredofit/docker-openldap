@@ -196,18 +196,20 @@ configure_ldap_server() {
   set -e
   set -o pipefail
 
-  IFS='.' read -a domain_elems <<< "${DOMAIN}"
-  SUFFIX=""
-  ROOT=""
+  if [ -z "$BASE_DN" ] ; then
+    IFS='.' read -a domain_elems <<< "${DOMAIN}"
+    SUFFIX=""
+    ROOT=""
 
-  for elem in "${domain_elems[@]}" ; do
-    if [ "x${SUFFIX}" = x ] ; then
-        SUFFIX="dc=${elem}"
-        ROOT="${elem}"
-    else
-        BASE_DN="${SUFFIX},dc=${elem}"
-    fi
-  done
+    for elem in "${domain_elems[@]}" ; do
+      if [ "x${SUFFIX}" = "x" ] ; then
+          SUFFIX="dc=${elem}"
+          ROOT="${elem}"
+      else
+          BASE_DN="${SUFFIX},dc=${elem}"
+      fi
+    done
+  fi
 
   if [ ! -e "$first_start_done" ]; then
     new_install=false
