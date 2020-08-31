@@ -15,8 +15,6 @@ changetype: modify
 delete: olcSyncRepl
 -
 delete: olcMirrorMode
--
-delete: olcLimits
 
 # Delete syncprov on config
 dn: olcOverlay=syncprov,olcDatabase={0}config,cn=config
