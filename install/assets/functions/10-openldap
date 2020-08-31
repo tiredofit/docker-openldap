@@ -202,7 +202,7 @@ configure_ldap_server() {
     ROOT=""
 
     for elem in "${domain_elems[@]}" ; do
-      if [ "x${SUFFIX}" = x ] ; then
+      if [ "x${SUFFIX}" = "x" ] ; then
           SUFFIX="dc=${elem}"
           ROOT="${elem}"
       else
