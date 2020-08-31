@@ -1,3 +1,8 @@
+## 7.1.2 2020-08-31 <bfidel@github>
+
+   ### Changed
+      - Fix for BASE_DN getting overwritten when DOMAIN environment variable exists
+
 ## 7.1.1 2020-08-31 <dave at tiredofit dot ca>
 
    ### Changed
