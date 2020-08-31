@@ -196,7 +196,7 @@ configure_ldap_server() {
   set -e
   set -o pipefail
 
-  if [ -z $BASE_DN ] ; then
+  if [ -z "$BASE_DN" ] ; then
     IFS='.' read -a domain_elems <<< "${DOMAIN}"
     SUFFIX=""
     ROOT=""
