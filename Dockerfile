@@ -1,7 +1,7 @@
 FROM tiredofit/alpine:3.12
 LABEL maintainer="Dave Conroy <dave at tiredofit dot ca>"
 
-ENV OPENLDAP_VERSION=2.4.50 \
+ENV OPENLDAP_VERSION=2.4.53 \
     SCHEMA2LDIF_VERSION=1.3 \
     ZABBIX_HOSTNAME=openldap-app \
     ENABLE_CRON=FALSE \
