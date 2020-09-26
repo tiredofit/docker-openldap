@@ -35,7 +35,7 @@ services:
       - SSL_HELPER_PREFIX=ldap
 
       - ENABLE_REPLICATION=FALSE
-      - REPLICATION_CONFIG_SYNCPROV=binddn="cn=admin,cn=config" bindmethod=simple credentials="admin" searchbase="cn=config" type=refreshAndPersist retry="5 5 60 +" timeout=1
+      - REPLICATION_CONFIG_SYNCPROV=binddn="cn=config" bindmethod=simple credentials="admin" searchbase="cn=config" type=refreshAndPersist retry="5 5 60 +" timeout=1
       - REPLICATION_DB_SYNCPROV=binddn="cn=admin,dc=example,dc=org" bindmethod=simple credentials="admin" searchbase="dc=example,dc=org" type=refreshAndPersist interval=00:00:00:10 retry="5 5 60 +" timeout=1
       - REPLICATION_HOSTS=ldap://ldap1.example.com ldap://ldap2.example.com ldap://ldap3.example.com
       - REMOVE_CONFIG_AFTER_SETUP=false
