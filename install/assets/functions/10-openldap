@@ -373,8 +373,8 @@ EOF
           for sanity_host in $replhosts_sanity; do
             if var_true "$WAIT_FOR_REPLICAS"; then
               print_debug "Waiting for $sanity_host to come online"
-              while ! ping -c1 -W1 $sanity_host; do
-                echo -n .
+              while ! silent ping -c1 -W1 $sanity_host; do
+                silent echo -n .
               done
             elif [[ $sanity_host =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
               sanity_ip=$sanity_host
