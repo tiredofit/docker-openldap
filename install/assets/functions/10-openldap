@@ -168,18 +168,17 @@ configure_backup() {
 
 configure_ldap_client() {
   print_notice "Configuring LDAP client"
-  cat <<EOF >${CONFIG_PATH}ldap.conf
+  cat <<EOF >/assets/slapd/ldap.conf
 BASE $BASE_DN
 URI  ldap://$HOSTNAME
 EOF
 
-  chmod 0600 ${CONFIG_PATH}ldap.conf
-  chown ldap:ldap ${CONFIG_PATH}ldap.conf
+  chmod 0600 /assets/slapd/ldap.conf
+  chown ldap:ldap /assets/slapd/ldap.conf
 
   if var_true $ENABLE_TLS; then
-    echo "TLS_CACERT ${TLS_CA_CRT_PATH}/${TLS_CA_CRT_FILENAME}" >>${CONFIG_PATH}ldap.conf
-    echo "TLS_REQCERT ${TLS_VERIFY_CLIENT}" >>${CONFIG_PATH}ldap.conf
-    cp -f ${CONFIG_PATH}ldap.conf /assets/slapd/ldap.conf
+    echo "TLS_CACERT ${TLS_CA_CRT_PATH}/${TLS_CA_CRT_FILENAME}" >>/assets/slapd/ldap.conf
+    echo "TLS_REQCERT ${TLS_VERIFY_CLIENT}" >>/assets/slapd/ldap.conf
 
     if [ -f "$HOME/.ldaprc" ]; then rm -f $HOME/.ldaprc; fi
     echo "TLS_CERT ${TLS_CRT_PATH}/${TLS_CRT_FILENAME}" >$HOME/.ldaprc
