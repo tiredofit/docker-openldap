@@ -525,14 +525,14 @@ EOF
 
         i=1
         replhosts=$(echo $REPLICATION_HOSTS | tr " " "\n")
+        get_ldap_base_dn
         for replhost in $replhosts; do
           sed -i "s|<REPLICATION_HOSTS>|olcServerID: $i $replhost\n<REPLICATION_HOSTS>|g" /assets/slapd/config/replication/replication-enable.ldif
-          sed -i "s|<REPLICATION_HOSTS_CONFIG_SYNC_REPL>|olcSyncRepl: rid=00$i provider=$replhost ${REPLICATION_CONFIG_SYNCPROV}\n<REPLICATION_HOSTS_CONFIG_SYNC_REPL>|g" /assets/slapd/config/replication/replication-enable.ldif
-          sed -i "s|<REPLICATION_HOSTS_DB_SYNC_REPL>|olcSyncRepl: rid=10$i provider=$replhost ${REPLICATION_DB_SYNCPROV}\n<REPLICATION_HOSTS_DB_SYNC_REPL>|g" /assets/slapd/config/replication/replication-enable.ldif
+          sed -i "s|<REPLICATION_HOSTS_CONFIG_SYNC_REPL>|olcSyncRepl: rid=00$i provider=$replhost ${REPLICATION_CONFIG_SYNCPROV:-"binddn=\"cn=config\" bindmethod=simple credentials=$CONFIG_PASS searchbase=\"cn=config\" type=refreshAndPersist retry=\"5 5 60 +\" timeout=1"}\n<REPLICATION_HOSTS_CONFIG_SYNC_REPL>|g" /assets/slapd/config/replication/replication-enable.ldif
+          sed -i "s|<REPLICATION_HOSTS_DB_SYNC_REPL>|olcSyncRepl: rid=10$i provider=$replhost ${REPLICATION_DB_SYNCPROV:-"binddn=\"cn=admin,$BASE_DN\" bindmethod=simple credentials=$ADMIN_PASS searchbase=\"$BASE_DN\" type=refreshAndPersist interval=00:00:00:10 retry=\"5 5 60 +\" timeout=1"}\n<REPLICATION_HOSTS_DB_SYNC_REPL>|g" /assets/slapd/config/replication/replication-enable.ldif
           ((i++))
         done
 
-        get_ldap_base_dn
         sed -i "/<REPLICATION_HOSTS>/d" /assets/slapd/config/replication/replication-enable.ldif
         sed -i "/<REPLICATION_HOSTS_CONFIG_SYNC_REPL>/d" /assets/slapd/config/replication/replication-enable.ldif
         sed -i "/<REPLICATION_HOSTS_DB_SYNC_REPL>/d" /assets/slapd/config/replication/replication-enable.ldif
