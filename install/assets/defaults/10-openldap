@@ -60,6 +60,7 @@ TLS_KEY_PATH=${TLS_KEY_PATH:-"/certs/"}
 TLS_RESET_PERMISSIONS=${TLS_RESET_PERMISSIONS:-"TRUE"}
 TLS_VERIFY_CLIENT=${TLS_VERIFY_CLIENT:-"try"}
 ULIMIT_N=${ULIMIT_N:-"1024"}
+WAIT_FOR_REPLICAS=${WAIT_FOR_REPLICAS:-"FALSE"}
 
 first_start_done="/assets/state/slapd-first-start-done"
 was_started_with_replication="${CONFIG_PATH}slapd.d/docker-openldap-was-started-with-replication"

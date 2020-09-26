@@ -371,7 +371,12 @@ EOF
         replhosts_sanity=$(grep -o -h "provider=ldap.*//.*." ${CONFIG_PATH}slapd.d/cn\=config/olcDatabase*.ldif | awk -F '[//]' '{ print $3 }' | awk -F 'binddn' '{ print $1 }' | awk '!a[$0]++' | tr '\n' ' ' | awk '!a[$0]++' | sed 's/  / /g')
         if [ ! -z "$replhosts_sanity" ]; then
           for sanity_host in $replhosts_sanity; do
-            if [[ $sanity_host =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            if var_true "$WAIT_FOR_REPLICAS"; then
+              print_debug "Waiting for $sanity_host to come online"
+              while ! ping -c1 -W1 $sanity_host; do
+                echo -n .
+              done
+            elif [[ $sanity_host =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
               sanity_ip=$sanity_host
               if [ -z "$sanity_ip" ]; then
                 print_error "It looks as if you have a malformed IP address for replication host "$sanity_host" in your schema configuration. Startup will fail!"
