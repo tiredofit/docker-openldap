@@ -1,8 +1,17 @@
+## 7.1.5 2020-11-06 <dave at tiredofit dot ca>
+
+   ### Added
+      - OpenLDAP 2.4.55
+
+## 7.1.4 2020-09-26 <frznvm0@github>
+
+   ### Changed
+      - Fix ldap.conf from being copied onto itself
+
 ## 7.1.3 2020-09-14 <dave at tiredofit dot ca>
 
    ### Added
       - OpenLDAP 2.4.53
-
 
 ## 7.1.2 2020-08-31 <bfidel@github>
 

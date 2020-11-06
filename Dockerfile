@@ -1,7 +1,7 @@
 FROM tiredofit/alpine:3.12
 LABEL maintainer="Dave Conroy <dave at tiredofit dot ca>"
 
-ENV OPENLDAP_VERSION=2.4.53 \
+ENV OPENLDAP_VERSION=2.4.55 \
     SCHEMA2LDIF_VERSION=1.3 \
     ZABBIX_HOSTNAME=openldap-app \
     ENABLE_CRON=FALSE \
@@ -142,8 +142,8 @@ RUN set -x && \
     cd /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
     make prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/ppm LDAP_INC_PATH=/tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}` && \
     cp /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/contrib/slapd-modules/ppm/ppm.so /usr/lib/openldap && \
-
-### OpenLDAP Setup
+    \
+    ### OpenLDAP Setup
     ln -s /usr/lib/slapd /usr/sbin && \
     mkdir -p /usr/share/doc/openldap && \
     mv /etc/openldap/*.default /usr/share/doc/openldap && \
