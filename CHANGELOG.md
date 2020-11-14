@@ -1,3 +1,9 @@
+## 7.1.6 2020-11-14 <dave at tiredofit dot ca>
+
+   ### Added
+      - Openldap 2.4.56
+
+
 ## 7.1.5 2020-11-06 <dave at tiredofit dot ca>
 
    ### Added
