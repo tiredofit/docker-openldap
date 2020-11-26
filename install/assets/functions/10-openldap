@@ -553,7 +553,6 @@ EOF
         print_notice "Found custom scripts to execute"
         for f in $(find /assets/custom-scripts/ -name \*.sh -type f); do
           print_debug "Running Script ${f}"
-          chmod +x ${f}
           ${f}
         done
       else

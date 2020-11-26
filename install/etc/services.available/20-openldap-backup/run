@@ -210,7 +210,6 @@ print_debug "Backup routines Initialized on $(date)"
     for f in $(find /assets/custom-scripts/ -name \*.sh -type f); do
       print_notice "Running Script ${f}"
       ## script DATE TIME BACKUP_FILENAME FILESIZE MD5_VALUE
-      chmod +x "${f}"
       ${f} "${now_date}" "${now_time}" "${target}" "${FILESIZE}" "${MD5VALUE}"
     done
     fi
