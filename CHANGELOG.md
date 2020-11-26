@@ -1,3 +1,9 @@
+## 7.1.7 2020-11-25 <goldsam at github>
+
+   ### Changed
+      - Change the way that custom scripts execute - Don't force chmod +x for files already.
+
+
 ## 7.1.6 2020-11-14 <dave at tiredofit dot ca>
 
    ### Added
