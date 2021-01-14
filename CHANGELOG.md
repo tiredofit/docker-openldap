@@ -1,3 +1,9 @@
+## 7.1.8 2021-01-14 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Alpine 3.13 Base         
+
+
 ## 7.1.7 2020-11-25 <goldsam at github>
 
    ### Changed
