@@ -205,9 +205,9 @@ print_debug "Backup routines Initialized on $(date)"
     fi
 
 ### Post Backup Custom Script Support
-    if [ -d /assets/custom-scripts/ ] ; then
+    if [ -d /assets/custom-backup-scripts/ ] ; then
     print_notice "Found Custom Scripts to Execute"
-    for f in $(find /assets/custom-scripts/ -name \*.sh -type f); do
+    for f in $(find /assets/custom-backup-scripts/ -name \*.sh -type f); do
       print_notice "Running Script ${f}"
       ## script DATE TIME BACKUP_FILENAME FILESIZE MD5_VALUE
       ${f} "${now_date}" "${now_time}" "${target}" "${FILESIZE}" "${MD5VALUE}"

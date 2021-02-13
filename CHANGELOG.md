@@ -1,3 +1,12 @@
+## 7.1.9 2021-02-13 <dave at tiredofit dot ca>
+
+   ### Added
+      - OpenLDAP 2.4.57
+
+   ### Changed
+      - Change /assets/custom-scripts/ location for executing post backups scripts to /assets/custom-backup-scripts/
+
+
 ## 7.1.8 2021-01-14 <dave at tiredofit dot ca>
 
    ### Changed

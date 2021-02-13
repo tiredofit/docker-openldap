@@ -93,13 +93,14 @@ __NOTE__: Please allow up to 2 minutes for the application to start for the firs
 
 The following directories are used for configuration and can be mapped for persistent storage.
 
-| Directory                 | Description                                                                                                              |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `/var/lib/openldap`       | Data Directory                                                                                                           |
-| `/etc/openldap/slapd.d`   | Configuration Directory                                                                                                  |
-| `/assets/custom-scripts/` | If you'd like to execute a script during the initialization process drop it here (Useful for using this image as a base) |
-| `/certs/`                 | Drop TLS Certificates here (or use your own path)                                                                        |
-| `/data/backup`            | Backup Directory                                                                                                         |
+| Directory                        | Description                                                                                                              |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `/var/lib/openldap`              | Data Directory                                                                                                           |
+| `/etc/openldap/slapd.d`          | Configuration Directory                                                                                                  |
+| `/assets/custom-scripts/`        | If you'd like to execute a script during the initialization process drop it here (Useful for using this image as a base) |
+| `/assets/custom-backup-scripts/` | If you'd like to execute a script after the backup process drop it here (Useful for using this image as a base)          |
+| `/certs/`                        | Drop TLS Certificates here (or use your own path)                                                                        |
+| `/data/backup`                   | Backup Directory                                                                                                         |
 
 ### Environment Varables
 
