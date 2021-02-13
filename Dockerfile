@@ -57,7 +57,7 @@ RUN set -x && \
                 && \
     \
     mkdir -p /usr/src/pixz && \
-    curl -ssL https://github.com/vasi/pixz/releases/download/v1.0.6/pixz-1.0.6.tar.gz | tar xvfz - --strip=1 -C /usr/src/pixz && \
+    curl -ssL https://github.com/vasi/pixz/releases/download/v1.0.7/pixz-1.0.7.tar.gz | tar xvfz - --strip=1 -C /usr/src/pixz && \
     cd /usr/src/pixz && \
     ./configure && \
     make -j$(getconf _NPROCESSORS_ONLN) && \

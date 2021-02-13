@@ -1,3 +1,9 @@
+## 7.1.10 2021-02-13 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Fix to compile pixz with new musl base
+
+
 ## 7.1.9 2021-02-13 <dave at tiredofit dot ca>
 
    ### Added
