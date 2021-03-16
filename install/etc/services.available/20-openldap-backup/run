@@ -135,8 +135,8 @@ move_backup() {
 
             if var_true "$BACKUP_MD5" ; then
                 s3_date="$(LC_ALL=C date -u +"%a, %d %b %Y %X %z")"
-                s3_md5="$(libressl md5 -binary < "${tmpdir}/${target}.md5" | base64)"
-                sig="$(printf "PUT\n$s3_md5\n${s3_content_type}\n$s3_date\n/$S3_BUCKET/$S3_PATH/${target}.md5" | libressl sha1 -binary -hmac "${S3_KEY_SECRET}" | base64)"
+                s3_md5="$(openssl md5 -binary < "${tmpdir}/${target}.md5" | base64)"
+                sig="$(printf "PUT\n$s3_md5\n${s3_content_type}\n$s3_date\n/$S3_BUCKET/$S3_PATH/${target}.md5" | openssl sha1 -binary -hmac "${S3_KEY_SECRET}" | base64)"
                 print_debug "Uploading ${target}.md5 to S3"
                 curl -T "${tmpdir}/${target}.md5" "${S3_PROTOCOL}"://"${s3_url}"/"${S3_PATH}"/"${target}".md5 \
                      -H "Date: $date" \
@@ -146,8 +146,8 @@ move_backup() {
             fi
 
             s3_date="$(LC_ALL=C date -u +"%a, %d %b %Y %X %z")"
-            s3_md5="$(libressl md5 -binary < "${tmpdir}/${target}" | base64)"
-            sig="$(printf "PUT\n$s3_md5\n${s3_content_type}\n$s3_date\n/$S3_BUCKET/$S3_PATH/${target}" | libressl sha1 -binary -hmac "${S3_KEY_SECRET}" | base64)"
+            s3_md5="$(openssl md5 -binary < "${tmpdir}/${target}" | base64)"
+            sig="$(printf "PUT\n$s3_md5\n${s3_content_type}\n$s3_date\n/$S3_BUCKET/$S3_PATH/${target}" | openssl sha1 -binary -hmac "${S3_KEY_SECRET}" | base64)"
             print_debug "Uploading ${target} to S3"
             curl -T ${tmpdir}/"${target}" "${S3_PROTOCOL}"://"${s3_url}"/"${S3_PATH}"/"${target}" \
                  -H "Date: $s3_date" \

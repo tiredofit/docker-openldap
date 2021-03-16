@@ -1,6 +1,5 @@
 # hub.docker.com/r/tiredofit/openldap
 
-[![Build Status](https://img.shields.io/docker/build/tiredofit/openldap.svg)](https://hub.docker.com/r/tiredofit/openldap)
 [![Docker Pulls](https://img.shields.io/docker/pulls/tiredofit/openldap.svg)](https://hub.docker.com/r/tiredofit/openldap)
 [![Docker Stars](https://img.shields.io/docker/stars/tiredofit/openldap.svg)](https://hub.docker.com/r/tiredofit/openldap)
 [![Docker Layers](https://images.microbadger.com/badges/image/tiredofit/openldap.svg)](https://microbadger.com/images/tiredofit/openldap)
@@ -152,13 +151,13 @@ available options that can be used to customize your installation.
 
 If `BACKUP_LOCATION` = `S3` then the following options are used.
 
-| Parameter              | Description                                                                             |
-| ---------------------- | --------------------------------------------------------------------------------------- |
-| `BACKUP_S3_BUCKET`     | S3 Bucket name e.g. 'mybucket'                                                          |
-| `BACKUP_S3_HOSTNAME`   | Hostname of S3 Server e.g "s3.amazonaws.com" - You can also include a port if necessary |
-| `BACKUP_S3_KEY_ID`     | S3 Key ID                                                                               |
-| `BACKUP_S3_KEY_SECRET` | S3 Key Secret                                                                           |
-| `BACKUP_S3_PATH`       | S3 Pathname to save to e.g. '`backup`'                                                  |
+| Variable               | Description                                                                             | Default       |
+| ---------------------- | --------------------------------------------------------------------------------------- | ------------- |
+| `BACKUP_S3_BUCKET`     | S3 Bucket name e.g. 'mybucket'                                                          |               |
+| `BACKUP_S3_HOST`       | Hostname of S3 Server e.g "s3.amazonaws.com" - You can also include a port if necessary |               |
+| `BACKUP_S3_KEY_ID`     | S3 Key ID                                                                               |               |
+| `BACKUP_S3_KEY_SECRET` | S3 Key Secret                                                                           |               |
+| `BACKUP_S3_PATH`       | S3 Pathname to save to e.g. '`backup`'                                                  |               |
 | `BACKUP_S3_PROTOCOL`   | Use either `http` or `https` to access service                                          | `https`       |
 | `BACKUP_S3_URI_STYLE`  | Choose either `VIRTUALHOST` or `PATH` style                                             | `VIRTUALHOST` |
 
@@ -207,33 +206,33 @@ If you already have a check_password.conf or ppm.conf in /etc/openldap/ the foll
 
 #### Replication options
 
-| Variable                      | Description                                                                                                                                                                                                                                                                         | Default                                                                                                                                                                           |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ENABLE_REPLICATION`          | Add replication capabilities. Multimaster only at present.                                                                                                                                                                                                                          | `false`                                                                                                                                                                           |
-| `REPLICATION_CONFIG_SYNCPROV` | olcSyncRepl options used for the config database. Without rid and provider which are automatically added based on `REPLICATION_HOSTS`.                                                                                                                                              | `binddn="cn=config" bindmethod=simple credentials=$CONFIG_PASS searchbase="cn=config" type=refreshAndPersist retry="5 5 60 +" timeout=1 filter="(!(objectclass=olcGlobal))"`                   |
-| `REPLICATION_DB_SYNCPROV`     | olcSyncRepl options used for the database. Without rid and provider which are automatically added based on `REPLICATION_HOSTS`.                                                                                                                                                     | `binddn="cn=admin,$BASE_DN" bindmethod=simple credentials=$ADMIN_PASS searchbase="$BASE_DN" type=refreshAndPersist interval=00:00:00:10 retry="5 5 60 +" timeout=1` |
+| Variable                      | Description                                                                                                                                                                                                                                                                         | Default                                                                                                                                                                      |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ENABLE_REPLICATION`          | Add replication capabilities. Multimaster only at present.                                                                                                                                                                                                                          | `false`                                                                                                                                                                      |
+| `REPLICATION_CONFIG_SYNCPROV` | olcSyncRepl options used for the config database. Without rid and provider which are automatically added based on `REPLICATION_HOSTS`.                                                                                                                                              | `binddn="cn=config" bindmethod=simple credentials=$CONFIG_PASS searchbase="cn=config" type=refreshAndPersist retry="5 5 60 +" timeout=1 filter="(!(objectclass=olcGlobal))"` |
+| `REPLICATION_DB_SYNCPROV`     | olcSyncRepl options used for the database. Without rid and provider which are automatically added based on `REPLICATION_HOSTS`.                                                                                                                                                     | `binddn="cn=admin,$BASE_DN" bindmethod=simple credentials=$ADMIN_PASS searchbase="$BASE_DN" type=refreshAndPersist interval=00:00:00:10 retry="5 5 60 +" timeout=1`          |
 | `REPLICATION_HOSTS`           | list of replication hosts seperated by a space, must contain the current container hostname set by --hostname on docker run command. If replicating all hosts must be set in the same order. Example - `ldap://ldap1.example.com ldap://ldap2.example.com ldap://ldap3.example.com` |
-| `WAIT_FOR_REPLICAS`           | should we wait for configured replicas to come online (respond to ping) before startup? | `false` | 
+| `WAIT_FOR_REPLICAS`           | should we wait for configured replicas to come online (respond to ping) before startup?                                                                                                                                                                                             | `false`                                                                                                                                                                      |
 
  #### Other environment variables
 
-| Variable                    | Description                                                                               | Default                                        |
-| --------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| `CONFIG_PATH`               | Configuration files path                                                                  | `/etc/openldap`                                |
-| `DB_PATH`                   | Data Files path                                                                           | `/var/lib/openldap`                            |
-| `REMOVE_CONFIG_AFTER_SETUP` | Delete config folder after setup.                                                         | `true`                                         |
-| `SLAPD_ARGS`                | If you want to override slapd runtime arguments place here . Default (null)               |                                                |
-| `SLAPD_HOSTS`               | Allow overriding the default listen parameters                                            | `ldap://$HOSTNAME ldaps://$HOSTNAME ldapi:///` |
-| `ULIMIT_N`                  | Set Open File Descriptor Limit                                                            | `1024`                                         |
+| Variable                    | Description                                                                 | Default                                        |
+| --------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------- |
+| `CONFIG_PATH`               | Configuration files path                                                    | `/etc/openldap`                                |
+| `DB_PATH`                   | Data Files path                                                             | `/var/lib/openldap`                            |
+| `REMOVE_CONFIG_AFTER_SETUP` | Delete config folder after setup.                                           | `true`                                         |
+| `SLAPD_ARGS`                | If you want to override slapd runtime arguments place here . Default (null) |                                                |
+| `SLAPD_HOSTS`               | Allow overriding the default listen parameters                              | `ldap://$HOSTNAME ldaps://$HOSTNAME ldapi:///` |
+| `ULIMIT_N`                  | Set Open File Descriptor Limit                                              | `1024`                                         |
 
 ### Networking
 
 The following ports are exposed and available to public interfaces
 
-| Port  | Description                                   |
-| ----- | --------------------------------------------- |
-| `389` | LDAP                                          |
-| `636` | TLS Encrypted LDAP                            |
+| Port  | Description        |
+| ----- | ------------------ |
+| `389` | LDAP               |
+| `636` | TLS Encrypted LDAP |
 
 ## Maintenance
 

@@ -1,3 +1,9 @@
+## 7.1.11 2021-03-15 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Fix sloppy S3 backup configuration
+
+
 ## 7.1.10 2021-02-13 <dave at tiredofit dot ca>
 
    ### Changed
