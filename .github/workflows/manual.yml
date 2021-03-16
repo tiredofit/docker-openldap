@@ -1,13 +1,14 @@
-### Application Level Image CI
-### Dave Conroy <dave at tiredofit dot ca>
+# This is a basic workflow that is manually triggered
 
-name: 'Build Images'
+name: Manual workflow
 
 on:
-  push:
-    paths:
-    - '**'
-    - '!README.md'
+  workflow_dispatch:
+    inputs:
+      Manual Build:
+        description: 'Manual Build'
+        required: false
+
 jobs:
   master:
     runs-on: ubuntu-latest
