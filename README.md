@@ -147,7 +147,9 @@ available options that can be used to customize your installation.
 | `BACKUP_PARALLEL_COMPRESSION` | Use multiple cores when compressing backups `TRUE` or `FALSE`                                                                                                                                      | `TRUE`         |
 | `BACKUP_PATH`                 | Filesystem path on where to place backups                                                                                                                                                          | `/data/backup` |
 
+
 ##### Backing Up to S3 Compatible Services
+
 
 If `BACKUP_LOCATION` = `S3` then the following options are used.
 
@@ -160,6 +162,7 @@ If `BACKUP_LOCATION` = `S3` then the following options are used.
 | `BACKUP_S3_PATH`       | S3 Pathname to save to e.g. '`backup`'                                                  |               |
 | `BACKUP_S3_PROTOCOL`   | Use either `http` or `https` to access service                                          | `https`       |
 | `BACKUP_S3_URI_STYLE`  | Choose either `VIRTUALHOST` or `PATH` style                                             | `VIRTUALHOST` |
+
 
 #### Password Policy Options
 

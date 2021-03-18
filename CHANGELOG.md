@@ -1,3 +1,9 @@
+## 7.1.12 2021-03-18 <jkrenzer@github>
+
+   ### Added 
+      - Autogroup overlay
+
+
 ## 7.1.11 2021-03-15 <dave at tiredofit dot ca>
 
    ### Changed
