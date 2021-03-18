@@ -1,3 +1,9 @@
+## 7.1.14 2021-03-18 <dave at tiredofit dot ca>
+
+   ### Added
+      - OpenLDAP 2.4.58
+
+
 ## 7.1.13 2021-03-18 <dave at tiredofit dot ca>
 
    ### Added
