@@ -551,7 +551,7 @@ EOF
       ## Execute Custom Scripts (To be used for example for tiredofit/openldap-fusiondirectory)
       if [ -d /assets/custom-scripts/ ]; then
         print_notice "Found custom scripts to execute"
-        for f in $(find /assets/custom-scripts/ -name \*.sh -type f); do
+        for f in $(find /assets/custom-scripts/ -name \*.sh -type f | sort); do
           print_debug "Running Script ${f}"
           ${f}
         done
