@@ -1,3 +1,10 @@
+## 7.1.15 2021-04-20 <dave at tiredofit dot ca>
+
+   ### Added
+      - Add support for smbk5pwd overlay (credit: @ludwig-burtscher)
+      - Fix custom script sorting
+
+
 ## 7.1.14 2021-03-18 <dave at tiredofit dot ca>
 
    ### Added
