@@ -1,6 +1,6 @@
 # This is a basic workflow that is manually triggered
 
-name: Manual workflow
+name: manual workflow
 
 on:
   workflow_dispatch:
