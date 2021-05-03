@@ -1,9 +1,9 @@
 # github.com/tiredofit/docker-openldap
 
-[![GitHub release](https://img.shields.io/github/v/tag/tiredofit/docker-postfix?style=flat-square)](https://github.com/tiredofit/docker-postfix/releases/latest)
-[![Build Status](https://img.shields.io/github/workflow/status/tiredofit/docker-postfix/build?style=flat-square)](https://github.com/tiredofit/docker-postfix/actions?query=workflow%3Abuild)
-[![Docker Stars](https://img.shields.io/docker/stars/tiredofit/postfix.svg?style=flat-square&logo=docker)](https://hub.docker.com/r/tiredofit/postfix/)
-[![Docker Pulls](https://img.shields.io/docker/pulls/tiredofit/postfix.svg?style=flat-square&logo=docker)](https://hub.docker.com/r/tiredofit/postfix/)
+[![GitHub release](https://img.shields.io/github/v/tag/tiredofit/docker-openldap?style=flat-square)](https://github.com/tiredofit/docker-openldap/releases/latest)
+[![Build Status](https://img.shields.io/github/workflow/status/tiredofit/docker-openldap/build?style=flat-square)](https://github.com/tiredofit/docker-openldap/actions?query=workflow%3Abuild)
+[![Docker Stars](https://img.shields.io/docker/stars/tiredofit/openldap.svg?style=flat-square&logo=docker)](https://hub.docker.com/r/tiredofit/openldap/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/tiredofit/openldap.svg?style=flat-square&logo=docker)](https://hub.docker.com/r/tiredofit/openldap/)
 [![Become a sponsor](https://img.shields.io/badge/sponsor-tiredofit-181717.svg?logo=github&style=flat-square)](https://github.com/sponsors/tiredofit)
 [![Paypal Donate](https://img.shields.io/badge/donate-paypal-00457c.svg?logo=paypal&style=flat-square)](https://www.paypal.me/tiredofit)
 
