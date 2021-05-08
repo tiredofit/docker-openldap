@@ -366,33 +366,35 @@ EOF
 
       ### Replication Sanity Tester
       if [ -e "$was_started_with_replication" ]; then
-        set +e
-        replhosts_sanity=$(grep -o -h "provider=ldap.*//.*." ${CONFIG_PATH}slapd.d/cn\=config/olcDatabase*.ldif | awk -F '[//]' '{ print $3 }' | awk -F 'binddn' '{ print $1 }' | awk '!a[$0]++' | tr '\n' ' ' | awk '!a[$0]++' | sed 's/  / /g')
-        if [ ! -z "$replhosts_sanity" ]; then
-          for sanity_host in $replhosts_sanity; do
-            if var_true "$WAIT_FOR_REPLICAS"; then
-              print_debug "Waiting for $sanity_host to come online"
-              while ! silent ping -c1 -W1 $sanity_host; do
-                silent echo -n .
-              done
-            elif [[ $sanity_host =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              sanity_ip=$sanity_host
-              if [ -z "$sanity_ip" ]; then
-                print_error "It looks as if you have a malformed IP address for replication host "$sanity_host" in your schema configuration. Startup will fail!"
-                exit 1
-              fi
-            else
-              sanity_ip=$(getent hosts $sanity_host | awk '{ print $1 }')
-              valid_ip=$(echo $sanity_ip | awk -F'.' '$1 <=255 && $2 <= 255 && $3 <= 255 && $4 <= 255')
+        if var_true "${REPLICATION_SAFETY_CHECK}" ; then
+          set +e
+          replhosts_sanity=$(grep -o -h "provider=ldap.*//.*." ${CONFIG_PATH}slapd.d/cn\=config/olcDatabase*.ldif | awk -F '[//]' '{ print $3 }' | awk -F 'binddn' '{ print $1 }' | awk '!a[$0]++' | tr '\n' ' ' | awk '!a[$0]++' | sed 's/  / /g')
+          if [ ! -z "$replhosts_sanity" ]; then
+            for sanity_host in $replhosts_sanity; do
+              if var_true "$WAIT_FOR_REPLICAS"; then
+                print_debug "Waiting for $sanity_host to come online"
+                while ! silent ping -c1 -W1 $sanity_host; do
+                  silent echo -n .
+                done
+              elif [[ $sanity_host =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                sanity_ip=$sanity_host
+                if [ -z "$sanity_ip" ]; then
+                  print_error "It looks as if you have a malformed IP address for replication host "$sanity_host" in your schema configuration. Startup will fail!"
+                  exit 1
+                fi
+              else
+                sanity_ip=$(getent hosts $sanity_host | awk '{ print $1 }')
+                valid_ip=$(echo $sanity_ip | awk -F'.' '$1 <=255 && $2 <= 255 && $3 <= 255 && $4 <= 255')
 
-              if [ -z "$valid_ip" ] || [ -z "$sanity_ip" ]; then
-                print_error "It looks as if you have no DNS entry for replication host "$sanity_host" in your schema configuration. Startup will fail!"
-                exit 1
-              fi
+                if [ -z "$valid_ip" ] || [ -z "$sanity_ip" ]; then
+                  print_error "It looks as if you have no DNS entry for replication host "$sanity_host" in your schema configuration. Startup will fail!"
+                  exit 1
+                fi
 
-            fi
-          done
-          set -e
+              fi
+            done
+            set -e
+          fi
         fi
       fi
 

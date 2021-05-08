@@ -1,3 +1,9 @@
+## 7.1.16 2021-05-08 <dave at tiredofit dot ca>
+
+   ### Added
+      - Introduce `REPLICATION_SAFETY_CHECK` variable to bypass DNS checking of replication hosts
+
+
 ## 7.1.15 2021-04-20 <dave at tiredofit dot ca>
 
    ### Added

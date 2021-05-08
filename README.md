@@ -32,12 +32,16 @@ Upon starting this image it will give you a ready to run server with many config
 ### Table of Contents
 
 
-- [Prerequisites](#prerequisites)
+- [Prerequisites and Assumptions](#prerequisites-and-assumptions)
 - [Installation](#installation)
-  - [Quick Start](#quick-start)
+  - [Build from Source](#build-from-source)
+  - [Prebuilt Images](#prebuilt-images)
+  - [Multi Archictecture](#multi-archictecture)
 - [Configuration](#configuration)
-  - [Data-Volumes](#data-volumes)
-  - [Environment Varables](#environment-varables)
+  - [Quick Start](#quick-start)
+  - [Persistent Storage](#persistent-storage)
+  - [Environment Variables](#environment-variables)
+    - [Base Images used](#base-images-used)
     - [Required for new setup](#required-for-new-setup)
     - [Logging Options](#logging-options)
     - [Backup Options:](#backup-options)
@@ -49,6 +53,12 @@ Upon starting this image it will give you a ready to run server with many config
   - [Networking](#networking)
 - [Maintenance](#maintenance)
   - [Shell Access](#shell-access)
+- [Support](#support)
+  - [Usage](#usage)
+  - [Bugfixes](#bugfixes)
+  - [Feature Requests](#feature-requests)
+  - [Updates](#updates)
+- [License](#license)
   - [References](#references)
 
 ## Prerequisites and Assumptions
@@ -65,7 +75,7 @@ Builds of the image are available on [Docker Hub](https://hub.docker.com/r/tired
 ```bash
 docker pull tiredofit/openldap:(imagetag)
 ```
-The following image tags are available along with their taged release based on what's written in the [Changelog](CHANGELOG.md):
+The following image tags are available along with their tagged release based on what's written in the [Changelog](CHANGELOG.md):
 
 | Version | Container OS | Tag       |
 | ------- | ------------ | --------- |
@@ -218,6 +228,7 @@ If you already have a check_password.conf or ppm.conf in /etc/openldap/ the foll
 | `REPLICATION_CONFIG_SYNCPROV` | olcSyncRepl options used for the config database. Without rid and provider which are automatically added based on `REPLICATION_HOSTS`.                                                                                                                                              | `binddn="cn=config" bindmethod=simple credentials=$CONFIG_PASS searchbase="cn=config" type=refreshAndPersist retry="5 5 60 +" timeout=1 filter="(!(objectclass=olcGlobal))"` |
 | `REPLICATION_DB_SYNCPROV`     | olcSyncRepl options used for the database. Without rid and provider which are automatically added based on `REPLICATION_HOSTS`.                                                                                                                                                     | `binddn="cn=admin,$BASE_DN" bindmethod=simple credentials=$ADMIN_PASS searchbase="$BASE_DN" type=refreshAndPersist interval=00:00:00:10 retry="5 5 60 +" timeout=1`          |
 | `REPLICATION_HOSTS`           | list of replication hosts seperated by a space, must contain the current container hostname set by --hostname on docker run command. If replicating all hosts must be set in the same order. Example - `ldap://ldap1.example.com ldap://ldap2.example.com ldap://ldap3.example.com` |
+| `REPLICATION_SAFETY_CHECK`    | Check to see if all hosts resolve before starting replication - Introduced as a safety measure to avoid slapd not starting.                                                                                                                                                         | `TRUE`                                                                                                                                                                       |
 | `WAIT_FOR_REPLICAS`           | should we wait for configured replicas to come online (respond to ping) before startup?                                                                                                                                                                                             | `false`                                                                                                                                                                      |
 
  #### Other environment variables
