@@ -1,3 +1,8 @@
+## 7.1.17 2021-06-01 <janpolito@github>
+
+   ### Fixed
+      - slapd-restore script wasn't restoring gzipped databases
+
 ## 7.1.16 2021-05-08 <dave at tiredofit dot ca>
 
    ### Added
@@ -25,7 +30,7 @@
 
 ## 7.1.12 2021-03-18 <jkrenzer@github>
 
-   ### Added 
+   ### Added
       - Autogroup overlay
 
 
@@ -53,7 +58,7 @@
 ## 7.1.8 2021-01-14 <dave at tiredofit dot ca>
 
    ### Changed
-      - Alpine 3.13 Base         
+      - Alpine 3.13 Base
 
 
 ## 7.1.7 2020-11-25 <goldsam at github>
@@ -191,9 +196,9 @@
 
 ## 6.8.1 2020-04-16 <frebib@github>
 
-   ### Added 
+   ### Added
       - Allow overriding slapd runtime arguments
-  
+
    ### Changed
       - Fixed spelling mistake for OpenLDAP version
 
@@ -295,13 +300,13 @@
 ## 6.0 2018-08-18 <dave at tiredofit dot ca>
 
 * Stop relying on slapd.conf on first time initialization
-* Properly apply ACLs for ppolicy 
+* Properly apply ACLs for ppolicy
 * Generate Wordlist for ppm.so
 * Automatically generate check_password.conf and ppm.conf
 
 ## 5.5 2018-08-16 <dave at tiredofit dot ca>
 
-* Fix for ACLs not applying on initial boot 
+* Fix for ACLs not applying on initial boot
 
 ## 5.4 2018-08-08 <dave at tiredofit dot ca>
 
@@ -318,7 +323,7 @@
 
 ## 5.1 2018-07-21 <dave at tiredofit dot ca>
 
-* Add a sanity checker for Replication errors if hostname doesn't exist in DNS or malformed IP address which causes container start 
+* Add a sanity checker for Replication errors if hostname doesn't exist in DNS or malformed IP address which causes container start
 fail on 2nd try
 * Cleanup Config Pass item
 
@@ -351,7 +356,7 @@ fail on 2nd try
 
 ## 3.2 2017-07-03 <dave at tiredofit dot ca>
 
-* Fix Cron Backup 
+* Fix Cron Backup
 
 
 ## 3.1 2017-03-20 <dave at tiredofit dot ca>

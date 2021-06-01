@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-# Usage: /sbin/slapd-restore-config file [gunzipFile]
+# Usage: /usr/local/bin/slapd-restore-config file [gunzipFile]
 file=$1
 
 /usr/local/bin/slapd-restore 0 $file

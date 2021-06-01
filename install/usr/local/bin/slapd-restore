@@ -3,7 +3,7 @@
 source /assets/functions/00-container
 source /assets/defaults/10-openldap
 
-# Usage: /sbin/slapd-restore dbnum file
+# Usage: /usr/local/bin/slapd-restore dbnum file
 dbnum=$1
 file=$2
 
@@ -14,12 +14,16 @@ file="$backupPath/$file"
 s6-svc -d /var/run/s6/services/10-openldap
 pkill slapd
 
-if [ "$1" = "1" ] ; 
-	rm -rf "${CONFIG_PATH}/slap.d/*"
+TEMP_FILE=$(mktemp)
+gunzip -c $file > $TEMP_FILE
+chown ldap:ldap $TEMP_FILE
+
+if [ "$1" = "0" ]; then
+	rm -rf ${CONFIG_PATH}/slap.d/*
 fi
 
-if [ "$1" = "2" ] ; 
-	rm -rf "${DB_PATH}/*"
+if [ "$1" = "1" ]; then
+	rm -rf ${DB_PATH}/*
 fi
 
 sudo -u ldap slapadd -c -F /etc/openldap/slapd.d -n $dbnum -l $TEMP_FILE
