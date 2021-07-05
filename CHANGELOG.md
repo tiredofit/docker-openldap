@@ -1,3 +1,10 @@
+## 7.1.18 2021-07-05 <dave at tiredofit dot ca>
+
+   ### Added
+      - OpenLDAP 2.4.59
+      - Alpine 3.14 Base
+
+
 ## 7.1.17 2021-06-01 <janpolito@github>
 
    ### Fixed

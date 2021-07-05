@@ -1,7 +1,7 @@
-FROM tiredofit/alpine:3.13
+FROM tiredofit/alpine:3.14
 LABEL maintainer="Dave Conroy <dave at tiredofit dot ca>"
 
-ENV OPENLDAP_VERSION=2.4.58 \
+ENV OPENLDAP_VERSION=2.4.59 \
     SCHEMA2LDIF_VERSION=1.3 \
     ZABBIX_HOSTNAME=openldap-app \
     ENABLE_CRON=FALSE \
@@ -17,7 +17,8 @@ RUN set -x && \
 ### Fetch Build Dependencies
     apk update && \
     apk add -t .openldap-build-deps \
-                autoconf \
+                alpine-sdk \
+    autoconf \
                 automake \
                 build-base \
                 cracklib-dev \
@@ -58,14 +59,14 @@ RUN set -x && \
                 && \
     \
     mkdir -p /usr/src/pixz && \
-    curl -ssL https://github.com/vasi/pixz/releases/download/v1.0.7/pixz-1.0.7.tar.gz | tar xvfz - --strip=1 -C /usr/src/pixz && \
+    curl -ssL https://github.com/vasi/pixz/releases/download/v1.0.7/pixz-1.0.7.tar.gz | tar xfz - --strip=1 -C /usr/src/pixz && \
     cd /usr/src/pixz && \
     ./configure && \
     make -j$(getconf _NPROCESSORS_ONLN) && \
     make install && \
     \
     mkdir -p /usr/src/pbzip2 && \
-    curl -ssL https://launchpad.net/pbzip2/1.1/1.1.13/+download/pbzip2-1.1.13.tar.gz | tar xvfz - --strip=1 -C /usr/src/pbzip2 && \
+    curl -ssL https://launchpad.net/pbzip2/1.1/1.1.13/+download/pbzip2-1.1.13.tar.gz | tar xfz - --strip=1 -C /usr/src/pbzip2 && \
     cd /usr/src/pbzip2 && \
     make -j$(getconf _NPROCESSORS_ONLN) && \
     make install && \
@@ -73,7 +74,7 @@ RUN set -x && \
 ### Grab OpenLDAP Source, Alpine Patches and Check ppolicy module
     \
     mkdir -p /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
-    curl -sSL ftp://ftp.openldap.org/pub/OpenLDAP/openldap-release/openldap-$OPENLDAP_VERSION.tgz | tar xvfz - --strip 1 -C /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
+    curl -sSL https://openldap.org/software/download/OpenLDAP/openldap-release/openldap-${OPENLDAP_VERSION}.tgz | tar xfz - --strip 1 -C /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
     git clone --depth 1 git://git.alpinelinux.org/aports.git /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/alpine && \
     mkdir -p contrib/slapd-modules/ppolicy-check-password && \
     git clone https://github.com/cedric-dufour/ppolicy-check-password /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/contrib/slapd-modules/ppolicy-check-password && \
@@ -89,9 +90,10 @@ RUN set -x && \
     for patch in ./alpine/*.patch; do echo "** Applying $patch"; patch -p1 < $patch; done && \
 ### Compile OpenLDAP
     cd /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
-    libtoolize --force && \
-    aclocal && \
-    autoconf && \
+    sed -i '/^STRIP/s,-s,,g' build/top.mk && \
+    # Required for autoconf-2.70 #765043
+	sed 's@^AM_INIT_AUTOMAKE.*@AC_PROG_MAKE_SET@' -i configure.in && \
+    AUTOMAKE=/bin/true autoreconf -fi && \
     \
     ./configure \
         --build=$CBUILD \
