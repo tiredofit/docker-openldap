@@ -402,7 +402,7 @@ EOF
       print_debug "Starting OpenLDAP Initialization Sequence"
       silent slapd -h "ldap://$HOSTNAME ldapi:///" -u ldap -g ldap -d 256 &
       print_debug "Waiting for OpenLDAP to be ready"
-      while [ ! -e /run/openldap/slapd.pid ]; do sleep 2.0; done
+      until ldapsearch -Y EXTERNAL -Q -H ldapi:/// -s base \&>/dev/null; do sleep 2.0; done
 
       ### Setup bootstrap config - Part 2
       if var_true $new_install ; then
