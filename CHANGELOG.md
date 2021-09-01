@@ -1,3 +1,9 @@
+## 7.1.19 2021-09-01 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Change internal envionrment variables to accomodate for upstream changes
+
+
 ## 7.1.18 2021-07-05 <dave at tiredofit dot ca>
 
    ### Added

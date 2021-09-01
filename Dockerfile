@@ -2,10 +2,7 @@ FROM tiredofit/alpine:3.14
 LABEL maintainer="Dave Conroy <dave at tiredofit dot ca>"
 
 ENV OPENLDAP_VERSION=2.4.59 \
-    SCHEMA2LDIF_VERSION=1.3 \
-    ZABBIX_HOSTNAME=openldap-app \
-    ENABLE_CRON=FALSE \
-    ENABLE_SMTP=FALSE
+    SCHEMA2LDIF_VERSION=1.3
 
 COPY CHANGELOG.md /tiredofit/
 
@@ -18,7 +15,7 @@ RUN set -x && \
     apk update && \
     apk add -t .openldap-build-deps \
                 alpine-sdk \
-    autoconf \
+                autoconf \
                 automake \
                 build-base \
                 cracklib-dev \
