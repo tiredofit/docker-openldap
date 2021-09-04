@@ -1,3 +1,9 @@
+## 7.1.20 2021-09-04 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Change the way logrotation is configured for future log parsing capabilities
+
+
 ## 7.1.19 2021-09-01 <dave at tiredofit dot ca>
 
    ### Changed

@@ -588,10 +588,9 @@ configure_logging() {
     mkdir -p ${LOG_PATH}
     touch ${LOG_PATH}${LOG_FILE}
     chown -R ldap: ${LOG_PATH}${LOG_FILE}
-    sed -i "s#<LOG_LOCATION>#${LOG_PATH}#g" /etc/logrotate.d/openldap
+    create_logrotate openldap ${LOG_PATH}/${LOG_FILE} none ldap ldap
     log_argument="${LOG_PATH}/${LOG_FILE}"
   else
-    rm -rf /etc/logrotate.d/openldap
     log_argument="/dev/stderr"
   fi
 
