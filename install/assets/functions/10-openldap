@@ -162,7 +162,7 @@ configure_backup() {
   if var_true $ENABLE_BACKUP; then
     print_notice "Enabling OpenLDAP scheduled backup routines"
   else
-    service_stop 20-openldap-backup
+    rm -rf /etc/services.available/20-openldap-backup
   fi
 }
 

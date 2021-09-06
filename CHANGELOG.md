@@ -1,3 +1,9 @@
+## 7.1.21 2021-09-06 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Fix for ENABLE_BACKUP=FALSE disabling main slapd process
+
+
 ## 7.1.20 2021-09-04 <dave at tiredofit dot ca>
 
    ### Changed
