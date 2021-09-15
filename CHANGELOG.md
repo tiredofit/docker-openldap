@@ -1,3 +1,9 @@
+## 7.1.22 2021-09-15 <bmalovyn@github>
+
+   ### Changed
+      - Wait for slapd to really be ready before running ldapmodify
+
+
 ## 7.1.21 2021-09-06 <dave at tiredofit dot ca>
 
    ### Changed
