@@ -1,3 +1,9 @@
+## 7.2.0 2021-11-09 <tiredofit@github>
+
+   ### Added
+      - OpenLDAP 2.6.0
+
+
 ## 7.1.22 2021-09-15 <bmalovyn@github>
 
    ### Changed

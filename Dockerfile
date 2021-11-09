@@ -1,7 +1,7 @@
 FROM docker.io/tiredofit/alpine:3.14
 LABEL maintainer="Dave Conroy <dave at tiredofit dot ca>"
 
-ENV OPENLDAP_VERSION=2.4.59 \
+ENV OPENLDAP_VERSION=2.6.0 \
     SCHEMA2LDIF_VERSION=1.3
 
 COPY CHANGELOG.md /tiredofit/
@@ -18,22 +18,24 @@ RUN set -x && \
                 autoconf \
                 automake \
                 build-base \
+                bzip2-dev \
                 cracklib-dev \
                 cyrus-sasl-dev \
                 db-dev \
-                bzip2-dev \
-                xz-dev \
-                libarchive-dev \
                 git \
                 groff \
-                openssl-dev \
+                heimdal-dev \
+                libarchive-dev \
+                libevent-dev \
                 libsodium-dev \
                 libtool \
                 m4 \
                 mosquitto-dev \
+                openssl-dev \
+                openssl-dev \
                 unixodbc-dev \
                 util-linux-dev \
-                heimdal-dev \
+                xz-dev \
                 && \
     \
 ### Fetch Runtime Dependencies
@@ -69,27 +71,25 @@ RUN set -x && \
     make install && \
     \
 ### Grab OpenLDAP Source, Alpine Patches and Check ppolicy module
-    \
-    mkdir -p /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
-    curl -sSL https://openldap.org/software/download/OpenLDAP/openldap-release/openldap-${OPENLDAP_VERSION}.tgz | tar xfz - --strip 1 -C /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
-    git clone --depth 1 git://git.alpinelinux.org/aports.git /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/alpine && \
+    mkdir -p /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/ && \
+    curl -sSL https://openldap.org/software/download/OpenLDAP/openldap-release/openldap-${OPENLDAP_VERSION}.tgz | tar xfz - --strip 1 -C /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/ && \
+    git clone --depth 1 git://git.alpinelinux.org/aports.git /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/alpine && \
     mkdir -p contrib/slapd-modules/ppolicy-check-password && \
-    git clone https://github.com/cedric-dufour/ppolicy-check-password /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/contrib/slapd-modules/ppolicy-check-password && \
-    mkdir -p contrib/slapd-modules/ppm && \
-    git clone https://github.com/ltb-project/ppm /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/contrib/slapd-modules/ppm && \
-    cd /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/alpine && \
+    git clone https://github.com/cedric-dufour/ppolicy-check-password /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/contrib/slapd-modules/ppolicy-check-password && \
+    rm -rf /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/contrib/slapd-modules/ppm && \
+    #mkdir -p contrib/slapd-modules/ppm && \
+    git clone https://github.com/ltb-project/ppm /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/contrib/slapd-modules/ppm && \
+    cd /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/alpine && \
     git filter-branch --prune-empty --subdirectory-filter main/openldap HEAD && \
-    # Already applied
-    rm -rf CVE-2017-9287.patch && \
     \
 ### Apply Patches
-    cd /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
+    cd /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/ && \
     for patch in ./alpine/*.patch; do echo "** Applying $patch"; patch -p1 < $patch; done && \
 ### Compile OpenLDAP
-    cd /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
+    cd /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/ && \
     sed -i '/^STRIP/s,-s,,g' build/top.mk && \
     # Required for autoconf-2.70 #765043
-	sed 's@^AM_INIT_AUTOMAKE.*@AC_PROG_MAKE_SET@' -i configure.in && \
+	#sed 's@^AM_INIT_AUTOMAKE.*@AC_PROG_MAKE_SET@' -i configure.in && \
     AUTOMAKE=/bin/true autoreconf -fi && \
     \
     ./configure \
@@ -100,55 +100,49 @@ RUN set -x && \
         --sysconfdir=/etc \
         --mandir=/usr/share/man \
         --localstatedir=/var/run/openldap \
-        --enable-slapd \
+        --enable-argon2 \
+        --enable-asyncmeta=mod \
+        --enable-balancer=yes \
         --enable-crypt \
-        --enable-modules \
-        --enable-dynamic \
-        --enable-bdb=mod \
         --enable-dnssrv=mod \
-        --enable-hdb=mod \
+        --enable-dynamic \
         --enable-ldap=mod \
+        --enable-lload=mod \
         --enable-mdb=mod \
         --enable-meta=mod \
+        --enable-modules \
         --enable-monitor=yes \
         --enable-null=mod \
+        --enable-overlays=mod \
         --enable-passwd=mod \
-        --enable-spasswd \
         --enable-relay=mod \
-        --enable-shell=mod \
+        --enable-spasswd \
+        --enable-slapd \
         --enable-sock=mod \
         --enable-sql=mod \
-        --enable-overlays=mod \
-        --with-tls=openssl \
         --with-cyrus-sasl \
+		--with-systemd=no \
+        --with-tls=openssl \
         && \
-    \
     make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" install && \
     \
-    ## Build MQTT overlay.
-    make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexec=/usr/lib -C contrib/slapd-modules/mqtt install && \
-    ## Build passwd pbkdf2.
-    make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/passwd/pbkdf2 install && \
-    ## Build passwd SHA2
-    make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/passwd/sha2 install && \
-    ## Build passwd Argon2
-    make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/passwd/argon2 install && \
-    ## Build autogroup for dynamic groups
+    ## Modules
+    cd /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/ && \
     make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/autogroup install && \
-    ## Build smbk5pwd overlay
-    make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/smbk5pwd install && \
-    ## Build lastbind overlay
     make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/lastbind install && \
+    make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexec=/usr/lib -C contrib/slapd-modules/mqtt install && \
+    make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/passwd/pbkdf2 install && \
+    make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/passwd/sha2 install && \
+    make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/smbk5pwd install && \
     #
     ## Build ppolicy-check Module
-    cd /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
-    make -j$(getconf _NPROCESSORS_ONLN) prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/ppolicy-check-password LDAP_INC_PATH=/tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}` && \
-    cp /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/contrib/slapd-modules/ppolicy-check-password/check_password.so /usr/lib/openldap && \
+    cd /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/ && \
+    make -j$(getconf _NPROCESSORS_ONLN) prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/ppolicy-check-password LDAP_INC_PATH=/tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}) && \
+    cp /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/contrib/slapd-modules/ppolicy-check-password/check_password.so /usr/lib/openldap && \
     ## Build Alternative PPM Module
-    cd /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
-    make prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/ppm LDAP_INC_PATH=/tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}` && \
-    cp /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/contrib/slapd-modules/ppm/ppm.so /usr/lib/openldap && \
-    \
+    cd /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/ && \
+    make prefix=/usr libexecdir=/usr/lib etcdir=/etc -C contrib/slapd-modules/ppm LDAP_INC_PATH=/tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}) && \
+    cp /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/contrib/slapd-modules/ppm/ppm.so /usr/lib/openldap && \
     ### OpenLDAP Setup
     ln -s /usr/lib/slapd /usr/sbin && \
     mkdir -p /usr/share/doc/openldap && \
@@ -157,7 +151,7 @@ RUN set -x && \
     mkdir -p /etc/openldap/sasl2 && \
     echo "mech_list: plain external" > /etc/openldap/sasl2/slapd.conf && \
     mkdir -p /etc/openldap/schema && \
-    cp -R /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/servers/slapd/schema/*.schema /etc/openldap/schema && \
+    cp -R /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/servers/slapd/schema/*.schema /etc/openldap/schema && \
     mkdir -p /run/openldap && \
     chown -R ldap:ldap /run/openldap && \
     \
