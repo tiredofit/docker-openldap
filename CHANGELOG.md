@@ -1,3 +1,9 @@
+## 7.2.1 2021-11-12 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Fix for 7.2.0 - Ppolicy schema is wrapped into the module now, and solve some configuration test issues
+
+
 ## 7.2.0 2021-11-09 <tiredofit@github>
 
    ### Added

@@ -446,10 +446,10 @@ EOF
           ldap_add_or_modify "$f"
         done
 
-        # Add ppolicy schema
-        print_debug "Adding ppolicy Schema"
-        /usr/bin/schema2ldif ${CONFIG_PATH}schema/ppolicy.schema >${CONFIG_PATH}schema/ppolicy.ldif
-        ldap_add_or_modify ${CONFIG_PATH}schema/ppolicy.ldif
+        # Add ppolicy schema # Moved here: https://github.com/openldap/openldap/commit/44191183be6a1e323eec6708fc8acfb9160d8188#diff-5b7ab737465d821532527e6e4cad597e98039d005012934cb900256562481d5d
+        #print_debug "Adding ppolicy Schema"
+        #/usr/bin/schema2ldif ${CONFIG_PATH}schema/ppolicy.schema >${CONFIG_PATH}schema/ppolicy.ldif
+        #ldap_add_or_modify ${CONFIG_PATH}schema/ppolicy.ldif
 
         # Custom LDIF injection
         if [ -d /assets/slapd/config/bootstrap/ldif/custom ]; then
@@ -725,7 +725,8 @@ function schema2ldif() {
     echo "include ${schema}" >>convert.dat
   done
 
-  silent slaptest -f convert.dat -F .
+  slaptest_tmp=$(mktemp -d)
+  silent slaptest -f convert.dat -F ${slaptest_tmp}
 
   if [ $? -ne 0 ]; then
     print_error "slaptest conversion failed!"
