@@ -63,7 +63,7 @@ Upon starting this image it will give you a ready to run server with many config
 
 ## Prerequisites and Assumptions
 
-- This image doesn't do much on it's own, you must use a complemenary service to pass messages or data to it via port 783.
+- None
 
 ## Installation
 ### Build from Source
