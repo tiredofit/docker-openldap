@@ -601,6 +601,16 @@ configure_logging() {
   done
 }
 
+configure_monitoring() {
+      if var_true "${CONTAINER_ENABLE_MONITORING}" && [ "${CONTAINER_MONITORING_BACKEND,,}" = "zabbix" ]; then
+        source /assets/defaults/03-monitoring
+        cat <<EOF > "${ZABBIX_CONFIG_PATH}"/"${ZABBIX_CONFIG_FILE}.d"/tiredofit_unbound.conf
+# Zabbix OpenLDAP Configuration - Automatically Generated
+# Find Companion Zabbix Server Templates at https://github.com/tiredofit/docker-openldap
+# Autoregister=openldap
+EOF
+    fi
+}
 configure_ppolicy_check_modules() {
   if var_true $ENABLE_PPOLICY; then
     print_notice "Configuring PPolicy check modules"

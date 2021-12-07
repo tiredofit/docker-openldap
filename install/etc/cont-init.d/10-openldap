@@ -10,5 +10,6 @@ configure_ldap_client
 configure_backup
 configure_networking
 configure_ppolicy_check_modules
+configure_monitoring
 
 liftoff
