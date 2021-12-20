@@ -1,3 +1,9 @@
+## 7.1.24 2021-12-20 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Fix for Zabbix Agent not starting
+
+
 ## 7.1.23 2021-12-20 <dave at tiredofit dot ca>
 
    ### Changed
