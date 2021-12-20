@@ -1,4 +1,4 @@
-FROM docker.io/tiredofit/alpine:3.14
+FROM docker.io/tiredofit/alpine:3.15
 LABEL maintainer="Dave Conroy <dave at tiredofit dot ca>"
 
 ENV OPENLDAP_VERSION=2.4.59 \
@@ -126,7 +126,7 @@ RUN set -x && \
     make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" install && \
     \
     ## Build MQTT overlay.
-    make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexec=/usr/lib -C contrib/slapd-modules/mqtt install && \
+    #make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexec=/usr/lib -C contrib/slapd-modules/mqtt install && \
     ## Build passwd pbkdf2.
     make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" prefix=/usr libexecdir=/usr/lib -C contrib/slapd-modules/passwd/pbkdf2 install && \
     ## Build passwd SHA2

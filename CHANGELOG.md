@@ -1,3 +1,10 @@
+## 7.1.23 2021-12-20 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Base image update to Alpine 3.15
+      - Zabbix Template changes
+
+
 ## 7.1.22 2021-09-15 <bmalovyn@github>
 
    ### Changed
