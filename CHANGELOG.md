@@ -1,3 +1,9 @@
+## 7.1.25 2021-12-23 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Rely on PATH to start slapd instead of absolute pathname for monitoring purposes
+
+
 ## 7.1.24 2021-12-20 <dave at tiredofit dot ca>
 
    ### Changed
