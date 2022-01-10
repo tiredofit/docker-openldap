@@ -1,0 +1,12 @@
+# Automatic folders created in the examples folder
+examples/backup
+examples/certs
+examples/config
+examples/data
+
+# Log files
+*.log
+
+# certs and keys
+*.pem
+*.key
