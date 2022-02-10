@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv bash
+#!/command/with-contenv bash
 
 ADD_DEFAULT_DATA=${ADD_DEFAULT_DATA:-"TRUE"}
 ADMIN_PASS=${ADMIN_PASS:-"admin"}
