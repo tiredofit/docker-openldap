@@ -1,3 +1,15 @@
+## 7.2.4 2022-03-01 <dave at tiredofit dot ca>
+
+   ### Added
+      - OpenLDAP 2.6.1
+
+   ### Changed
+      - Repair quirks with OpenLDAP script (S3 backups, temp directories)
+      - Disable anonymous bind on initial OpenLDAP setup
+      - Rework replication to deprecate olcMirrorMode attributes
+      - Code Cleanup and modernization
+
+
 ## 7.2.3 2021-12-07 <dave at tiredofit dot ca>
 
    ### Added

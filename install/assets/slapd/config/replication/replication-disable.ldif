@@ -3,7 +3,7 @@ dn: olcDatabase={1}mdb,cn=config
 changetype: modify
 delete: olcSyncRepl
 -
-delete: olcMirrorMode
+delete: olcMultiProvider
 
 # Delete syncprov on backend
 dn: olcOverlay=syncprov,olcDatabase={1}mdb,cn=config
@@ -14,7 +14,7 @@ dn: olcDatabase={0}config,cn=config
 changetype: modify
 delete: olcSyncRepl
 -
-delete: olcMirrorMode
+delete: olcMultiProvider
 
 # Delete syncprov on config
 dn: olcOverlay=syncprov,olcDatabase={0}config,cn=config

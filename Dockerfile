@@ -1,18 +1,18 @@
 FROM docker.io/tiredofit/alpine:3.15
-LABEL maintainer="Dave Conroy <dave at tiredofit dot ca>"
+LABEL maintainer="Dave Conroy (github.com/tiredofit)"
 
-ENV OPENLDAP_VERSION=2.6.0 \
-    SCHEMA2LDIF_VERSION=1.3
+ENV OPENLDAP_VERSION=2.6.1 \
+    SCHEMA2LDIF_VERSION=1.3 \
+    IMAGE_NAME="tiredofit/openldap" \
+    IMAGE_REPO_URL="https://github.com/tiredofit/docker-openldap/"
 
 COPY CHANGELOG.md /tiredofit/
 
 RUN set -x && \
-### Add OpenLDAP user and group
     addgroup -g 389 ldap && \
     adduser -S -D -H -h /var/lib/openldap -s /sbin/nologin -G ldap -u 389 ldap && \
-    \
-### Fetch Build Dependencies
     apk update && \
+    apk upgrade && \
     apk add -t .openldap-build-deps \
                 alpine-sdk \
                 autoconf \
@@ -38,8 +38,8 @@ RUN set -x && \
                 xz-dev \
                 && \
     \
-### Fetch Runtime Dependencies
     apk add -t .openldap-run-deps \
+                aws-cli \
                 bzip2 \
                 cyrus-sasl \
                 coreutils \
@@ -91,7 +91,6 @@ RUN set -x && \
     # Required for autoconf-2.70 #765043
 	#sed 's@^AM_INIT_AUTOMAKE.*@AC_PROG_MAKE_SET@' -i configure.in && \
     AUTOMAKE=/bin/true autoreconf -fi && \
-    \
     ./configure \
         --build=$CBUILD \
         --host=$CHOST \
@@ -168,11 +167,10 @@ RUN set -x && \
     rm -rf cracklib-words-2.9.7.gz && \
     \
 ### Cleanup
-    apk del \
-        .openldap-build-deps \
-        && \
+    apk del .openldap-build-deps \
+            && \
     rm -rf /tiredofit \
-           /usr/src \
+           /usr/src/* \
            /var/cache/apk/*
 
 ### Networking
