@@ -77,9 +77,11 @@ docker pull tiredofit/openldap:(imagetag)
 ```
 The following image tags are available along with their tagged release based on what's written in the [Changelog](CHANGELOG.md):
 
-| Version | Container OS | Tag       |
-| ------- | ------------ | --------- |
-| latest  | Alpine       | `:latest` |
+| Version | OpenLDAP Version | Container OS | Tag       |
+| ------- | ---------------- | ------------ | --------- |
+| latest  | 2.6.x            | Alpine       | `:latest` |
+| `2.6`   | 2.6.x            | Alpine       | `:2.6`    |
+| `2.4`   | 2.4.x            | Alpine       | `:2.4`    |
 
 ### Multi Architecture
 Images are built primarily for `amd64` architecture, and may also include builds for `arm/v6`, `arm/v7`, `arm64` and others. These variants are all unsupported. Consider [sponsoring](https://github.com/sponsors/tiredofit) my work so that I can work with various hardware. To see if this image supports multiple architecures, type `docker manifest (image):(tag)`
