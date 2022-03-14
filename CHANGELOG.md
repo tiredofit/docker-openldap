@@ -1,3 +1,9 @@
+## 7.2.5 2022-03-14 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Fix for slapd-restore and S6 Overlay 3.xx
+
+
 ## 7.2.4 2022-03-01 <dave at tiredofit dot ca>
 
    ### Added
