@@ -11,7 +11,7 @@ backupPath="/data/backup"
 file="$backupPath/$file"
 
 # stop slapd
-s6-svc -d /var/run/s6/services/10-openldap
+s6-svc -d /var/run/s6/legacy-services/10-openldap
 pkill slapd
 
 TEMP_FILE=$(mktemp)
@@ -29,7 +29,7 @@ fi
 sudo -u ldap slapadd -c -F /etc/openldap/slapd.d -n $dbnum -l $TEMP_FILE
 
 # restart slapd
-s6-svc -u /var/run/s6/services/10-openldap
+s6-svc -u /var/run/s6/legacy-services/10-openldap
 
 rm $TEMP_FILE
 
