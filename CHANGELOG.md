@@ -1,3 +1,9 @@
+## 7.2.6 2022-04-25 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Fix to allow RFC2307bis schemas to install
+
+
 ## 7.2.5 2022-03-14 <dave at tiredofit dot ca>
 
    ### Changed

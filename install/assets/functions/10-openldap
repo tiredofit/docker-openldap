@@ -705,7 +705,7 @@ function schema2ldif() {
 
   # Dual Schema Support
   if [ "${SCHEMA_TYPE,,}" = "rfc2307bis" ] ; then
-    cp -R /assets/slapd/config/bootstrap/scfhema/rfc2307bis/rfc2307bis.schema /etc/openldap/schema/
+    cp -R /assets/slapd/config/bootstrap/schema/rfc2307bis/rfc2307bis.schema /etc/openldap/schema/
     SCHEMA_TYPE="rfc2307bis"
   else
     SCHEMA_TYPE="nis"
