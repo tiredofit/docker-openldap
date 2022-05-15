@@ -1,7 +1,7 @@
 FROM docker.io/tiredofit/alpine:3.15
 LABEL maintainer="Dave Conroy (github.com/tiredofit)"
 
-ENV OPENLDAP_VERSION=2.6.1 \
+ENV OPENLDAP_VERSION=2.6.2 \
     SCHEMA2LDIF_VERSION=1.3 \
     IMAGE_NAME="tiredofit/openldap" \
     IMAGE_REPO_URL="https://github.com/tiredofit/docker-openldap/"
