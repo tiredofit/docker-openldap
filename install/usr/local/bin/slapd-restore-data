@@ -1,8 +1,0 @@
-#!/bin/bash -e
-
-# Usage: /usr/local/bin/slapd-restore-data file [gunzipFile]
-file=$1
-
-/usr/local/bin/slapd-restore 1 $file
-
-exit 0

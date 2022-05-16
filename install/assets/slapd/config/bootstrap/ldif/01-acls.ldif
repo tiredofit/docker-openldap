@@ -1,5 +1,0 @@
-dn: olcDatabase={1}mdb,cn=config
-changeType: modify
-add: olcAccess
-olcAccess: to attrs=userPassword,shadowLastChange by self =xw by dn="cn=admin,<BASE_DN>" write by anonymous auth by * none
-olcAccess: to * by self write by dn="cn=admin,<BASE_DN>" write by * read
