@@ -3,7 +3,7 @@ LABEL maintainer="Dave Conroy <dave at tiredofit dot ca>"
 
 ENV OPENLDAP_VERSION=2.4.59 \
     SCHEMA2LDIF_VERSION=1.3 \
-    IMAGE_NAME="tiredofit/openldap" \
+    IMAGE_NAME="tiredofit/openldap:2.4" \
     IMAGE_REPO_URL="https://github.com/tiredofit/docker-openldap/"
 
 COPY CHANGELOG.md /tiredofit/
@@ -74,12 +74,14 @@ RUN set -x && \
     \
     mkdir -p /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
     curl -sSL https://openldap.org/software/download/OpenLDAP/openldap-release/openldap-${OPENLDAP_VERSION}.tgz | tar xfz - --strip 1 -C /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/ && \
-    git clone --depth 1 git://git.alpinelinux.org/aports.git /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/alpine && \
+    git clone https://github.com/alpinelinux/aports /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/alpine && \
     mkdir -p contrib/slapd-modules/ppolicy-check-password && \
     git clone https://github.com/cedric-dufour/ppolicy-check-password /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/contrib/slapd-modules/ppolicy-check-password && \
     mkdir -p contrib/slapd-modules/ppm && \
     git clone https://github.com/ltb-project/ppm /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/contrib/slapd-modules/ppm && \
     cd /tiredofit/openldap:`head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'}`/alpine && \
+    git checkout  5342340d59 && \
+    #git filter-branch --prune-empty --subdirectory-filter main/openldap 5342340d59c0daccaad57f13b253453ba5fe7a7f && \
     git filter-branch --prune-empty --subdirectory-filter main/openldap HEAD && \
     # Already applied
     rm -rf CVE-2017-9287.patch && \

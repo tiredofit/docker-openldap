@@ -1,3 +1,9 @@
+## 7.1.30 2022-05-24 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Fix for patches not installing correctly limiting compilation
+
+
 ## 7.1.29 2022-05-24 <dave at tiredofit dot ca>
 
    ### Added
