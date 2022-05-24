@@ -1,4 +1,4 @@
-FROM docker.io/tiredofit/alpine:3.15
+FROM docker.io/tiredofit/alpine:3.16
 LABEL maintainer="Dave Conroy (github.com/tiredofit)"
 
 ENV OPENLDAP_VERSION=2.6.2 \
