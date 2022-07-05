@@ -1,3 +1,9 @@
+## 7.1.31 2022-07-05 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Version bump for dependencies
+
+
 ## 7.1.30 2022-05-24 <dave at tiredofit dot ca>
 
    ### Changed
