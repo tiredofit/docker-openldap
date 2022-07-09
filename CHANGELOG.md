@@ -1,3 +1,9 @@
+## 7.2.10 2022-07-09 <sniper7kills@github>
+
+   ### Fixed
+      - Custom Schemas not inserting properly
+
+
 ## 7.2.9 2022-07-05 <dave at tiredofit dot ca>
 
    ### Changed
