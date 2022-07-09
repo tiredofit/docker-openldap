@@ -737,7 +737,7 @@ function schema2ldif() {
     schema_dir=$(dirname ${fullpath})
     ldif_file=${schema_name}.ldif
 
-    find . -name *\}${schema_name}.ldif -exec mv '{}' ./${ldif_file} \;
+    find ${slaptest_tmp} -name *\}${schema_name}.ldif -exec mv '{}' ./${ldif_file} \;
 
     # TODO: these sed invocations could all be combined
     sed -i "/dn:/ c dn: cn=${schema_name},cn=schema,cn=config" ${ldif_file}
