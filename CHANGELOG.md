@@ -1,3 +1,9 @@
+## 7.1.32 2022-07-09 <sniper7kills@github>
+
+   ### Fixed
+      - Custom schemas not loading properly
+
+
 ## 7.1.31 2022-07-05 <dave at tiredofit dot ca>
 
    ### Changed
