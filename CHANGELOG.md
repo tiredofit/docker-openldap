@@ -1,3 +1,9 @@
+## 7.2.11 2022-07-14 <dave at tiredofit dot ca>
+
+   ### Added
+      - OpenLDAP 2.6.3
+
+
 ## 7.2.10 2022-07-09 <sniper7kills@github>
 
    ### Fixed
