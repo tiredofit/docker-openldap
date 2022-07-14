@@ -84,6 +84,7 @@ RUN set -x && \
     \
 ### Apply Patches
     cd /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/ && \
+    rm -rf ./alpine/tests-make-add-missing-dependency.patch && \
     for patch in ./alpine/*.patch; do echo "** Applying $patch"; patch -p1 < $patch; done && \
 ### Compile OpenLDAP
     cd /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/ && \

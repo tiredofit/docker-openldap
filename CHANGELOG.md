@@ -1,3 +1,9 @@
+## 7.2.12 2022-07-14 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Stop patching one of the makefiles to allow successful builds
+
+
 ## 7.2.11 2022-07-14 <dave at tiredofit dot ca>
 
    ### Added
