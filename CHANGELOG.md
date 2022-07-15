@@ -1,3 +1,9 @@
+## 7.2.13 2022-07-14 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Silence warning with a dirty chown command
+
+
 ## 7.2.12 2022-07-14 <dave at tiredofit dot ca>
 
    ### Changed

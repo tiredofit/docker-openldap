@@ -614,7 +614,7 @@ min_digit $PPOLICY_MIN_DIGIT
 min_punct $PPOLICY_MIN_PUNCT
 max_consecutive_per_class $PPOLICY_MAX_CONSEC
 EOF
-      chown ldap. "${CONFIG_PATH}"check_password.conf
+      chown ldap:ldap "${CONFIG_PATH}"check_password.conf
     fi
 
     ### ppm.so
@@ -634,7 +634,7 @@ class-lowerCase abcdefghijklmnopqrstuvwxyz $PPOLICY_MIN_LOWER 1
 class-digit 0123456789 $PPOLICY_MIN_DIGIT 1
 class-special <>,?;.:/!§ù%*µ^¨$£²&é~"#'{([-|è\`_\ç^à@)]°=}+ $PPOLICY_MIN_PUNCT 1
 EOF
-      chown ldap. "${CONFIG_PATH}"/ppm.conf
+      chown ldap:ldap "${CONFIG_PATH}"/ppm.conf
     fi
   fi
 }
