@@ -1,3 +1,9 @@
+## 7.2.14 2022-08-06 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Minor tweak to loading custom scripts
+
+
 ## 7.2.13 2022-07-14 <dave at tiredofit dot ca>
 
    ### Changed

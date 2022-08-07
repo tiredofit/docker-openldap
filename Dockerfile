@@ -44,6 +44,7 @@ RUN set -x && \
                 cyrus-sasl \
                 coreutils \
                 cracklib \
+                iptables \
                 libltdl \
                 libuuid \
                 libintl \

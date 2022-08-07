@@ -550,11 +550,7 @@ EOF
 
       ## Execute Custom Scripts (To be used for example for tiredofit/openldap-fusiondirectory)
       if [ -d /assets/custom-scripts/ ]; then
-        print_notice "Found custom scripts to execute"
-        for f in $(find /assets/custom-scripts/ -name \*.sh -type f | sort); do
-          print_debug "Running Script ${f}"
-          ${f}
-        done
+        custom_scripts
       else
         if var_true "${ADD_DEFAULT_DATA}" ; then
           print_notice "Adding default top level data configuration"
