@@ -11,4 +11,4 @@ ulimit -n ${ULIMIT_N}
 liftoff
 
 print_start "Starting OpenLDAP ${OPENLDAP_VERSION}"
-slapd $SLAPD_ARGS -h "${SLAPD_HOSTS}" -u ldap -g ldap ${log_level} >>${log_argument} 2>&1
+exec slapd $SLAPD_ARGS -h "${SLAPD_HOSTS}" -u ldap -g ldap ${log_level} >>${log_argument} 2>&1
