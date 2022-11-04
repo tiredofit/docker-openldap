@@ -179,4 +179,4 @@ RUN set -x && \
 EXPOSE 389 636
 
 ### Add Assets
-ADD install /
+COPY install /

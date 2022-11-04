@@ -1,3 +1,9 @@
+## 7.2.16 2022-11-03 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Switch ADD to COPY
+
+
 ## 7.2.15 2022-08-17 <dave at tiredofit dot ca>
 
    ### Changed
