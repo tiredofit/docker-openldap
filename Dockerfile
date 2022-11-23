@@ -1,4 +1,4 @@
-FROM docker.io/tiredofit/alpine:3.16
+FROM docker.io/tiredofit/alpine:3.17
 LABEL maintainer="Dave Conroy (github.com/tiredofit)"
 
 ENV OPENLDAP_VERSION=2.6.3 \
@@ -31,7 +31,6 @@ RUN set -x && \
                 libtool \
                 m4 \
                 mosquitto-dev \
-                openssl-dev \
                 openssl-dev \
                 unixodbc-dev \
                 util-linux-dev \
