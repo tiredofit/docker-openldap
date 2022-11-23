@@ -1,3 +1,9 @@
+## 7.1.33 2022-11-23 <dave at tiredofit dot ca>
+
+   ### Added
+      - OpenSSL Base
+
+
 ## 7.1.32 2022-07-09 <sniper7kills@github>
 
    ### Fixed
