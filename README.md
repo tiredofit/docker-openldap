@@ -1,7 +1,7 @@
 # github.com/tiredofit/docker-openldap
 
 [![GitHub release](https://img.shields.io/github/v/tag/tiredofit/docker-openldap?style=flat-square)](https://github.com/tiredofit/docker-openldap/releases/latest)
-[![Build Status](https://img.shields.io/github/workflow/status/tiredofit/docker-openldap/build?style=flat-square)](https://github.com/tiredofit/docker-openldap/actions?query=workflow%3Abuild)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/tiredofit/docker-openldap/main.yml?branch=main&style=flat-square)](https://github.com/tiredofit/docker-openldap/actions)
 [![Docker Stars](https://img.shields.io/docker/stars/tiredofit/openldap.svg?style=flat-square&logo=docker)](https://hub.docker.com/r/tiredofit/openldap/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/tiredofit/openldap.svg?style=flat-square&logo=docker)](https://hub.docker.com/r/tiredofit/openldap/)
 [![Become a sponsor](https://img.shields.io/badge/sponsor-tiredofit-181717.svg?logo=github&style=flat-square)](https://github.com/sponsors/tiredofit)
