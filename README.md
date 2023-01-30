@@ -78,7 +78,7 @@ docker pull docker.io/tiredofdit/openldap:(imagetag)
 Builds of the image are also available on the [Github Container Registry](https://github.com/tiredofit/docker-openldap/pkgs/container/docker-openldap) 
  
 ```
-docker pull ghcr.io/tiredofit/docker-openldap/pkgs/container/docker-openldap):(imagetag)
+docker pull ghcr.io/tiredofit/docker-openldap:(imagetag)
 ``` 
 
 The following image tags are available along with their tagged release based on what's written in the [Changelog](CHANGELOG.md):
