@@ -310,7 +310,7 @@ EOF
       rm -rf /tmp/slapd.ldif
       set -e
 
-      chown -R ldap:ldap ${CONFIG_PATH}
+      chown -R ldap:ldap "${CONFIG_PATH}"
 
     # Error: the database directory (${DB_PATH}) is empty but not the config directory (${CONFIG_PATH}slapd.d)
     elif [ -z "$(ls -A -I lost+found ${DB_PATH})" ] && [ ! -z "$(ls -A -I lost+found ${CONFIG_PATH}slapd.d)" ]; then
@@ -581,7 +581,7 @@ configure_logging() {
   if [ "${LOG_TYPE,,}" = "file" ] ; then
     mkdir -p ${LOG_PATH}
     touch ${LOG_PATH}${LOG_FILE}
-    chown -R ldap: ${LOG_PATH}${LOG_FILE}
+    chown -R ldap:ldap ${LOG_PATH}${LOG_FILE}
     create_logrotate openldap ${LOG_PATH}/${LOG_FILE} none ldap ldap
     log_argument="${LOG_PATH}/${LOG_FILE}"
   else
