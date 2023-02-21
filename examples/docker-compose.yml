@@ -3,7 +3,7 @@ services:
 
   openldap-app:
     hostname: ldap.example.org
-    image: tiredofit/openldap
+    image: tiredofit/openldap:2.6
     container_name: openldap-app
     ports:
       - 389:389

@@ -1,3 +1,9 @@
+## 2.6-7.2.19 2023-02-21 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Modernize Dockerfile
+
+
 ## 2.6-7.2.18 2023-02-21 <dave at tiredofit dot ca>
 
    ### Added

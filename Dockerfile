@@ -1,19 +1,25 @@
-FROM docker.io/tiredofit/alpine:3.17
+ARG DISTRO=alpine
+ARG DISTRO_VARIANT=3.17
+
+FROM docker.io/tiredofit/${DISTRO}:${DISTRO_VARIANT}
 LABEL maintainer="Dave Conroy (github.com/tiredofit)"
 
-ENV OPENLDAP_VERSION=2.6.4 \
+ARG OPENLDAP_VERSION
+
+ENV OPENLDAP_VERSION=${OPENLDAP_VERSION:-"2.6.4"} \
     SCHEMA2LDIF_VERSION=1.3 \
-    IMAGE_NAME="tiredofit/openldap" \
+    IMAGE_NAME="tiredofit/openldap:2.6" \
     IMAGE_REPO_URL="https://github.com/tiredofit/docker-openldap/"
 
 COPY CHANGELOG.md /tiredofit/
 
-RUN set -x && \
+RUN source /assets/functions/00-container && \
+    set -x && \
     addgroup -g 389 ldap && \
     adduser -S -D -H -h /var/lib/openldap -s /sbin/nologin -G ldap -u 389 ldap && \
-    apk update && \
-    apk upgrade && \
-    apk add -t .openldap-build-deps \
+    package update && \
+    package upgrade && \
+    package install .openldap-build-deps \
                 alpine-sdk \
                 autoconf \
                 automake \
@@ -37,7 +43,7 @@ RUN set -x && \
                 xz-dev \
                 && \
     \
-    apk add -t .openldap-run-deps \
+    package install .openldap-run-deps \
                 aws-cli \
                 bzip2 \
                 cyrus-sasl \
@@ -70,7 +76,7 @@ RUN set -x && \
     make -j$(getconf _NPROCESSORS_ONLN) && \
     make install && \
     \
-### Grab OpenLDAP Source, Alpine Patches and Check ppolicy module
+    ### Grab OpenLDAP Source, Alpine Patches and Check ppolicy module
     mkdir -p /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/ && \
     curl -sSL https://openldap.org/software/download/OpenLDAP/openldap-release/openldap-${OPENLDAP_VERSION}.tgz | tar xfz - --strip 1 -C /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/ && \
     git clone --depth 1 git://git.alpinelinux.org/aports.git /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/alpine && \
@@ -82,11 +88,11 @@ RUN set -x && \
     cd /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/alpine && \
     git filter-branch --prune-empty --subdirectory-filter main/openldap HEAD && \
     \
-### Apply Patches
+    ### Apply Patches
     cd /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/ && \
     rm -rf ./alpine/tests-make-add-missing-dependency.patch && \
     for patch in ./alpine/*.patch; do echo "** Applying $patch"; patch -p1 < $patch; done && \
-### Compile OpenLDAP
+    ### Compile OpenLDAP
     cd /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/ && \
     sed -i '/^STRIP/s,-s,,g' build/top.mk && \
     # Required for autoconf-2.70 #765043
@@ -121,7 +127,7 @@ RUN set -x && \
         --enable-sock=mod \
         --enable-sql=mod \
         --with-cyrus-sasl \
-		--with-systemd=no \
+        --with-systemd=no \
         --with-tls=openssl \
         && \
     make -j$(getconf _NPROCESSORS_ONLN) DESTDIR="" install && \
@@ -155,27 +161,25 @@ RUN set -x && \
     mkdir -p /run/openldap && \
     chown -R ldap:ldap /run/openldap && \
     \
-## Install Schema2LDIF
+    ## Install Schema2LDIF
     curl https://codeload.github.com/fusiondirectory/schema2ldif/tar.gz/${SCHEMA2LDIF_VERSION} | tar xvfz - --strip 1 -C /usr && \
     rm -rf /usr/Changelog && \
     rm -rf /usr/LICENSE && \
     \
-## Create Cracklib Dictionary
+    ## Create Cracklib Dictionary
     mkdir -p /usr/share/dict && \
     cd /usr/share/dict && \
     wget https://github.com/cracklib/cracklib/releases/download/v2.9.7/cracklib-words-2.9.7.gz && \
     create-cracklib-dict -o pw_dict cracklib-words-2.9.7.gz && \
     rm -rf cracklib-words-2.9.7.gz && \
     \
-### Cleanup
-    apk del .openldap-build-deps \
-            && \
+    ### Cleanup
+    package remove .openldap-build-deps && \
+    package cleanup && \
     rm -rf /tiredofit \
            /usr/src/* \
            /var/cache/apk/*
 
-### Networking
 EXPOSE 389 636
 
-### Add Assets
 COPY install /
