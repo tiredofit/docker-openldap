@@ -1,3 +1,10 @@
+## 2.6-7.3.0 2023-02-22 <dave at tiredofit dot ca>
+
+   ### Added
+      - Compatibility with Docker 23.0.0 and newer versions of Kubernetes
+      - Modernize image
+
+
 ## 2.6-7.2.19 2023-02-21 <dave at tiredofit dot ca>
 
    ### Changed

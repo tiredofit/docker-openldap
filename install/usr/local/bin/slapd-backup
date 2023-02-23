@@ -12,6 +12,6 @@ backupPath="${BACKUP_PATH}"
 # Date format for the dump file name
 dateFileFormat="+%Y%m%dT%H%M%S"
 
-/usr/sbin/slapcat -F ${CONFIG_PATH}/slapd.d -n $dbnum | gzip > ${BACKUP_PATH}$(date "$dateFileFormat")-$filename.gz
+/usr/sbin/slapcat -F "${CONFIG_PATH}"/slapd.d -n $dbnum | gzip > "${BACKUP_PATH}"$(date "$dateFileFormat")-$filename.gz
 
 exit 0

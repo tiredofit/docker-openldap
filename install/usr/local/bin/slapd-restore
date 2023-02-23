@@ -5,32 +5,54 @@ source /assets/defaults/10-openldap
 
 # Usage: /usr/local/bin/slapd-restore dbnum file
 dbnum=$1
-file=$2
+ldif_file=$2
 
-backupPath="/data/backup"
-file="$backupPath/$file"
+if [ -z "${1}" ] ; then
+    echo "Syntax: $(basename "$0") dbnum[0|1] [filename]"
+    exit 2
+elif [ -z "${2}" ] ; then
+    echo "Need Filename to restore!"
+    exit 2
+fi
 
 # stop slapd
 s6-svc -d /var/run/s6/legacy-services/10-openldap
 pkill slapd
 
-TEMP_FILE=$(mktemp)
-gunzip -c $file > $TEMP_FILE
-chown ldap:ldap $TEMP_FILE
+tmp_backup_file="$(mktemp)"
+case "${ldif_file##*.}" in
+    gz )
+        gunzip -c "$ldif_file" > "${tmp_backup_file}"
+    ;;
+    zst )
+        zstd -d "$file" > "${tmp_backup_file}"
+    ;;
+esac
 
-if [ "$1" = "0" ]; then
-	rm -rf ${CONFIG_PATH}/slap.d/*
-fi
+chown ldap:ldap "${tmp_backup_file}"
 
-if [ "$1" = "1" ]; then
-	rm -rf ${DB_PATH}/*
-fi
+case "$1" in
+    0 )
+        tmp_docker_files="$(mktemp -d)"
+        mv "${CONFIG_PATH}"/docker-* "${tmp_docker_files}"/
+        rm -rf "${CONFIG_PATH}"/slap.d/*
+    ;;
+    1 )
+        rm -rf "${DB_PATH:?}"/*
+    ;;
+esac
 
-sudo -u ldap slapadd -c -F /etc/openldap/slapd.d -n $dbnum -l $TEMP_FILE
+sudo -u ldap slapadd -v -F /etc/openldap/slapd.d -n "${dbnum}" -l "${tmp_backup_file}"
+
+case "$1" in
+    0 )
+        mv "${tmp_docker_files}"/* "${CONFIG_PATH}"/
+        rm -rf "${tmp_docker_files}"
+    ;;
+esac
 
 # restart slapd
 s6-svc -u /var/run/s6/legacy-services/10-openldap
 
-rm $TEMP_FILE
-
+rm -rf  "${tmp_backup_file}"
 exit 0

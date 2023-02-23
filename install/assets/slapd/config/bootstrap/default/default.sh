@@ -5,7 +5,7 @@ source /assets/defaults/10-openldap
 
 PROCESS_NAME="openldap"
 
-if [ -z "$BASE_DN" ]; then
+if [ -z "${BASE_DN}" ]; then
     IFS='.' read -ra BASE_DN_TABLE <<< "$DOMAIN"
     for i in "${BASE_DN_TABLE[@]}"; do
       EXT="dc=$i,"
@@ -22,17 +22,17 @@ ROOT=""
 for elem in "${domain_elems[@]}" ; do
     if [ "x${SUFFIX}" = x ] ; then
         SUFFIX="dc=${elem}"
-        BASE_DN="${SUFFIX}" 
+        BASE_DN="${SUFFIX}"
         ROOT="${elem}"
     else
-        BASE_DN="${BASE_DN},dc=${elem}" 
+        BASE_DN="${BASE_DN},dc=${elem}"
     fi
 done
 
 file_env "ADMIN_PASS"
-ADMIN_PASS_ENCRYPTED=`slappasswd -s $ADMIN_PASS`
+ADMIN_PASS_ENCRYPTED=$(slappasswd -s "${ADMIN_PASS}")
 file_env "READONLY_USER_PASS"
-READONLY_USER_PASS_ENCRYPTED=`slappasswd -s $READONLY_USER_PASS`
+READONLY_USER_PASS_ENCRYPTED=$(slappasswd -s "${READONLY_USER_PASS}")
 
 cat <<EOF > /tmp/00-default-data.ldif
 dn: ${BASE_DN}
@@ -54,7 +54,7 @@ description: LDAP administrator
 userPassword: ${ADMIN_PASS_ENCRYPTED}
 EOF
 
-if var_true $ENABLE_READONLY_USER ; then
+if var_true "${ENABLE_READONLY_USER}" ; then
   	cat <<EOF >> /tmp/00-default-data.ldif
 
 dn: cn=${READONLY_USER_USER},${BASE_DN}
@@ -66,7 +66,7 @@ description: LDAP read only user
 userPassword: ${READONLY_USER_PASS_ENCRYPTED}
 EOF
 fi
-    
+
 silent ldapmodify -H 'ldapi:///' -D "cn=admin,${BASE_DN}" -w $ADMIN_PASS -f /tmp/00-default-data.ldif
 rm -rf /tmp/00-default-data.ldif
 
