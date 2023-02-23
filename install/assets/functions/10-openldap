@@ -443,7 +443,7 @@ EOF
                 # Adapt security and ACLs
                 print_notice "Setting Security and ACLs"
                 get_ldap_base_dn
-                update template /assets/slapd/config/bootstrap/ldif/01-acls.ldif \
+                update_template /assets/slapd/config/bootstrap/ldif/01-acls.ldif \
                     BASE_DN
 
                 # Process config files (*.ldif) in bootstrap directory
