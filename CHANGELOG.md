@@ -1,3 +1,9 @@
+## 2.6-7.3.1 2023-02-23 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Fix for update_template function not firing
+
+
 ## 2.6-7.3.0 2023-02-22 <dave at tiredofit dot ca>
 
    ### Added
