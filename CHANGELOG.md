@@ -1,3 +1,9 @@
+## 2.6-7.3.2 2023-03-07 <adrianparilli@github>
+
+   ### Changed
+      - Fix for Custom schemas not loading
+
+
 ## 2.6-7.3.1 2023-02-23 <dave at tiredofit dot ca>
 
    ### Changed
