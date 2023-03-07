@@ -722,7 +722,6 @@ schema2ldif() {
 
     tmpd=$(mktemp -d)
     pushd "${tmpd}" >>/dev/null
-
     echo "include /etc/openldap/schema/core.schema" >> convert.dat
     echo "include /etc/openldap/schema/cosine.schema" >> convert.dat
     echo "include /etc/openldap/schema/${SCHEMA_TYPE}.schema" >> convert.dat
@@ -741,14 +740,20 @@ schema2ldif() {
     fi
 
     for schema in ${schemas}; do
-        fullpath=${schema}
-        schema_name=$(basename "${fullpath}" .schema)
-        schema_dir=$(dirname "${fullpath}")
-        ldif_file=${schema_name}.ldif
 
-        find "${slaptest_tmp}" -name *\}"${schema_name}".ldif -exec mv '{}' ./"${ldif_file}" \;
+        # Schema name without extension
+        schema_name=$(basename "${schema}" .schema)
 
-        # TODO: these sed invocations could all be combined
+        # Schema path
+        schema_dir=$(dirname "${schema}")
+
+        # Final path and name for LDIF file
+        ldif_file=${schema_dir}/${schema_name}.ldif
+
+        # Locate the LDIF from temporal dir and move to its final location
+        find "${slaptest_tmp}" -name *\}${schema_name}.ldif -exec mv '{}' "${ldif_file}" \;
+
+        # Apply LDAP stuff to LDIF file
         sed -i \
                     -e "/dn:/ c dn: cn=${schema_name},cn=schema,cn=config" \
                     -e "/cn:/ c cn: ${schema_name}" \
@@ -760,10 +765,10 @@ schema2ldif() {
                     -e '/modifiersName/ d' \
                     -e '/modifyTimestamp/ d' \
                 "${ldif_file}"
-        # slapd seems to be very sensitive to how a file ends. There should be no blank lines.
-        sed -i '/^ *$/d' "${ldif_file}"
 
-        mv "${ldif_file}" "${schema_dir}"
+        # slapd is very sensitive to how a file starts and ends. There should be no blank lines.
+        # see https://www.openldap.org/doc/admin26/appendix-common-errors.html
+        sed -i '/^ *$/d' "${ldif_file}"
     done
 
     popd >>/dev/null
