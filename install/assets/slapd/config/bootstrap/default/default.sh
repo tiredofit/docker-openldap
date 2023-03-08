@@ -61,7 +61,7 @@ dn: cn=${READONLY_USER_USER},${BASE_DN}
 changeType: add
 objectClass: simpleSecurityObject
 objectClass: organizationalRole
-cn: cn=${READONLY_USER_USER}
+cn: ${READONLY_USER_USER}
 description: LDAP read only user
 userPassword: ${READONLY_USER_PASS_ENCRYPTED}
 EOF
