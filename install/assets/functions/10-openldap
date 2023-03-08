@@ -430,16 +430,6 @@ EOF
                     fi
                 done
 
-                if var_true "${ENABLE_READONLY_USER}"; then
-                    READONLY_USER_PASS_ENCRYPTED="$(slappasswd -s "${READONLY_USER_PASS}")"
-                    for readonly_ldif in /assets/slapd/config/bootstrap/ldif/readonly-user/*.ldif; do
-                        update_template "${readonly_ldif}" \
-                            BASE_DN \
-                            READONLY_USER_USER \
-                            READONLY_USER_PASS_ENCRYPTED
-                    done
-                fi
-
                 # Adapt security and ACLs
                 print_notice "Setting Security and ACLs"
                 get_ldap_base_dn
@@ -452,6 +442,41 @@ EOF
                     print_debug "Bootstrap LDIF: Processing file ${ldif_file}"
                     ldap_add_or_modify "${ldif_file}"
                 done
+
+                # Proceed with default.sh bootstraping (creating read only user if enabled / modify ACLs accordingly)
+                if [ ! -d /assets/custom-scripts ]; then
+
+                    print_notice "No custom-scripts directory was found"
+                    if var_true "${ADD_DEFAULT_DATA}"; then
+
+                        print_notice "Adding default top level data configuration"
+                        chmod +x /assets/slapd/config/bootstrap/default/default.sh
+                        /assets/slapd/config/bootstrap/default/default.sh
+
+                        # Read only user
+                        if var_true "${ENABLE_READONLY_USER}"; then
+
+                            print_notice "Setting Security and ACLs for readonly-user"
+                            READONLY_USER_PASS_ENCRYPTED="$(slappasswd -s "${READONLY_USER_PASS}")"
+                            for readonly_ldif in /assets/slapd/config/bootstrap/ldif/readonly-user/*.ldif; do
+                                update_template "${readonly_ldif}" \
+                                    BASE_DN \
+                                    READONLY_USER_USER \
+                                    READONLY_USER_PASS_ENCRYPTED
+                            done
+
+                            #print_notice "Adding read only (DSA) user and bootstrap ldifs"
+                            #for ldif_file in $(find /assets/slapd/config/bootstrap/ldif/readonly-user -type f -name \*.ldif | sort); do
+                                #print_debug "LDIF: Processing file ${ldif_file}"
+                                ldap_add_or_modify "/assets/slapd/config/bootstrap/ldif/readonly-user/readonly-user-acl.ldif"
+                            #done
+                        fi
+                    fi
+                else
+                    # Execute Custom Scripts (To be used for example for tiredofit/openldap-fusiondirectory)
+                    print_notice "Found custom-scripts directory"
+                    custom_scripts
+                fi
 
                 # Custom LDIF injection
                 if [ -d /assets/slapd/config/bootstrap/ldif/custom ]; then
@@ -554,23 +579,6 @@ EOF
             else
                 print_debug "Disabling replication config"
                 replication_disable || true
-            fi
-
-            ## Execute Custom Scripts (To be used for example for tiredofit/openldap-fusiondirectory)
-            if [ -d /assets/custom-scripts/ ]; then
-                custom_scripts
-            else
-                if var_true "${ADD_DEFAULT_DATA}"; then
-                    print_notice "Adding default top level data configuration"
-                    chmod +x /assets/slapd/config/bootstrap/default/default.sh
-                    /assets/slapd/config/bootstrap/default/default.sh
-                    # Read only user
-                    if var_true "${ENABLE_READONLY_USER}"; then
-                        print_notice "Adding read only (DSA) user"
-                        ldap_add_or_modify "/assets/slapd/config/bootstrap/ldif/readonly-user/readonly-user.ldif"
-                        ldapmodify -H 'ldapi:///' -f /assets/slapd/config/bootstrap/ldif/readonly-user/readonly-user-acl.ldif
-                    fi
-                fi
             fi
 
             # Stop OpenLDAP
