@@ -160,6 +160,11 @@ EOF
 configure_backup() {
     if var_true "${ENABLE_BACKUP}"; then
         print_notice "Enabling OpenLDAP scheduled backup routines"
+        cat <<EOF > /etc/zabbix/zabbix_agentd.conf.d/openldap-backup.conf
+# OpenLDAP monitoring for Zabbix Agent 5.4+
+# Get the template at https://github.com/tiredofit/docker-openldap
+# Autoregister=openldap-backup
+EOF
     else
         rm -rf /etc/services.available/20-openldap-backup
     fi

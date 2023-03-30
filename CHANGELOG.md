@@ -1,3 +1,9 @@
+## 2.6-7.4.1 2023-03-30 <dave at tiredofit dot ca>
+
+   ### Added
+      - Add autoregister support for new OpenLDAP Zabbix backup template
+
+
 ## 2.6-7.4.0 2023-03-30 <dave at tiredofit dot ca>
 
    ### Changed
