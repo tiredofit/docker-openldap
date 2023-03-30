@@ -74,17 +74,17 @@ Builds of the image are available on [Docker Hub](https://hub.docker.com/r/tired
 ```bash
 docker pull docker.io/tiredofdit/openldap:(imagetag)
 ```
-Builds of the image are also available on the [Github Container Registry](https://github.com/tiredofit/docker-openldap/pkgs/container/docker-openldap) 
- 
+Builds of the image are also available on the [Github Container Registry](https://github.com/tiredofit/docker-openldap/pkgs/container/docker-openldap)
+
 ```
 docker pull ghcr.io/tiredofit/docker-openldap:(imagetag)
-``` 
+```
 
-Builds of the image are also available on the [Github Container Registry](https://github.com/tiredofit/docker-tiredofdit/pkgs/container/docker-tiredofdit) 
- 
+Builds of the image are also available on the [Github Container Registry](https://github.com/tiredofit/docker-tiredofdit/pkgs/container/docker-tiredofdit)
+
 ```
 docker pull ghcr.io/tiredofit/docker-tiredofdit:(imagetag)
-``` 
+```
 
 The following image tags are available along with their tagged release based on what's written in the [Changelog](CHANGELOG.md):
 
@@ -159,22 +159,25 @@ Be sure to view the following repositories to understand all the customizable op
 #### Backup Options:
 
 
-| Parameter                     | Description                                                                                                                                                                                        | Default         |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
-| `ENABLE_BACKUP`               | Enable Backup System                                                                                                                                                                               | `TRUE`          |
-| `BACKUP_LOCATION`             | Backup to `FILESYSTEM` or `S3` compatible services like S3, Minio, Wasabi                                                                                                                          | `FILESYSTEM`    |
-| `BACKUP_COMPRESSION`          | Use either Gzip `GZ`, Bzip2 `BZ`, XZip `XZ`, ZSTD `ZSTD` or none `NONE`                                                                                                                            | `GZ`            |
-| `BACKUP_COMPRESSION_LEVEL`    | Numberical value of what level of compression to use, most allow `1` to `9` except for `ZSTD` which allows for `1` to `19`                                                                         | `3`             |
-| `BACKUP_INTERVAL`             | How often to do a dump, in minutes. Defaults to 1440 minutes, or once per day.                                                                                                                     |                 |
-| `BACKUP_BEGIN`                | What time to do the first dump. Defaults to immediate. Must be in one of two formats                                                                                                               |                 |
-|                               | Absolute HHMM, e.g. `2330` or `0415`                                                                                                                                                               |                 |
-|                               | Relative +MM, i.e. how many minutes after starting the container, e.g. `+0` (immediate), `+10` (in 10 minutes), or `+90` in an hour and a half                                                     |                 |
-| `BACKUP_RETENTION`            | Value in minutes to delete old backups (only fired when dump freqency fires). 1440 would delete anything above 1 day old. You don't need to set this variable if you want to hold onto everything. |                 |
-| `BACKUP_MD5`                  | Generate MD5 Sum in Directory, `TRUE` or `FALSE`                                                                                                                                                   | `TRUE`          |
-| `BACKUP_PARALLEL_COMPRESSION` | Use multiple cores when compressing backups `TRUE` or `FALSE`                                                                                                                                      | `TRUE`          |
-| `BACKUP_PATH`                 | Filesystem path on where to place backups                                                                                                                                                          | `/data/backup`  |
-| `BACKUP_TEMP_LOCATION`        | If you wish to specify a different location, enter it here                                                                                                                                         | `/tmp/backups/" |
-
+| Parameter                      | Description                                                                                                                                                                                        | Default                   |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| `ENABLE_BACKUP`                | Enable Backup System                                                                                                                                                                               | `TRUE`                    |
+| `BACKUP_BEGIN`                 | What time to do the first dump. Defaults to immediate. Must be in one of two formats                                                                                                               |                           |
+|                                | Absolute HHMM, e.g. `2330` or `0415`                                                                                                                                                               |                           |
+|                                | Relative +MM, i.e. how many minutes after starting the container, e.g. `+0` (immediate), `+10` (in 10 minutes), or `+90` in an hour and a half                                                     |                           |
+| `BACKUP_ARCHIVE_TIME`          | Value in minutes to move all files older than (x) from `BACKUP_PATH` to `BACKUP_PATH_ARCHIVE` - which is useful when pairing against an external backup system.                                    |
+| `BACKUP_CHECKSUM`              | `md5` or `sha1`                                                                                                                                                                                    | `md5`                     |
+| `BACKUP_COMPRESSION_LEVEL`     | Numberical value of what level of compression to use, most allow `1` to `9` except for `ZSTD` which allows for `1` to `19`                                                                         | `8`                       |
+| `BACKUP_COMPRESSION`           | Use either Gzip `GZ`, Bzip2 `BZ`, XZip `XZ`, ZSTD `ZSTD` or `none` `zstd`                                                                                                                            | `GZ`                      |
+| `BACKUP_CREATE_LATEST_SYMLINK` | Create a symbolic link pointing to last backup in this format: `latest-openldap-(config                                                                                                            | data`                     | `TRUE` |
+| `BACKUP_ENABLE_CHECKSUM`       | Enable checksum after backup `TRUE` or `FALSE`                                                                                                                                                     | `TRUE`                    |
+| `BACKUP_INTERVAL`              | How often to do a dump, in minutes. Defaults to 1440 minutes, or once per day.                                                                                                                     |                           |
+| `BACKUP_LOCATION`              | Backup to `FILESYSTEM` or `S3` compatible services like S3, Minio, Wasabi                                                                                                                          | `FILESYSTEM`              |
+| `BACKUP_PARALLEL_COMPRESSION`  | Use multiple cores when compressing backups `TRUE` or `FALSE`                                                                                                                                      | `TRUE`                    |
+| `BACKUP_PATH_ARCHIVE`          | Optional Directory where the database dumps archivess are kept.                                                                                                                                      | `${BACKUP_PATH}/archive/` |
+| `BACKUP_PATH`                  | Filesystem path on where to place backups                                                                                                                                                          | `/data/backup`            |
+| `BACKUP_RETENTION`             | Value in minutes to delete old backups (only fired when dump freqency fires). 1440 would delete anything above 1 day old. You don't need to set this variable if you want to hold onto everything. |                           |
+| `BACKUP_TEMP_LOCATION`         | If you wish to specify a different location, enter it here                                                                                                                                         | `/tmp/backups/`           |
 
 ##### Backing Up to S3 Compatible Services
 
@@ -232,7 +235,7 @@ If you already have a check_password.conf or ppm.conf in /etc/openldap/ the foll
 | `TLS_RESET_PERMISSIONS` | Change permissions on certificate directories for OpenLDAP to read | `TRUE`                                                                                                                  |
 | `TLS_VERIFY_CLIENT`     | TLS verify client.                                                 | `try`                                                                                                                   |
 
-    Help: http://www.openldap.org/doc/admin24/tls.html
+    Help: http://www.openldap.org/doc/admin26/tls.html
 
 #### Replication options
 

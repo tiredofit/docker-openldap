@@ -1,3 +1,12 @@
+## 2.6-7.4.0 2023-03-30 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Rework OpenLDAP Backup routines to become more in line with parent tiredofit/db-backup image
+      - config and data both get compressed into same tar file going forward
+      - Added ability to create "latest" symlink to last good backup
+      - Added ability to "archive" backups to an archive folder after a specified period of time for better external backup capabilities
+
+
 ## 2.6-7.3.2 2023-03-07 <adrianparilli@github>
 
    ### Changed

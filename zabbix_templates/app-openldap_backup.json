@@ -1,0 +1,218 @@
+{
+    "zabbix_export": {
+        "version": "6.2",
+        "date": "2023-03-30T18:32:26Z",
+        "template_groups": [
+            {
+                "uuid": "fa56524b5dbb4ec09d9777a6f7ccfbe4",
+                "name": "DB/Backup"
+            },
+            {
+                "uuid": "748ad4d098d447d492bb935c907f652f",
+                "name": "Templates/Databases"
+            }
+        ],
+        "templates": [
+            {
+                "uuid": "b91f579b2d02424981425412d257ffd5",
+                "template": "OpenLDAP Backup",
+                "name": "OpenLDAP Backup",
+                "description": "Template for OpenLDAP Backup\n\nMeant for use specifically with https://github.com/tiredofit/docker-openldap",
+                "groups": [
+                    {
+                        "name": "DB/Backup"
+                    },
+                    {
+                        "name": "Templates/Databases"
+                    }
+                ],
+                "items": [
+                    {
+                        "uuid": "1d185ba7eb684da0b5d24513abfe749f",
+                        "name": "OpenLDAP Backup: Backup Size",
+                        "type": "TRAP",
+                        "key": "dbbackup.size",
+                        "delay": "0",
+                        "history": "7d",
+                        "units": "B",
+                        "request_method": "POST",
+                        "tags": [
+                            {
+                                "tag": "Application",
+                                "value": "OpenLDAP Backup"
+                            }
+                        ],
+                        "triggers": [
+                            {
+                                "uuid": "3955db038ca2409693f7149be8710e4a",
+                                "expression": "last(/OpenLDAP Backup/dbbackup.size)/last(/OpenLDAP Backup/dbbackup.size,#2)>1.2",
+                                "name": "OpenLDAP Backup: 20% Greater in Size",
+                                "priority": "WARNING",
+                                "manual_close": "YES"
+                            },
+                            {
+                                "uuid": "f31f4eac5dfd486aaf87300fcad746a3",
+                                "expression": "last(/OpenLDAP Backup/dbbackup.size)/last(/OpenLDAP Backup/dbbackup.size,#2)<0.2",
+                                "name": "OpenLDAP Backup: 20% Smaller in Size",
+                                "priority": "WARNING",
+                                "manual_close": "YES"
+                            },
+                            {
+                                "uuid": "7a82cf37d0f2488a8d0596104a90b0db",
+                                "expression": "last(/OpenLDAP Backup/dbbackup.size)<1K",
+                                "name": "OpenLDAP Backup: empty",
+                                "priority": "HIGH"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "9a788c5f12414f69a45e87d41ece732b",
+                        "name": "OpenLDAP Backup: Backup Duration",
+                        "type": "TRAP",
+                        "key": "openldap.backup.backup_duration",
+                        "delay": "0",
+                        "history": "7d",
+                        "units": "uptime",
+                        "description": "How long the backup took",
+                        "tags": [
+                            {
+                                "tag": "Application",
+                                "value": "OpenLDAP Backup"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "5e8727e6cc5e4e5d90765d2b0636a881",
+                        "name": "OpenLDAP Backup: Backup Time",
+                        "type": "TRAP",
+                        "key": "openldap.backup.datetime",
+                        "delay": "0",
+                        "history": "7d",
+                        "units": "unixtime",
+                        "request_method": "POST",
+                        "tags": [
+                            {
+                                "tag": "Application",
+                                "value": "OpenLDAP Backup"
+                            }
+                        ],
+                        "triggers": [
+                            {
+                                "uuid": "febb127a42d44ece975fe8c3c942e174",
+                                "expression": "nodata(/OpenLDAP Backup/openldap.backup.datetime,2d)=1",
+                                "name": "OpenLDAP Backup: No backups detected in 2 days",
+                                "priority": "DISASTER",
+                                "manual_close": "YES"
+                            },
+                            {
+                                "uuid": "4df7ad82b2884d60b1c99b7cb99b7f35",
+                                "expression": "fuzzytime(/OpenLDAP Backup/openldap.backup.datetime,172800s)=0 and fuzzytime(/OpenLDAP Backup/openldap.backup.datetime,259200s)<>0 and fuzzytime(/OpenLDAP Backup/openldap.backup.datetime,345600s)<>0 and fuzzytime(/OpenLDAP Backup/openldap.backup.datetime,432800s)<>0",
+                                "name": "OpenLDAP Backup: No Backups occurred in 2 days",
+                                "priority": "AVERAGE"
+                            },
+                            {
+                                "uuid": "cb9eeb35b9a64ac2a6eca1602a1abd28",
+                                "expression": "fuzzytime(/OpenLDAP Backup/openldap.backup.datetime,172800s)<>0 and fuzzytime(/OpenLDAP Backup/openldap.backup.datetime,259200s)=0 and fuzzytime(/OpenLDAP Backup/openldap.backup.datetime,345600s)<>0 and fuzzytime(/OpenLDAP Backup/openldap.backup.datetime,432800s)<>0",
+                                "name": "OpenLDAP Backup: No Backups occurred in 3 days",
+                                "priority": "AVERAGE"
+                            },
+                            {
+                                "uuid": "3fc9786a491c45398d3918feb0bc1079",
+                                "expression": "fuzzytime(/OpenLDAP Backup/openldap.backup.datetime,172800s)<>0 and fuzzytime(/OpenLDAP Backup/openldap.backup.datetime,259200s)<>0 and fuzzytime(/OpenLDAP Backup/openldap.backup.datetime,345600s)=0 and fuzzytime(/OpenLDAP Backup/openldap.backup.datetime,432800s)<>0",
+                                "name": "OpenLDAP Backup: No Backups occurred in 4 days",
+                                "priority": "AVERAGE"
+                            },
+                            {
+                                "uuid": "b4dcc109d512408c83f8b67904d47e96",
+                                "expression": "fuzzytime(/OpenLDAP Backup/openldap.backup.datetime,172800s)<>0 and fuzzytime(/OpenLDAP Backup/openldap.backup.datetime,259200s)<>0 and fuzzytime(/OpenLDAP Backup/openldap.backup.datetime,345600s)<>0 and fuzzytime(/OpenLDAP Backup/openldap.backup.datetime,432800s)=0",
+                                "name": "OpenLDAP Backup: No Backups occurred in 5 days or more",
+                                "priority": "HIGH"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "a17a4927f0ad4471ae6b040a31570583",
+                        "name": "OpenLDAP Backup: Last Backup Status",
+                        "type": "TRAP",
+                        "key": "openldap.backup.status",
+                        "delay": "0",
+                        "history": "7d",
+                        "description": "Maps Exit Codes received by backup applications",
+                        "tags": [
+                            {
+                                "tag": "Application",
+                                "value": "OpenLDAP Backup"
+                            }
+                        ],
+                        "triggers": [
+                            {
+                                "uuid": "ecd3f445189d4c7d900f1e9d8ed73d83",
+                                "expression": "last(/OpenLDAP Backup/openldap.backup.status)=1",
+                                "name": "OpenLDAP Backup: Failed Backup Detected",
+                                "priority": "HIGH",
+                                "manual_close": "YES"
+                            }
+                        ]
+                    }
+                ],
+                "tags": [
+                    {
+                        "tag": "Service",
+                        "value": "Backup"
+                    },
+                    {
+                        "tag": "Service",
+                        "value": "Database"
+                    }
+                ],
+                "valuemaps": [
+                    {
+                        "uuid": "15430865d6ed400cbed054efed687225",
+                        "name": "OpenLDAP Backup Status",
+                        "mappings": [
+                            {
+                                "value": "0",
+                                "newvalue": "OK"
+                            },
+                            {
+                                "type": "GREATER_OR_EQUAL",
+                                "value": "1",
+                                "newvalue": "FAIL"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "graphs": [
+            {
+                "uuid": "5ff167e7d1964e02842868988a6b8892",
+                "name": "OpenLDAP Backup: Backup Duration",
+                "graph_items": [
+                    {
+                        "color": "199C0D",
+                        "item": {
+                            "host": "OpenLDAP Backup",
+                            "key": "openldap.backup.backup_duration"
+                        }
+                    }
+                ]
+            },
+            {
+                "uuid": "b9830cb151334f7081ee90182051dc34",
+                "name": "OpenLDAP Backup: Backup Size",
+                "type": "STACKED",
+                "graph_items": [
+                    {
+                        "sortorder": "1",
+                        "color": "1A7C11",
+                        "item": {
+                            "host": "OpenLDAP Backup",
+                            "key": "dbbackup.size"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

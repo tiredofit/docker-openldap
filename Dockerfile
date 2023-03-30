@@ -8,7 +8,7 @@ ARG OPENLDAP_VERSION
 
 ENV OPENLDAP_VERSION=${OPENLDAP_VERSION:-"2.6.4"} \
     SCHEMA2LDIF_VERSION=1.3 \
-    IMAGE_NAME="tiredofit/openldap:2.6" \
+    IMAGE_NAME="tiredofit/openldap" \
     IMAGE_REPO_URL="https://github.com/tiredofit/docker-openldap/"
 
 COPY CHANGELOG.md /tiredofit/
@@ -20,48 +20,49 @@ RUN source /assets/functions/00-container && \
     package update && \
     package upgrade && \
     package install .openldap-build-deps \
-                alpine-sdk \
-                autoconf \
-                automake \
-                build-base \
-                bzip2-dev \
-                cracklib-dev \
-                cyrus-sasl-dev \
-                db-dev \
-                git \
-                groff \
-                heimdal-dev \
-                libarchive-dev \
-                libevent-dev \
-                libsodium-dev \
-                libtool \
-                m4 \
-                mosquitto-dev \
-                openssl-dev \
-                unixodbc-dev \
-                util-linux-dev \
-                xz-dev \
-                && \
+                        alpine-sdk \
+                        autoconf \
+                        automake \
+                        build-base \
+                        bzip2-dev \
+                        cracklib-dev \
+                        cyrus-sasl-dev \
+                        db-dev \
+                        git \
+                        groff \
+                        heimdal-dev \
+                        libarchive-dev \
+                        libevent-dev \
+                        libsodium-dev \
+                        libtool \
+                        m4 \
+                        mosquitto-dev \
+                        openssl-dev \
+                        unixodbc-dev \
+                        util-linux-dev \
+                        xz-dev \
+                        && \
     \
     package install .openldap-run-deps \
-                aws-cli \
-                bzip2 \
-                cyrus-sasl \
-                coreutils \
-                cracklib \
-                iptables \
-                libltdl \
-                libuuid \
-                libintl \
-                libsodium \
-                openssl \
-                perl \
-                pigz \
-                sed \
-                unixodbc \
-                xz \
-                zstd \
-                && \
+                    aws-cli \
+                    bzip2 \
+                    cyrus-sasl \
+                    coreutils \
+                    cracklib \
+                    iptables \
+                    libltdl \
+                    libuuid \
+                    libintl \
+                    libsodium \
+                    openssl \
+                    perl \
+                    pigz \
+                    sed \
+                    tar \
+                    unixodbc \
+                    xz \
+                    zstd \
+                    && \
     \
     mkdir -p /usr/src/pixz && \
     curl -ssL https://github.com/vasi/pixz/releases/download/v1.0.7/pixz-1.0.7.tar.gz | tar xfz - --strip=1 -C /usr/src/pixz && \
@@ -83,7 +84,6 @@ RUN source /assets/functions/00-container && \
     mkdir -p contrib/slapd-modules/ppolicy-check-password && \
     git clone https://github.com/cedric-dufour/ppolicy-check-password /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/contrib/slapd-modules/ppolicy-check-password && \
     rm -rf /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/contrib/slapd-modules/ppm && \
-    #mkdir -p contrib/slapd-modules/ppm && \
     git clone https://github.com/ltb-project/ppm /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/contrib/slapd-modules/ppm && \
     cd /tiredofit/openldap:$(head -n 1 /tiredofit/CHANGELOG.md | awk '{print $2'})/alpine && \
     git filter-branch --prune-empty --subdirectory-filter main/openldap HEAD && \
