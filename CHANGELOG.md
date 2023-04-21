@@ -1,3 +1,9 @@
+## 2.6-7.4.2 2023-04-21 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Fix for enabling replication
+
+
 ## 2.6-7.4.1 2023-03-30 <dave at tiredofit dot ca>
 
    ### Added
