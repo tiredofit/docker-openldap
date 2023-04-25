@@ -135,17 +135,17 @@ Be sure to view the following repositories to understand all the customizable op
 
 #### Required for new setup
 
-| Variable               | Description                                                   | Default                |
-| ---------------------- | ------------------------------------------------------------- | ---------------------- |
-| `DOMAIN`               | LDAP domain.                                                  | `example.org`          |
-| `BASE_DN`              | LDAP base DN. If empty automatically set from `DOMAIN` value. | (empty)                |
-| `ADMIN_PASS`           | Ldap Admin password.                                          | `admin`                |
-| `CONFIG_PASS`          | Ldap Config password.                                         | `config`               |
-| `ORGANIZATION`         | Organization Name                                             | `Example Organization` |
-| `ENABLE_READONLY_USER` | Add a read only/Simple Security Object/DSA                    | `false`                |
-| `READONLY_USER_USER`   | Read only user username.                                      | `readonly`             |
-| `READONLY_USER_PASS`   | Read only user password.                                      | `readonly`             |
-| `SCHEMA_TYPE`          | Use `nis` or `rfc2307bis` core schema.                        | `nis`                  |
+| Variable               | Description                                                   | Default                | `_FILE` |
+| ---------------------- | ------------------------------------------------------------- | ---------------------- | ------- |
+| `DOMAIN`               | LDAP domain.                                                  | `example.org`          |         |
+| `BASE_DN`              | LDAP base DN. If empty automatically set from `DOMAIN` value. | (empty)                |         |
+| `ADMIN_PASS`           | Ldap Admin password.                                          | `admin`                | x       |
+| `CONFIG_PASS`          | Ldap Config password.                                         | `config`               | x       |
+| `ORGANIZATION`         | Organization Name                                             | `Example Organization` |         |
+| `ENABLE_READONLY_USER` | Add a read only/Simple Security Object/DSA                    | `false`                |         |
+| `READONLY_USER_USER`   | Read only user username.                                      | `readonly`             | x       |
+| `READONLY_USER_PASS`   | Read only user password.                                      | `readonly`             | x       |
+| `SCHEMA_TYPE`          | Use `nis` or `rfc2307bis` core schema.                        | `nis`                  |         |
 
 #### Logging Options
 
@@ -183,15 +183,15 @@ Be sure to view the following repositories to understand all the customizable op
 
 If `BACKUP_LOCATION` = `S3` then the following options are used.
 
-| Variable               | Description                                                                             | Default       |
-| ---------------------- | --------------------------------------------------------------------------------------- | ------------- |
-| `BACKUP_S3_BUCKET`     | S3 Bucket name e.g. 'mybucket'                                                          |               |
-| `BACKUP_S3_HOST`       | Hostname of S3 Server e.g "s3.amazonaws.com" - You can also include a port if necessary |               |
-| `BACKUP_S3_KEY_ID`     | S3 Key ID                                                                               |               |
-| `BACKUP_S3_KEY_SECRET` | S3 Key Secret                                                                           |               |
-| `BACKUP_S3_PATH`       | S3 Pathname to save to e.g. '`backup`'                                                  |               |
-| `BACKUP_S3_PROTOCOL`   | Use either `http` or `https` to access service                                          | `https`       |
-| `BACKUP_S3_URI_STYLE`  | Choose either `VIRTUALHOST` or `PATH` style                                             | `VIRTUALHOST` |
+| Variable               | Description                                                                             | Default       | `_FILE` |
+| ---------------------- | --------------------------------------------------------------------------------------- | ------------- | ------- |
+| `BACKUP_S3_BUCKET`     | S3 Bucket name e.g. 'mybucket'                                                          |               | x       |
+| `BACKUP_S3_HOST`       | Hostname of S3 Server e.g "s3.amazonaws.com" - You can also include a port if necessary |               | x       |
+| `BACKUP_S3_KEY_ID`     | S3 Key ID                                                                               |               | x       |
+| `BACKUP_S3_KEY_SECRET` | S3 Key Secret                                                                           |               | x       |
+| `BACKUP_S3_PATH`       | S3 Pathname to save to e.g. '`backup`'                                                  |               | x       |
+| `BACKUP_S3_PROTOCOL`   | Use either `http` or `https` to access service                                          | `https`       | x       |
+| `BACKUP_S3_URI_STYLE`  | Choose either `VIRTUALHOST` or `PATH` style                                             | `VIRTUALHOST` |         |
 
 
 #### Password Policy Options
@@ -239,12 +239,12 @@ If you already have a check_password.conf or ppm.conf in /etc/openldap/ the foll
 
 #### Replication options
 
-| Variable                      | Description                                                                                                                                                                                                                                                                         | Default                                                                                                                                                                      |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Variable                      | Description                                                                                                                                                                                                                                                                         | Default                                                                                                                                                                      | `_FILE` |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | `ENABLE_REPLICATION`          | Add replication capabilities. Multimaster only at present.                                                                                                                                                                                                                          | `false`                                                                                                                                                                      |
-| `REPLICATION_CONFIG_SYNCPROV` | olcSyncRepl options used for the config database. Without rid and provider which are automatically added based on `REPLICATION_HOSTS`.                                                                                                                                              | `binddn="cn=config" bindmethod=simple credentials=$CONFIG_PASS searchbase="cn=config" type=refreshAndPersist retry="5 5 60 +" timeout=1 filter="(!(objectclass=olcGlobal))"` |
-| `REPLICATION_DB_SYNCPROV`     | olcSyncRepl options used for the database. Without rid and provider which are automatically added based on `REPLICATION_HOSTS`.                                                                                                                                                     | `binddn="cn=admin,$BASE_DN" bindmethod=simple credentials=$ADMIN_PASS searchbase="$BASE_DN" type=refreshAndPersist interval=00:00:00:10 retry="5 5 60 +" timeout=1`          |
-| `REPLICATION_HOSTS`           | list of replication hosts seperated by a space, must contain the current container hostname set by --hostname on docker run command. If replicating all hosts must be set in the same order. Example - `ldap://ldap1.example.com ldap://ldap2.example.com ldap://ldap3.example.com` |
+| `REPLICATION_CONFIG_SYNCPROV` | olcSyncRepl options used for the config database. Without rid and provider which are automatically added based on `REPLICATION_HOSTS`.                                                                                                                                              | `binddn="cn=config" bindmethod=simple credentials=$CONFIG_PASS searchbase="cn=config" type=refreshAndPersist retry="5 5 60 +" timeout=1 filter="(!(objectclass=olcGlobal))"` | x       |
+| `REPLICATION_DB_SYNCPROV`     | olcSyncRepl options used for the database. Without rid and provider which are automatically added based on `REPLICATION_HOSTS`.                                                                                                                                                     | `binddn="cn=admin,$BASE_DN" bindmethod=simple credentials=$ADMIN_PASS searchbase="$BASE_DN" type=refreshAndPersist interval=00:00:00:10 retry="5 5 60 +" timeout=1`          | x       |
+| `REPLICATION_HOSTS`           | list of replication hosts seperated by a space, must contain the current container hostname set by --hostname on docker run command. If replicating all hosts must be set in the same order. Example - `ldap://ldap1.example.com ldap://ldap2.example.com ldap://ldap3.example.com` | x                                                                                                                                                                            |
 | `REPLICATION_SAFETY_CHECK`    | Check to see if all hosts resolve before starting replication - Introduced as a safety measure to avoid slapd not starting.                                                                                                                                                         | `TRUE`                                                                                                                                                                       |
 | `WAIT_FOR_REPLICAS`           | should we wait for configured replicas to come online (respond to ping) before startup?                                                                                                                                                                                             | `false`                                                                                                                                                                      |
 

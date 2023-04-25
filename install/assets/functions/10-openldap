@@ -217,10 +217,14 @@ configure_ldap_server() {
     if [ ! -e "$first_start_done" ]; then
         new_install=false
 
-        file_env 'CONFIG_PASS'
-        file_env 'ADMIN_PASS'
+        transform_var \
+                        ADMIN_PASS \
+                        CONFIG_PASS
+
         if var_true "${ENABLE_READONLY_USER}"; then
-            file_env 'READONLY_USER_PASS'
+            transform_var \
+                            READONLY_USER_USER \
+                            READONLY_USER_PASS
         fi
 
         # setup bootstrap config - Part 1
@@ -439,9 +443,9 @@ EOF
                     READONLY_USER_PASS_ENCRYPTED="$(slappasswd -s "${READONLY_USER_PASS}")"
                     for readonly_ldif in /assets/slapd/config/bootstrap/ldif/readonly-user/*.ldif; do
                         update_template "${readonly_ldif}" \
-                            BASE_DN \
-                            READONLY_USER_USER \
-                            READONLY_USER_PASS_ENCRYPTED
+                                                                BASE_DN \
+                                                                READONLY_USER_USER \
+                                                                READONLY_USER_PASS_ENCRYPTED
                     done
                 fi
 
@@ -532,6 +536,11 @@ EOF
             if var_true "${ENABLE_REPLICATION}"; then
                 print_notice "Configuring replication"
                 replication_disable || true
+
+                transform_var \
+                                REPLICATION_HOSTS \
+                                REPLICATION_HOSTS_CONFIG_SYNC_PROV \
+                                REPLICATION_HOSTS_DB_SYNC_PROV
 
                 i=1
                 replhosts=$(echo "${REPLICATION_HOSTS}" | tr " " "\n")

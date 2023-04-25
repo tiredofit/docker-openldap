@@ -29,9 +29,12 @@ for elem in "${domain_elems[@]}" ; do
     fi
 done
 
-file_env "ADMIN_PASS"
+transform_var \
+                ADMIN_PASS \
+                READONLY_USER_USER
+                READONLY_USER_PASS
+
 ADMIN_PASS_ENCRYPTED=$(slappasswd -s "${ADMIN_PASS}")
-file_env "READONLY_USER_PASS"
 READONLY_USER_PASS_ENCRYPTED=$(slappasswd -s "${READONLY_USER_PASS}")
 
 cat <<EOF > /tmp/00-default-data.ldif

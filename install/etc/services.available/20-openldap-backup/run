@@ -8,14 +8,13 @@ check_service_initialized init 10-openldap
 liftoff
 
 if [ "${BACKUP_LOCATION}" = "s3" ] || [ "${BACKUP_LOCATION}" = "minio" ]; then
-    S3_PROTOCOL=${S3_PROTOCOL:-"https"}
-    sanity_var S3_BUCKET "S3 Bucket"
-    sanity_var S3_KEY_ID "S3 Key ID"
-    sanity_var S3_KEY_SECRET "S3 Key Secret"
-    sanity_var S3_PATH "S3 Path"
-    sanity_var S3_REGION "S3 Region"
-    file_env 'S3_KEY_ID'
-    file_env 'S3_KEY_SECRET'
+    transform_var \
+                    S3_BUCKET \
+                    S3_KEY_ID \
+                    S3_KEY_SECRET \
+                    S3_KEY_PATH \
+                    S3_KEY_REGION \
+                    S3_PROTOCOL
 fi
 
 ### Set Compression Options

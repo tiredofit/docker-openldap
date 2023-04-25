@@ -1,27 +1,6 @@
 #!/command/with-contenv bash
 
-# usage: file_env VAR [DEFAULT]
-#    ie: file_env 'XYZ_DB_PASSWORD' 'example'
-# (will allow for "$XYZ_DB_PASSWORD_FILE" to fill in the value of
-#  "$XYZ_DB_PASSWORD" from a file, especially for Docker's secrets feature)
-
-function file_env () {
-    local var="$1"
-    local fileVar="${var}_FILE"
-    local def="${2:-}"
-    local val="$def"
-    if [ "${!fileVar:-}" ]; then
-        val="$(cat "${!fileVar}")"
-    elif [ "${!var:-}" ]; then
-        val="${!var}"
-    fi
-    if [ -z ${val} ]; then
-        print_error "error: neither $var nor $fileVar are set but are required"
-        exit 1
-    fi
-    export "$var"="$val"
-    unset "$fileVar"
-}
+source /assets/functions/00-container
 
 # if BASE_DN is empty set value from DOMAIN
 if [ -z "${BASE_DN}" ]; then
@@ -34,7 +13,8 @@ if [ -z "${BASE_DN}" ]; then
     BASE_DN=${BASE_DN::-1}
 fi
 
-file_env 'ADMIN_PASS'
+transform_var \
+                ADMIN_PASS
 
 #dynamic
 LDAP_PARAM="$1"
