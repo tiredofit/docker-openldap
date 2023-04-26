@@ -13,7 +13,7 @@ if [ -z "${BASE_DN}" ]; then
     BASE_DN=${BASE_DN::-1}
 fi
 
-transform_var \
+transform_file_var \
                 ADMIN_PASS
 
 #dynamic

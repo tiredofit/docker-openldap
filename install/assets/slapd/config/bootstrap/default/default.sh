@@ -29,7 +29,7 @@ for elem in "${domain_elems[@]}" ; do
     fi
 done
 
-transform_var \
+transform_file_var \
                 ADMIN_PASS \
                 READONLY_USER_USER
                 READONLY_USER_PASS

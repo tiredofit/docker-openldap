@@ -8,7 +8,7 @@ check_service_initialized init 10-openldap
 liftoff
 
 if [ "${BACKUP_LOCATION}" = "s3" ] || [ "${BACKUP_LOCATION}" = "minio" ]; then
-    transform_var \
+    transform_file_var \
                     S3_BUCKET \
                     S3_KEY_ID \
                     S3_KEY_SECRET \
