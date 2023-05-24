@@ -72,7 +72,7 @@ Clone this repository and build the image with `docker build -t (imagename) .`
 Builds of the image are available on [Docker Hub](https://hub.docker.com/r/tiredofit/openldap)
 
 ```bash
-docker pull docker.io/tiredofdit/openldap:(imagetag)
+docker pull docker.io/tiredofit/openldap:(imagetag)
 ```
 Builds of the image are also available on the [Github Container Registry](https://github.com/tiredofit/docker-openldap/pkgs/container/docker-openldap)
 
