@@ -1,3 +1,10 @@
+## 2.6-7.6.1 2023-05-31 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Fix for backups not being created in tar format
+      - Transform config and data files into their own folder in tar file for better extraction
+
+
 ## 2.6-2.6-7.6 2023-05-10 <dave at tiredofit dot ca>
 
    ### Changed

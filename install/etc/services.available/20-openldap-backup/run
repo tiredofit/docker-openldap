@@ -64,26 +64,27 @@ compression() {
     case "${BACKUP_COMPRESSION,,}" in
     bz*)
         print_notice "Compressing backup with bzip2"
-        target=${target}.bz2
-        tar --use-compress-program="${bzip} " -cf "${BACKUP_TEMP_LOCATION}"/"${target}" -C "${BACKUP_TEMP_LOCATION}" config data
+        target=${target}.tar.bz2
+        tar --use-compress-program="${bzip} " -cf "${BACKUP_TEMP_LOCATION}"/"${target}" -C "${BACKUP_TEMP_LOCATION}" config data --transform "s|config|${now}-openldap_${CONTAINER_NAME}/config|" --transform "s|data|${now}-openldap_${CONTAINER_NAME}/data|"
         ;;
     gz*)
         print_notice "Compressing backup with gzip"
-        target=${target}.gz
-        tar --use-compress-program="${gzip} " -cf "${BACKUP_TEMP_LOCATION}"/"${target}" -C "${BACKUP_TEMP_LOCATION}" config data
+        target=${target}.tar.gz
+        tar --use-compress-program="${gzip} " -cf "${BACKUP_TEMP_LOCATION}"/"${target}" -C "${BACKUP_TEMP_LOCATION}" config data --transform "s|config|${now}-openldap_${CONTAINER_NAME}/config|" --transform "s|data|${now}-openldap_${CONTAINER_NAME}/data|"
         ;;
     "none" | "false")
-        tar -cf "${BACKUP_TEMP_LOCATION}"/"${target}" -C "${BACKUP_TEMP_LOCATION}" config data
+        target=${target}.tar
+        tar -cf "${BACKUP_TEMP_LOCATION}"/"${target}" -C "${BACKUP_TEMP_LOCATION}" config data --transform "s|config|${now}-openldap_${CONTAINER_NAME}/config|" --transform "s|data|${now}-openldap_${CONTAINER_NAME}/data|"
         ;;
     xz*)
         print_notice "Compressing backup with xzip"
-        target=${target}.xz
-        tar --use-compress-program="${xzip} " -cf "${BACKUP_TEMP_LOCATION}"/"${target}" -C "${BACKUP_TEMP_LOCATION}" config data
+        target=${target}.tar.xz
+        tar --use-compress-program="${xzip} " -cf "${BACKUP_TEMP_LOCATION}"/"${target}" -C "${BACKUP_TEMP_LOCATION}" config data --transform "s|config|${now}-openldap_${CONTAINER_NAME}/config|" --transform "s|data|${now}-openldap_${CONTAINER_NAME}/data|"
         ;;
     zst*)
         print_notice "Compressing backup with zstd"
-        target=${target}.zst
-        tar --use-compress-program="${zstd} " -cf "${BACKUP_TEMP_LOCATION}"/"${target}" -C "${BACKUP_TEMP_LOCATION}" config data
+        target=${target}.tar.zst
+        tar --use-compress-program="${zstd} " -cf "${BACKUP_TEMP_LOCATION}"/"${target}" -C "${BACKUP_TEMP_LOCATION}" config data --transform "s|config|${now}-openldap_${CONTAINER_NAME}/config|" --transform "s|data|${now}-openldap_${CONTAINER_NAME}/data|"
         ;;
     esac
 }
