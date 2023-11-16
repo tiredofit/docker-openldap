@@ -1,3 +1,9 @@
+## 2.6-7.6.4 2023-11-16 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Restore READONLY_USER_* variables on database initial creation
+
+
 ## 2.6-7.6.3 2023-07-31 <dave at tiredofit dot ca>
 
    ### Added

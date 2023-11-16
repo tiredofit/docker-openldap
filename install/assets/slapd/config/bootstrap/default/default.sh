@@ -31,7 +31,7 @@ done
 
 transform_file_var \
                 ADMIN_PASS \
-                READONLY_USER_USER
+                READONLY_USER_USER \
                 READONLY_USER_PASS
 
 ADMIN_PASS_ENCRYPTED=$(slappasswd -s "${ADMIN_PASS}")
