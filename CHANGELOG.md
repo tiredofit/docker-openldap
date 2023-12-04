@@ -1,3 +1,9 @@
+## 2.6-7.6.5 2023-12-04 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Change REPLICATION wrappers from <> to {}
+
+
 ## 2.6-7.6.4 2023-11-16 <dave at tiredofit dot ca>
 
    ### Changed
