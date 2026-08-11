@@ -11,9 +11,7 @@ if var_true "${ENABLE_SASLAUTHD}" ; then
     print_notice "Configuring saslauthd"
     saslauthd_bootstrap_filesystem
     saslauthd_configure_daemon
-set -x
     saslauthd_configure_pam
-set +x
 else
     print_debug "Disabling saslauthd"
     service_stop 30-saslauthd

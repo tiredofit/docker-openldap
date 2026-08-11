@@ -1,7 +1,10 @@
-## 2.6-8.1.0pre 2026-04-14 <code at nfastack dot com>
+## 2.6-8.1.0 2026-08-11 <code at nfrastack dot com>
 
    ### Added
       - SaslAuthd process support - Switch on ENABLE_SASLAUTHD - See README for additional variables
+      - OpenLDAP 2.6.14
+      - Alpine 3.24
+
 
 ## 2.6-8.0.2 2026-03-09 <code at nfastack dot com>
 

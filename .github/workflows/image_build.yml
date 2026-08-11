@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - { distro: "alpine", distro_variant: "3.22", latest: "true", distro_latest: "true", arch: "linux/amd64,linux/arm64" }
+          - { distro: "alpine", distro_variant: "3.24", latest: "true", distro_latest: "true", arch: "linux/amd64,linux/arm64" }
     uses: nfrastack/gha/.github/workflows/container-build_generic.yml@main
     with:
       base_image: "ghcr.io/nfrastack/container-base"
@@ -29,6 +29,7 @@ jobs:
       platforms: ${{ matrix.arch }}
       push_dockerhub: ${{ matrix.push_dockerhub || true }}
       push_ghcr: ${{ matrix.push_ghcr || true }}
+      base_image_version: ${{ matrix.base_image_version || '' }}
     secrets: inherit
   cleanup:
     needs: [ build ]
