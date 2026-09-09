@@ -17,7 +17,7 @@ LABEL \
         org.opencontainers.image.vendor="Nfrastack <https://www.nfrastack.com>" \
         org.opencontainers.image.licenses="MIT"
 
-ARG OPENLDAP_VERSION="2.6.14" \
+ARG OPENLDAP_VERSION="2.6.15" \
     CRACKLIB_VERSION="2.10.3" \
     CRACKLIB_REPO_URL="https://github.com/cracklib/cracklib" \
     SCHEMA2LDIF_VERSION="1.3"
